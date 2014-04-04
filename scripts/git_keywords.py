@@ -4,7 +4,7 @@
 #
 # Copyright (C) 2012 Jose A. Rivera <jarrpa@redhat.com>
 #
-# $Date: 2014-04-03 23:31:49 -0500$
+# $Date: 2014-04-03 23:43:13 -0500$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -131,7 +131,7 @@ def kwsub( filepath ):
   kw = { 'Name'     : 'Name: ' + name,
          'Copyright': 'Copyright (C) ' + str(ad.year) + ' ' + author,
          'Date'     : 'Date: ' + cdate,
-         'Id'       : 'Id: ' + name + ' ' + cdate + ' ' + cn,
+         'Id'       : 'Id: ' + name + '; ' + cdate + '; ' + cn,
          'Author'   : 'Author: ' + author,
          'AName'    : 'AName: ' + an,
          'AEmail'   : 'AEmail: ' + ae,
