@@ -131,6 +131,7 @@ References
 
 [IMPCIFS] Hertel, C. R., "Implementing CIFS - The Common Internet File
           System", Prentice Hall, August 2003, ISBN:013047116X.
+          http://www.ubiqx.org/cifs/
 
 [MS-CIFS] Microsoft Corporation, "Common Internet File System (CIFS)
           Protocol Specification",
@@ -159,4 +160,4 @@ References
 
 Timestamp
 =========
-$Id: 0.Readme.txt; 2014-04-04 14:02:35 -0500; Christopher R. Hertel$
+$Id: 0.Readme.txt; 2014-04-13 17:35:17 -0500; Christopher R. Hertel$
