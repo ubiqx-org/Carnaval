@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_NameService.py 2014-04-03 23:31:49 -0500 Christopher R. Hertel$
+# $Id: NBT_NameService.py; 2014-04-14 11:58:37 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -1008,22 +1008,19 @@ class NSHeader( object ):
     self._ARcount = 0x0001 if Counts[3] else 0x0000
 
   def __TrnId( self, TrnId=None ):
-    """Get/set the Transaction ID (HEADER.NAME_TRN_ID).
-    """
+    # Get/set the Transaction ID (HEADER.NAME_TRN_ID).
     if( TrnId is None ):
       return( self._TrnId )   # Return the current Transaction Id value.
     self._TrnId = (0xFFFF & int( TrnId ))   # Set the NAME_TRN_ID value.
 
   def __Flags( self, Flags=None ):
-    """Get/set the 2-octet HEADER.FLAGS field.
-    """
+    # Get/set the 2-octet HEADER.FLAGS field.
     if( Flags is None ):
       return( self._Flags )   # Return the current HEADER.FLAGS value.
     self._Flags  = (0xFFFF & int( Flags ))    # Set the HEADER.FLAGS value.
 
   def __Rbit( self, R=None ):
-    """Get/set the state of the HEADER.FLAGS.R(esponse) bit.
-    """
+    # Get/set the state of the HEADER.FLAGS.R(esponse) bit.
     if( R is None ):
       return( bool( self._Flags & NS_R_BIT ) )
     if( R ):
@@ -1032,23 +1029,20 @@ class NSHeader( object ):
       self._Flags &= ~NS_R_BIT
 
   def __OPcode( self, OPcode=None ):
-    """Get/set the HEADER.FLAGS.OPCODE subfield value.
-    """
+    # Get/set the HEADER.FLAGS.OPCODE subfield value.
     if( OPcode is None ):
       return( self._Flags & NS_OPCODE_MASK )
     self._Flags = (self._Flags & ~NS_OPCODE_MASK) | (OPcode & NS_OPCODE_MASK)
 
   def __NMflags( self, NMflags=None ):
-    """Get/set the HEADER.FLAGS.NMFLAGS subfield.
-    """
+    # Get/set the HEADER.FLAGS.NMFLAGS subfield.
     if( NMflags is None ):
       return( self._Flags & NS_NM_FLAGS_MASK )
     self._Flags &= ~NS_NM_FLAGS_MASK
     self._Flags |= (NMflags & NS_NM_FLAGS_MASK)
 
   def __AAbit( self, AA=None ):
-    """Get/set the NM_FLAGS.AA (Authoritative Answer) bit state.
-    """
+    # Get/set the NM_FLAGS.AA (Authoritative Answer) bit state.
     if( AA is None ):
       return( bool( self._Flags & NS_NM_AA_BIT ) )
     if( AA ):
@@ -1057,8 +1051,7 @@ class NSHeader( object ):
       self._Flags &= ~NS_NM_AA_BIT
 
   def __TCbit( self, TC=None ):
-    """Get/set the NM_FLAGS.TC (TrunCation) bit state.
-    """
+    # Get/set the NM_FLAGS.TC (TrunCation) bit state.
     if( TC is None ):
       return( bool( self._Flags & NS_NM_TC_BIT ) )
     if( TC ):
@@ -1067,8 +1060,7 @@ class NSHeader( object ):
       self._Flags &= ~NS_NM_TC_BIT
 
   def __RDbit( self, RD=None ):
-    """Get/set the NM_FLAGS.RD (Recursion Desired) bit state.
-    """
+    # Get/set the NM_FLAGS.RD (Recursion Desired) bit state.
     if( RD is None ):
       return( bool( self._Flags & NS_NM_RD_BIT ) )
     if( RD ):
@@ -1077,8 +1069,7 @@ class NSHeader( object ):
       self._Flags &= ~NS_NM_RD_BIT
 
   def __RAbit( self, RA=None ):
-    """Get/set the state of the NM_FLAGS.RA (Recursion Available) bit.
-    """
+    # Get/set the state of the NM_FLAGS.RA (Recursion Available) bit.
     if( RA is None ):
       return( bool( self._Flags & NS_NM_RA_BIT ) )
     if( RA ):
@@ -1087,8 +1078,7 @@ class NSHeader( object ):
       self._Flags &= ~NS_NM_RA_BIT
 
   def __Bbit( self, B=None ):
-    """Get/set the state of the Broadcast bit (NM_FLAGS.B).
-    """
+    # Get/set the state of the Broadcast bit (NM_FLAGS.B).
     if( B is None ):
       return( bool( self._Flags & NS_NM_B_BIT ) )
     if( B ):
@@ -1097,39 +1087,34 @@ class NSHeader( object ):
       self._Flags &= ~NS_NM_B_BIT
 
   def __Rcode( self, Rcode=None ):
-    """Get/set the message Result Code (NM_FLAGS.RCODE).
-    """
+    # Get/set the message Result Code (NM_FLAGS.RCODE).
     if( Rcode is None ):
       return( self._Flags & NS_RCODE_MASK )
     self._Flags = (self._Flags & ~NS_RCODE_MASK) | (Rcode & NS_RCODE_MASK)
 
   def __QDcount( self, QDcount=None ):
-    """Get/set the number of Question Records included in the message.
-    """
+    # Get/set the number of Question Records included in the message.
     if( QDcount is None ):
       return( self._QDcount )
     # The QDcount must be 0 or 1.
     self._QDcount = 0x0001 if QDcount else 0x0000
 
   def __ANcount( self, ANcount=None ):
-    """Get/set the number of Answer Records included in the message.
-    """
+    # Get/set the number of Answer Records included in the message.
     if( ANcount is None ):
       return( self._ANcount )
     # The ANcount must be 0 or 1.
     self._ANcount = 0x0001 if ANcount else 0x0000
 
   def __NScount( self, NScount=None ):
-    """Get/set the number of Name Service Authority records.
-    """
+    # Get/set the number of Name Service Authority records.
     if( NScount is None ):
       return( self._NScount )
     # The NScount must be 0 or 1.
     self._NScount = 0x0001 if NScount else 0x0000
 
   def __ARcount( self, ARcount=None ):
-    """Get/set the number of Additional Records in the message.
-    """
+    # Get/set the number of Additional Records in the message.
     if( ARcount is None ):
       return( self._ARcount )
     # As above, the only valid values are 0 and 1.
@@ -1250,22 +1235,19 @@ class QuestionRecord( object ):
     self._Qclass = NS_Q_CLASS_IN
 
   def __Qname( self, Qname=None ):
-    """Get/set the encoded NBT Question Name.
-    """
+    # Get/set the encoded NBT Question Name.
     if( Qname is None ):
       return( self._Qname )
     self._Qname = Qname
 
   def __Qtype( self, Qtype=None ):
-    """Get/set the Question Type.
-    """
+    # Get/set the Question Type.
     if( Qtype is None ):
       return( self._Qtype )
     self._Qtype = (0xFFFF & Qtype)
 
   def __Qclass( self, Qclass=None ):
-    """Get/set the Question Class.
-    """
+    # Get/set the Question Class.
     if( Qclass is None ):
       return( self._Qclass )
     self._Qclass = (0xFFFF & Qclass)
@@ -1354,36 +1336,31 @@ class ResourceRecord( object ):
     self._RDlen   = 0x0000 if( not RDlen ) else (0xFFFF & int( RDlen ))
 
   def __RRname( self, RRname=None ):
-    """Get/set the encoded NBT Resource Record Name.
-    """
+    # Get/set the encoded NBT Resource Record Name.
     if( RRname is None ):
       return( self._RRname )
     self._RRname = RRname
 
   def __RRtype( self, RRtype=None ):
-    """Get/set the Resource Record Type.
-    """
+    # Get/set the Resource Record Type.
     if( RRtype is None ):
       return( self._RRtype )
     self._RRtype = (0xFFFF & RRtype)
 
   def __RRclass( self, RRclass=None ):
-    """Get/set the Resource Record Class.
-    """
+    # Get/set the Resource Record Class.
     if( RRclass is None ):
       return( self._RRclass )
     self._RRclass = (0xFFFF & RRclass)
 
   def __TTL( self, TTL=None ):
-    """Get/set the Time to Live value.
-    """
+    # Get/set the Time to Live value.
     if( TTL is None ):
       return( self._TTL )
     self._TTL = (0xFFFFFFFF & int( TTL ))
 
   def __RDlen( self, RDlen=None ):
-    """Get/set the RDLENGTH field of the Resource Record.
-    """
+    # Get/set the RDLENGTH field of the Resource Record.
     if( RDlen is None ):
       return( self._RDlen )
     self._RDlen = (0xFFFF & int( RDlen ))
@@ -1507,8 +1484,7 @@ class AddressRecord( object ):
       self._NBflags |= NS_GROUP_BIT
 
   def __Gbit( self, G=None ):
-    """Get/set the Group (G) bit in the NB_FLAGS field.
-    """
+    # Get/set the Group (G) bit in the NB_FLAGS field.
     if( G is None ):
       return( bool( NS_GROUP_BIT & self._NBflags ) )
     if( G ):
@@ -1517,22 +1493,19 @@ class AddressRecord( object ):
       self._NBflags &= ~NS_GROUP_BIT
 
   def __ONT( self, ONT=None ):
-    """Get/set the Owner Node Type in the RDATA.NB_FLAGS.
-    """
+    # Get/set the Owner Node Type in the RDATA.NB_FLAGS.
     if( ONT is None ):
       return( NS_ONT_MASK & self._NBflags )
     self._NBflags = (self._NBflags & ~NS_ONT_MASK) | (NS_ONT_MASK & ONT)
 
   def __NBaddr( self, NBaddr=None ):
-    """Get/set the RDATA.NB_ADDRESS of the message.
-    """
+    # Get/set the RDATA.NB_ADDRESS of the message.
     if( NBaddr is None ):
       return( self._NBaddr )
     self._NBaddr = (NBaddr[:4] if( NBaddr ) else (4 * '\0'))
 
   def __NBflags( self, NBflags=None ):
-    """Get/set the RDATA.NB_FLAGS field as a whole.
-    """
+    # Get/set the RDATA.NB_FLAGS field as a whole.
     if( NBflags is None ):
       return( self._NBflags )
     self._NBflags = (NBflags & NS_NBFLAG_MASK)
@@ -1665,16 +1638,14 @@ class NodeStatusResponse( NSHeader, ResourceRecord ):
     ResourceRecord.__init__( self, L2name, NS_RR_TYPE_NBSTAT, 0, rdlen )
 
   def __NameList( self, NameList=None ):
-    """Get/set the list of names in the response.
-    """
+    # Get/set the list of names in the response.
     if( NameList is None ):
       return( self._NameList )
     self._NameList = NameList[:255] if( NameList ) else []
     self._RDlen = 7 + (18 * (len( self._NameList ) & 0xFF ))
 
   def __MAC( self, MAC=None ):
-    """Get/set the MAC address value.
-    """
+    # Get/set the MAC address value.
     if( MAC is None ):
       return( self._MAC )
     self._MAC = (MAC + (6 * '\0'))[:6] if( MAC ) else (6 * '\0')
@@ -1870,8 +1841,7 @@ class NameQueryResponse( NSHeader, ResourceRecord ):
     self.__AddrList( aList if( aList ) else [] )
 
   def __AddrList( self, AddrList=None ):
-    """Set the address list for the NBT Name Query Response.
-    """
+    # Set the address list for the NBT Name Query Response.
     if( AddrList is None ):
       return( self._AddrList )
     if( not isinstance( msg, list ) ):
