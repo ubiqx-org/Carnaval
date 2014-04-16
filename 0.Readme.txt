@@ -1,7 +1,7 @@
-Hi.
+Hi!
 
 PsmbY
-=====
+-----
 
 ...an SMB protocol suite implementation in Python.  SMB in PYthon.
 
@@ -10,7 +10,7 @@ NBT transport layer.  Stay tuned.
 
 
 Patch Submissions
-=================
+-----------------
 
 If you want to contribute something, we would just be tickled pink, but
 please note the licensing philosophy discussion below.  If you submit
@@ -24,7 +24,7 @@ See:  https://wiki.python.org/moin/PythonSoftwareFoundationLicenseFaq
 
 
 Licensing Philosophy
-====================
+--------------------
 
 This code is provided with the hope that it is both usable and useful, but
 without any promises regarding net weight, color, the quality of the bits
@@ -53,7 +53,7 @@ under an additional license.
 
 
 Ramblings
-=========
+---------
 
 A quick Internet search shows that there have been a handful of attempts
 to create an SMB client in Python, and a possibly a few tries at an SMB
@@ -62,16 +62,17 @@ server.
 Here we go again.
 
 We are trying to meet the following goals:
-- Provide a useful SMB2/3 client and server implementation in Python.  We
+
+* Provide a useful SMB2/3 client and server implementation in Python.  We
   don't expect that it'll be wildly fast, but we do want it to be both
   reliable and useful.  (SMB1 may follow later on.  SMB2/3 is a higher
   priority for now.)
-- Provide modular support for additional protocols, such as the Distributed
+* Provide modular support for additional protocols, such as the Distributed
   File System (see [MS-DFSC]).
-- Provide clear and complete documentation.  The pydoc output in all of our
+* Provide clear and complete documentation.  The pydoc output in all of our
   modules should be be enough to get you started, and provide useful links
   to further information if you want to dig deeper.
-- Act as a guide for others who want to implement some aspect of the SMB
+* Act as a guide for others who want to implement some aspect of the SMB
   suite.  We're trying to keep the code clean and clear and commented so
   that that it's not only clear what the code is doing, but why it's doing
   it.
@@ -83,25 +84,23 @@ to our goals.
 
 
 Words
-=====
+-----
 
-CIFS    Common Internet File System.  CIFS is the "marketing upgrade"
+CIFS::  Common Internet File System.  CIFS is the "marketing upgrade"
         name that was bestowed upon the SMB protocol in the mid-1990's.  For
         a while, some in the community used the CIFS name to refer to suite
         of protocols that centered upon SMB, including SMB, NBT, the Browser
-        protocols, DFS, Mailslot protocol, and a few others.
+        protocols, DFS, Mailslot protocol, and a few others.  CIFS is now
+        considered a dead name.  Microsoft doesn't use it any more, except
+        in older documentation or references to legacy implementations.
 
-        CIFS is now considered a dead name.  Microsoft doesn't use it any
-        more, except in older documentation or references to legacy
-        implementations.
-
-SMB     Server Message Block protocol.  SMB was originally created by
+SMB::   Server Message Block protocol.  SMB was originally created by
         IBM in the early 1980's for use with PC-DOS.  SMB was updated and
         extended for use with OS/2, and was eventually ported to Windows.
         The ported version, known as "NT LM 0.12", has remained very much
         the same since then.
 
-SMB1    Also known as SMBv1, CIFS, or "NT LM 0.12", SMB1 is the designation
+SMB1::  Also known as SMBv1, CIFS, or "NT LM 0.12", SMB1 is the designation
         given to the "NT LM 0.12" dialect of the original SMB protocol as
         implemented in all versions of Windows since Windows NT 3.51.  The
         SMB1 name may be thought of as excluding older OS/2 LAN Manger and
@@ -110,7 +109,7 @@ SMB1    Also known as SMBv1, CIFS, or "NT LM 0.12", SMB1 is the designation
         versions.  (See [MS-CIFS]; changes to SMB1 between Windows NT4 and
         all subsequent Windows versions are documented in [MS-SMB].)
 
-SMB2    A.K.A. SMBv2;  SMB2 is not a dialect of SMB1;  SMB2 is a different
+SMB2::  A.K.A. SMBv2;  SMB2 is not a dialect of SMB1, it is a different
         protocol.  It does, however, share many characteristics with SMB1.
         SMB2 was introduced in Windows Vista.  This original release was not
         particularly ambitious, and its existence was hardly noticed at the
@@ -118,7 +117,7 @@ SMB2    A.K.A. SMBv2;  SMB2 is not a dialect of SMB1;  SMB2 is a different
         for release with Windows 8, but see the description of SMB3.
         (See [MS-SMB2].)
 
-SMB3    A.K.A. SMBv3 or SMB2.2;  SMB3 is, in fact, a dialect of SMB2.  It
+SMB3::  A.K.A. SMBv3 or SMB2.2;  SMB3 is, in fact, a dialect of SMB2.  It
         was originally intended to be released as SMB version 2.2 but it
         contained a number of new features and so was re-dubbed SMB3 (what
         you might call a "marketing upgrade").  SMB3 supports I/O over RDMA
@@ -127,37 +126,37 @@ SMB3    A.K.A. SMBv3 or SMB2.2;  SMB3 is, in fact, a dialect of SMB2.  It
 
 
 References
-==========
+----------
 
-[IMPCIFS] Hertel, C. R., "Implementing CIFS - The Common Internet File
-          System", Prentice Hall, August 2003, ISBN:013047116X,
-          http://www.ubiqx.org/cifs/
+[IMPCIFS]:: Hertel, Christopher R., "Implementing CIFS - The Common Internet
+            File System", Prentice Hall, August 2003, ISBN:013047116X,
+            http://www.ubiqx.org/cifs/
 
-[MS-CIFS] Microsoft Corporation, "Common Internet File System (CIFS)
-          Protocol Specification",
-          http://msdn.microsoft.com/en-us/library/ee442092.aspx
+[MS-CIFS]:: Microsoft Corporation, "Common Internet File System (CIFS)
+            Protocol Specification",
+            http://msdn.microsoft.com/en-us/library/ee442092.aspx
 
-[MS-DFSC] Microsoft Corporation, "Distributed File System (DFS): Referral
-          Protocol Specification",
-          http://msdn.microsoft.com/en-us/library/cc226982.aspx
+[MS-DFSC]:: Microsoft Corporation, "Distributed File System (DFS): Referral
+            Protocol Specification",
+            http://msdn.microsoft.com/en-us/library/cc226982.aspx
 
-[MS-SMB]  Microsoft Corporation, "Server Message Block (SMB) Protocol
-          Specification",
-          http://msdn.microsoft.com/en-us/library/cc246231.aspx
+[MS-SMB]::  Microsoft Corporation, "Server Message Block (SMB) Protocol
+            Specification",
+            http://msdn.microsoft.com/en-us/library/cc246231.aspx
 
-[MS-SMB2] Microsoft Corporation, "Server Message Block (SMB) Protocol
-          Versions 2 and 3",
-          http://msdn.microsoft.com/en-us/library/cc246482.aspx
+[MS-SMB2]:: Microsoft Corporation, "Server Message Block (SMB) Protocol
+            Versions 2 and 3",
+            http://msdn.microsoft.com/en-us/library/cc246482.aspx
 
-[RFC1001] Network Working Group, "Protocol Standard for a NetBIOS Service on
-          a TCP/UDP Transport: Concepts and Methods", STD 19, RFC 1001,
-          March 1987, http://www.ietf.org/rfc/rfc1001.txt
+[RFC1001]:: Network Working Group, "Protocol Standard for a NetBIOS Service
+            on a TCP/UDP Transport: Concepts and Methods", STD 19, RFC 1001,
+            March 1987, http://www.ietf.org/rfc/rfc1001.txt
 
-[RFC1002] Network Working Group, "Protocol Standard for a NetBIOS Service on
-          a TCP/UDP Transport: Detailed Specifications", STD 19, RFC 1002,
-          March 1987, http://www.ietf.org/rfc/rfc1002.txt
+[RFC1002]:: Network Working Group, "Protocol Standard for a NetBIOS Service
+            on a TCP/UDP Transport: Detailed Specifications", STD 19, RFC
+            1002, March 1987, http://www.ietf.org/rfc/rfc1002.txt
 
 
 Timestamp
-=========
-$Id: 0.Readme.txt; 2014-04-14 11:56:49 -0500; Christopher R. Hertel$
+---------
+$Id: 0.Readme.txt; 2014-04-16 16:25:34 -0500; Christopher R. Hertel$
