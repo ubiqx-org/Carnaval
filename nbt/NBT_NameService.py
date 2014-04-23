@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_NameService.py; 2014-04-14 11:58:37 -0500; Christopher R. Hertel$
+# $Id: NBT_NameService.py; 2014-04-23 10:34:14 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -60,7 +60,7 @@
 #   - Consider which fields in a from-the-wire message should be copied
 #     verbatim into the object created by ParseMsg().  Once we know what
 #     kind of message we have, we can forgive several types of errors in
-#     the message iteself, including reserved bits that should be clear,
+#     the message itself, including reserved bits that should be clear,
 #     or fields (like the TTL field) that should be zero in some cases.
 #     Why keep the wire values?  Only for testing and disgnostics.  What
 #     mistakes do other implementations make?
@@ -159,7 +159,7 @@ CONSTANTS:
     NS_PRM           = 0x0200   # Machine's permanent name.  Not used.
 """
 
-# Imports --------------------------------------------------------------------
+# Imports -------------------------------------------------------------------- #
 #
 #   struct    - Binary data packing and parsing tools.
 #   NBT_Core  - Objects common to all NBT transport services.
@@ -172,7 +172,7 @@ from NBT_Core import hexbyte, hexstr  # Byte to hex string conversion.
 from NBT_Core import hexdump          # Hexdump raw blocks of data.
 
 
-# Constants ------------------------------------------------------------------
+# Constants ------------------------------------------------------------------ #
 #
 
 # Protocol Details
@@ -253,7 +253,7 @@ NS_ACT           = 0x0400   # Always set.  Name is active.
 NS_PRM           = 0x0200   # Indicates machine's permanent name.  Not used.
 
 
-# Globals --------------------------------------------------------------------
+# Globals -------------------------------------------------------------------- #
 #
 #   _format_NS_hdr    - A Struct object used to parse NBT Name Service
 #                       headers.
@@ -299,7 +299,7 @@ _nameFlagDict = { NS_DRG: "Deregister",
                   NS_PRM: "Permanent" }
 
 
-# Classes --------------------------------------------------------------------
+# Classes -------------------------------------------------------------------- #
 #
 
 class Name( object ):
@@ -718,7 +718,7 @@ class Name( object ):
     while( lablen > 0 ):
       if( lablen < 0x40 ):
         # Upper two bits are 00; should be a normal label length.
-        posn  += 1 + lablen
+        posn += 1 + lablen
         if( posn >= namlen ):
           # Must've had invalid length bytes.
           raise ValueError( "Malformed NBT name; label length incorrect." )
@@ -1858,7 +1858,7 @@ class NameQueryResponse( NSHeader, ResourceRecord ):
     Ouput:  The Name Query Response message, formatted for display and
             returned as a string.
     """
-    return( NSHeader.dump( self, indent ) + ResourceRecord.dump( self, indent ) )
+    return( NSHeader.dump( self, indent )+ResourceRecord.dump( self, indent ) )
 
   def compose( self, TrnId=None ):
     """Create an NBT Name Query Response message.
@@ -2162,7 +2162,7 @@ class WaitForAcknowledgementResponse( NSHeader, ResourceRecord ):
     Ouput:  The Wait For Acknowledgement Response message, formatted for
             display and returned as a string.
     """
-    return( NSHeader.dump( self, indent ) + ResourceRecord.dump( self, indent ) )
+    return( NSHeader.dump( self, indent )+ResourceRecord.dump( self, indent ) )
 
   def compose( self, TrnId=None ):
     """Create the wire-format WACK message.
@@ -2673,7 +2673,7 @@ class LocalNameTable( object ):
     return( tmplst )
 
 
-# Functions ------------------------------------------------------------------
+# Functions ------------------------------------------------------------------ #
 #
 
 def ParseMsg( msg=None ):

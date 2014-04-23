@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_Core.py 2014-04-03 23:31:49 -0500 Christopher R. Hertel$
+# $Id: NBT_Core.py; 2014-04-23 10:34:14 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -84,7 +84,7 @@ References:
     http://msdn.microsoft.com/en-us/library/dd891412.aspx
 """
 
-# Constants ------------------------------------------------------------------
+# Constants ------------------------------------------------------------------ #
 #
 #   _NBT_HEX_XLATE  - String used to convert a nibble into a hex digit
 #                     character.  Used in hexbyte() and hexstr().
@@ -94,7 +94,7 @@ References:
 _NBT_HEX_XLATE = "0123456789ABCDEF"
 
 
-# Classes --------------------------------------------------------------------
+# Classes -------------------------------------------------------------------- #
 #
 
 class NBTerror( Exception ):
@@ -158,10 +158,10 @@ class NBTerror( Exception ):
     """Return the minimum and maximum error code values as a tuple.
 
     Output: A tuple containing the minimum and maximum values of the
-            NBTerror error codes that are defined. 
+            NBTerror error codes that are defined.
 
     Notes:  Error codes should be defined in sequential order with no
-            gaps, but don't take that as a promise. 
+            gaps, but don't take that as a promise.
 
     Doctext:
       >>> a, b = NBTerror.errRange()
@@ -220,7 +220,7 @@ class NBTerror( Exception ):
     return( "????: NBT Error; Unkown NBT exception raised." )
 
 
-# Functions ------------------------------------------------------------------
+# Functions ------------------------------------------------------------------ #
 #
 
 def hexbyte( data=None ):
