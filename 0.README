@@ -1,9 +1,9 @@
 Hi!
 
-PsmbY
------
+Carnaval
+--------
 
-...an SMB protocol suite implementation in Python.  SMB in PYthon.
+...is an SMB protocol suite implementation in Python.
 
 This project is new.  So far we have only a partial implementation of the
 NBT transport layer.  Stay tuned.
