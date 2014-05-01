@@ -148,6 +148,9 @@ References
             Versions 2 and 3",
             http://msdn.microsoft.com/en-us/library/cc246482.aspx
 
+[NBGUIDE]:: Winston, G., "NetBIOS Specification", 1998-2012,
+            http://www.netbiosguide.com/
+
 [RFC1001]:: Network Working Group, "Protocol Standard for a NetBIOS Service
             on a TCP/UDP Transport: Concepts and Methods", STD 19, RFC 1001,
             March 1987, http://www.ietf.org/rfc/rfc1001.txt
