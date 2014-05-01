@@ -78,9 +78,8 @@ We are trying to meet the following goals:
   it.
 
 That's pretty lofty, particularly since we've only gotten as far as the NBT
-transport layer so far.  On the other hand, the project has some
-excperienced SMB folks involved and what we've produced so far is living up
-to our goals.
+transport layer so far.  On the other hand, the project has some experienced
+SMB folks involved and what we've produced so far is living up to our goals.
 
 
 Words
@@ -88,11 +87,21 @@ Words
 
 CIFS::  Common Internet File System.  CIFS is the "marketing upgrade"
         name that was bestowed upon the SMB protocol in the mid-1990's.  For
-        a while, some in the community used the CIFS name to refer to suite
-        of protocols that centered upon SMB, including SMB, NBT, the Browser
-        protocols, DFS, Mailslot protocol, and a few others.  CIFS is now
-        considered a dead name.  Microsoft doesn't use it any more, except
-        in older documentation or references to legacy implementations.
+        a while, some in the community used the CIFS name to refer to the
+        suite of protocols that centered upon SMB, including SMB, NBT, the
+        Browser protocols, DFS, Mailslot protocol, and a few others.
+        Unfortunately, some lawyers got hold of the name and used it to
+        refer to what we now call SMB1 (see below).  Confusion reigned, and
+        the term lost all relevance.  CIFS is now considered a dead name.
+        Microsoft doesn't use it any more, except in older documentation or
+        references to legacy implementations.  The term is still popular
+        among sales engineers.
+
+NBT::   NetBIOS over TCP transport protocol.  NBT is the virtual LAN
+        protocol specified by IETF Standard #19 which, in turn, consists of
+        RFC1001 and RFC1002.  NBT provides a mechanism for supporting the
+        semantics of the NetBIOS API over TCP/UPD/IP internetworks.  (See
+        [NBGUIDE], [IMPCIFS], [RFC1001], and [RFC1002].)
 
 SMB::   Server Message Block protocol.  SMB was originally created by
         IBM in the early 1980's for use with PC-DOS.  SMB was updated and
