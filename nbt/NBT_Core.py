@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_Core.py; 2014-04-23 10:34:14 -0500; Christopher R. Hertel$
+# $Id: NBT_Core.py; 2014-05-05 01:38:53 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
