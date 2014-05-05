@@ -28,6 +28,9 @@
 #   You should have received a copy of the GNU Lesser General Public License
 #   along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #
+# See Also:
+#   The 0.README file included with the distribution.
+#
 # ---------------------------------------------------------------------------- #
 #
 # Notes:
@@ -67,7 +70,7 @@
 #
 # ============================================================================ #
 #
-"""NetBIOS over TCP/UDP (NBT) protocol: NBT Name Service
+"""NetBIOS over TCP/UDP (NBT) protocol: Name Service
 
 The NBT Name Service provides a mechanism for mapping NetBIOS names to
 IPv4 addresses in an IP network.  This module is a toolkit for
@@ -326,7 +329,7 @@ class Name( object ):
   lower-order 14 bits represent an offset into an NBT message at which
   the rest of the encoded name is to be found.
 
-  Doctext:
+  Doctest:
     >>> name = "fooberry".upper()
     >>> name = Name( name )
     >>> newname = Name()
@@ -417,8 +420,8 @@ class Name( object ):
             http://docs.python.org/2/reference/datamodel.html#object.__repr__
 
     Doctest:
-    >>> print Name( "MITSCHLAG", scope="Himmelschpitz.org" ).__repr__()
-    Name( 'MITSCHLAG', '\\x20', '\\x20', 'Himmelschpitz.org', None )
+      >>> print Name( "MITSCHLAG", scope="Himmelschpitz.org" ).__repr__()
+      Name( 'MITSCHLAG', '\\x20', '\\x20', 'Himmelschpitz.org', None )
     """
     # Ensure that the name is fully decoded, or is empty.
     self._decodeAll()
@@ -1460,10 +1463,10 @@ class AddressRecord( object ):
 
   For an example, see http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.1
 
-  Doctext:
-  >>> ip = chr( 10 ) + chr( 64 ) + chr( 109 ) + chr( 73 )
-  >>> hexstr( AddressRecord( True, NS_ONT_H, ip ).compose() )
-  '\\\\xE0\\\\x00\\\\x0A@mI'
+  Doctest:
+    >>> ip = chr( 10 ) + chr( 64 ) + chr( 109 ) + chr( 73 )
+    >>> hexstr( AddressRecord( True, NS_ONT_H, ip ).compose() )
+    '\\\\xE0\\\\x00\\\\x0A@mI'
   """
   def __init__( self, G=False, ONT=NS_ONT_B, IP=None ):
     """Create an Address Record.
@@ -2648,21 +2651,21 @@ class LocalNameTable( object ):
             definition, hidden names are not registered and are not
             visible to other nodes in the NBT virtual LAN.
 
-    Doctext:
-    >>> lnt = LocalNameTable()
-    >>> lnt.updateEntry( "EGFCEFEMECCACACACACACACACACACAAA",
-    ... Status=(NS_ACT|NS_PRM) )
-    >>> lnt.updateEntry( "EGFCEFEMECCACACACACACACACACACACA" )
-    >>> lnt.updateEntry( "EOEFFCEEEMEJEOEHEFFCCACACACACACA", Group=True )
-    >>> lnt.updateEntry( "EOEFFCEEEMEJEOEHEFFCCACACACACABN", Group=True )
-    >>> lnt.updateEntry( "CKFDENECFDEFFCFGEFFCCACACACACACA", Hidden=True )
-    >>> for n, f in lnt.statusList():
-    ...   s = hexstr( n[:15] )
-    ...   print "%s<%02X> [0x%04x]" % (s, ord( n[15] ), f)
-    FRELB          <00> [0x0600]
-    FRELB          <20> [0x0400]
-    NERDLINGER     <1D> [0x8400]
-    NERDLINGER     <20> [0x8400]
+    Doctest:
+      >>> lnt = LocalNameTable()
+      >>> lnt.updateEntry( "EGFCEFEMECCACACACACACACACACACAAA",
+      ... Status=(NS_ACT|NS_PRM) )
+      >>> lnt.updateEntry( "EGFCEFEMECCACACACACACACACACACACA" )
+      >>> lnt.updateEntry( "EOEFFCEEEMEJEOEHEFFCCACACACACACA", Group=True )
+      >>> lnt.updateEntry( "EOEFFCEEEMEJEOEHEFFCCACACACACABN", Group=True )
+      >>> lnt.updateEntry( "CKFDENECFDEFFCFGEFFCCACACACACACA", Hidden=True )
+      >>> for n, f in lnt.statusList():
+      ...   s = hexstr( n[:15] )
+      ...   print "%s<%02X> [0x%04x]" % (s, ord( n[15] ), f)
+      FRELB          <00> [0x0600]
+      FRELB          <20> [0x0400]
+      NERDLINGER     <1D> [0x8400]
+      NERDLINGER     <20> [0x8400]
     """
     tmplst = []
     for nom in self._nameDict:
@@ -3002,7 +3005,7 @@ def ParseMsg( msg=None ):
 
   # Ooops.
   s = "response" if( Rbit ) else "request"
-  s = "Parsing failed, unhandled %s OPcode: 0x%X." % (s, (OPcode >> 11))
+  s = "Parsing failed, unhandled %s OPcode: 0x%X" % (s, (OPcode >> 11))
   raise NBTerror( 1005, s )
 
 # ============================================================================ #

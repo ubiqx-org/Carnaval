@@ -9,7 +9,7 @@
 # ---------------------------------------------------------------------------- #
 #
 # Description:
-#   NetBIOS over TCP/IP (IETF STD19) implementation: core components.
+#   NetBIOS over TCP/IP (IETF STD19) implementation: Core components.
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -27,6 +27,9 @@
 #
 #   You should have received a copy of the GNU Lesser General Public License
 #   along with this library.  If not, see <http://www.gnu.org/licenses/>.
+#
+# See Also:
+#   The 0.README file included with the distribution.
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -143,7 +146,7 @@ class NBTerror( Exception ):
     Output: A string, which is the text associated with the given
             error code, or None if the error code is not defined.
 
-    Doctext:
+    Doctest:
       >>> print NBTerror.errStr( 1002 )
       NBT Syntax Error
     """
@@ -163,7 +166,7 @@ class NBTerror( Exception ):
     Notes:  Error codes should be defined in sequential order with no
             gaps, but don't take that as a promise.
 
-    Doctext:
+    Doctest:
       >>> a, b = NBTerror.errRange()
       >>> a < b
       True
@@ -205,7 +208,7 @@ class NBTerror( Exception ):
         <Value>       is the (optional) instance-specific value given
                       when the exception is raised.
 
-    Doctext:
+    Doctest:
       >>> print NBTerror( 1005, 'Mein Luftkissenfahrzeug ist voller Aale' )
       1005: Malformed Message; Mein Luftkissenfahrzeug ist voller Aale.
     """
@@ -242,7 +245,7 @@ def hexbyte( data=None ):
           character.  The output is always a two hex-digit pair, and
           never an escape sequence (e.g., never '\\t' for TAB).
 
-  Doctext:
+  Doctest:
     >>> print "<%s>" % hexbyte( "\\b" )
     <08>
   """
@@ -277,7 +280,7 @@ def hexstr( data=None ):
           See:  http://blogs.msdn.com/b/larryosterman/archive/2007/07/
                 11/how-do-i-compare-two-different-netbios-names.aspx
 
-  Doctext:
+  Doctest:
     >>> print hexstr( "\\tOcelot\\nBanana" )
     \\x09Ocelot\\x0ABanana
   """
@@ -314,7 +317,7 @@ def hexdumpln( offset=0, data=None ):
   Notes:  This implementation uses a unicode-encoded hollow bullet
           to represent non-printing characters.
 
-  Doctext:
+  Doctest:
   >>> print hexdumpln( 8, _NBT_HEX_XLATE + "Hello, Whirled" )
   000008:  38 39 41 42 43 44 45 46  48 65 6c 6c 6f 2c 20 57  |89ABCDEFHello, W|
   """
@@ -352,7 +355,7 @@ def hexdump( data=None ):
 
   Errors: ValueError  - Raised if the input is not of type str.
 
-  Doctext:
+  Doctest:
   >>> hexdump( _NBT_HEX_XLATE + "Hello, Whirled" )
   000000:  30 31 32 33 34 35 36 37  38 39 41 42 43 44 45 46  |0123456789ABCDEF|
   000010:  48 65 6c 6c 6f 2c 20 57  68 69 72 6c 65 64        |Hello, Whirled  |
