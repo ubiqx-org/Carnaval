@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id$
+# $Id: NBT_DatagramService.py; 2014-05-05 01:23:30 -0500; crh$
 #
 # ---------------------------------------------------------------------------- #
 #
