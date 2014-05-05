@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_DatagramService.py; 2014-05-05 01:23:30 -0500; crh$
+# $Id: NBT_DatagramService.py; 2014-05-05 15:33:44 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -645,8 +645,8 @@ class DSMessage( DSHeader ):
 class DSFragment( DSMessage ):
   """Datagram Message Fragment class.
 
-  This class is a special case of the DSMessage, used for handling
-  message fragments.
+  A special case of the DSMessage class, used for handling message
+  fragments.
 
   A fragment can be a part of a Unique, Group, or Broadcast message.
   The specific message type should be determined as the original
@@ -660,7 +660,7 @@ class DSFragment( DSMessage ):
     >>> sn = Name( "MOONBEAM" ).getL2name()
     >>> dn = Name( "KAPOOR" ).getL2name()
     >>> ud = (8 * "Asynchonous double buffer.  " ).rstrip()
-    >>> DUD = DirectUniqueDatagram( DS_SNT_B, 2001, ip, DS_PORT, sn, dn, ud )
+    >>> DUD = DirectUniqueDatagram( DS_SNT_B, 2, ip, DS_PORT, sn, dn, ud )
     >>> DUD.maxData = 196
     >>> DgmList = DUD.composeList()
     >>> len( DgmList )
@@ -671,7 +671,7 @@ class DSFragment( DSMessage ):
       Flags.......: 0x00
         SNT.........: 0b00 = B node
         FM..........: 0b00 = Last Fragment
-      DatagramID..: 0x07D1 (2001)
+      DatagramID..: 0x0002 (2)
       Source IP...: 192.168.0.1
       Source Port.: 138
     Message:
@@ -766,7 +766,7 @@ class DirectUniqueDatagram( DSMessage ):
     >>> sn = Name( "Fooberry", scope="cheese" ).getL2name()
     >>> dn = Name( "Vorplzoo" ).getL2name()
     >>> ud = "We are the android sisters."
-    >>> DUD = DirectUniqueDatagram( DS_SNT_B, 2001, ip, DS_PORT, sn, dn, ud )
+    >>> DUD = DirectUniqueDatagram( DS_SNT_B, 7, ip, DS_PORT, sn, dn, ud )
     >>> DgmList = DUD.composeList()
     >>> len( DgmList )
     1
@@ -776,7 +776,7 @@ class DirectUniqueDatagram( DSMessage ):
       Flags.......: 0x02
         SNT.........: 0b00 = B node
         FM..........: 0b10 = Unfragmented
-      DatagramID..: 0x07D1 (2001)
+      DatagramID..: 0x0007 (7)
       Source IP...: 10.11.12.13
       Source Port.: 138
     Message:
@@ -847,7 +847,7 @@ class DirectGroupDatagram( DSMessage ):
     >>> sn = Name( "ONOFFON", suffix='\x37' ).getL2name()
     >>> dn = Name( "OFFONOFF", suffix='\x42' ).getL2name()
     >>> ud = "Last night, I had a digital dream."
-    >>> DGD = DirectGroupDatagram( DS_SNT_P, 2010, ip, DS_PORT, sn, dn, ud )
+    >>> DGD = DirectGroupDatagram( DS_SNT_P, 21, ip, DS_PORT, sn, dn, ud )
     >>> DgmList = DGD.composeList()
     >>> len( DgmList )
     1
@@ -857,7 +857,7 @@ class DirectGroupDatagram( DSMessage ):
       Flags.......: 0x06
         SNT.........: 0b01 = P node
         FM..........: 0b10 = Unfragmented
-      DatagramID..: 0x07DA (2010)
+      DatagramID..: 0x0015 (21)
       Source IP...: 10.12.14.18
       Source Port.: 138
     Message:
