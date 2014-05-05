@@ -453,19 +453,24 @@ class Name( object ):
                 in length.
 
     Errors: ValueError  - Raised if the input just isn't right somehow.
+                          Specifically, if the input is the wrong length
+                          or contains invalid encoding octets.  Valid
+                          encoding octets are in the ASCII range
+                          'A'..'P'.
 
     Output: A 16-octet string made up of the original NetBIOS name,
             any padding bytes, and the suffix byte.
     """
+    # Bug check...
     if( 32 != len( L1name ) ):
-      s = "Incorrect length (%d) for an L1 encoded NetBIOS name" % len( L1name )
-      raise ValueError( s )
+      s = "Incorrect length (%d) for an L1 encoded NetBIOS name."
+      raise ValueError( s  % len( L1name ) )
+    if( not all( c in "ABCDEFGHIJKLMNOP" for c in L1name ) )
+      raise ValueError( "Invalid encoding byte in L1 encoded name." )
 
+    # Decode...
     tmpnam = ''
-    for i in range(32)[::2]:
-      if( L1name[i] not in "ABCDEFGHIJKLMNOP" ):
-        s = "Invalid character '%s' in L1 encoded name" % L1name[i]
-        raise ValueError( s )
+    for i in range( 0, 32, 2 ):
       hi = ((ord( L1name[i] ) - 0x41) << 4) & 0xF0
       lo = (ord( L1name[i+1] ) - 0x41) & 0x0F
       tmpnam += chr( hi + lo )
