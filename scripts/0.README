@@ -1,17 +1,20 @@
+Scripts
+-------
+
 This directory contains:
 
-  * git_utils.py:     A utility module.
-  * git_keywords.py:  A git pre-commit script.
+* git_utils.py:     A utility module.
+* git_keywords.py:  A git pre-commit script.
 
 These are used to perform keyword substitution on program files as they are
 committed to the repository, adding or updating the information associated
 with specific keywords.
 
-Carnaval uses keywords in its source files.  It helps us keep track of what
-happened when and who did it.  Yes, git also provides that information (and
-in greater detail), but if'n all you've got is a copy of a file outside of a
-repository then you're out of context and out of luck.  Keyword substitution
-mitigates that problem.
+Carnaval uses keywords in its source files, which helps us keep track of
+what happened when and who did it.  Yes, git also provides that information
+(and in greater detail), but if'n all you've got is a copy of a file outside
+of a repository then you're out of context and out of luck.  Keyword
+substitution mitigates that problem.
 
 Setting up your repository to support keyword substitution:
 
@@ -24,11 +27,11 @@ Setting up your repository to support keyword substitution:
    that looks sort of like this:
 
 *.py kwsub=true
-0.Readme.txt kwsub=true
+0.README kwsub=true
 
 4) Make suer that your username and e'mail address are correctly assigned in
    the <repository>/.git/config file.  If you have a GitHub account, your
    e'mail address should match one of the addresses you registered on GitHub.
 
 ____
-$Id: 0.README; 2014-05-06 15:07:31 -0500; Christopher R. Hertel$
+$Id: 0.README; 2014-05-06 15:35:20 -0500; Christopher R. Hertel$
