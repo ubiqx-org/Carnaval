@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_NameService.py; 2014-05-05 01:38:53 -0500; Christopher R. Hertel$
+# $Id: NBT_NameService.py; 2014-05-05 19:44:44 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -465,7 +465,7 @@ class Name( object ):
     if( 32 != len( L1name ) ):
       s = "Incorrect length (%d) for an L1 encoded NetBIOS name."
       raise ValueError( s  % len( L1name ) )
-    if( not all( c in "ABCDEFGHIJKLMNOP" for c in L1name ) )
+    if( not all( c in "ABCDEFGHIJKLMNOP" for c in L1name ) ):
       raise ValueError( "Invalid encoding byte in L1 encoded name." )
 
     # Decode...
