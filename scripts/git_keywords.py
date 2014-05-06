@@ -4,7 +4,7 @@
 #
 # Copyright (C) 2012 Jose A. Rivera <jarrpa@redhat.com>
 #
-# $Date: 2014-04-03 23:43:13 -0500$
+# $Date: 2014-05-06 15:07:31 -0500$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -42,15 +42,16 @@ is either added or updated.
 
 Currently, the following keywords are supported:
   * Name      - The name of the file.
-  * Copyright - A string indicating who holds copyright to the file and when.
-                Taken as the author of the commit.
+  * Copyright - A string indicating who holds copyright to the file and
+                when.  Taken as the author of the commit.  This should only
+                be used when a single author holds copyright.
   * Date      - A date and time stamp of when the file was last committed.
   * Id        - A string giving the file name, author date, and author name.
   * Author    - A string giving the author name and author e-mail address.
   * AName     - The file author's name.
   * AEmail    - The file author's e-mail address.
   * ADate     - The file author's date of authorship.
-  * Committer - A string giving the committer name and author e-mail address.
+  * Committer - A string giving the committer name and e-mail address.
   * CName     - The file committer's name.
   * CEmail    - The file committer's e-mail address
   * CDate     - The file committer's date of commit. An alias for Date.
@@ -91,18 +92,49 @@ def getenv( key ):
   return( os.environ[key] if( key in os.environ ) else '' )
 
 def kwsub( filepath ):
-  """Scan through the given file line-by-line looking for matching keywords.
-  Substitute appropriate values if keywords are found.
+  """Perform keyword substitution on the given file.
 
-  filepath  - Path to the file to be scanned.
+  filepath  - The pathname of the file to be operated upon.
+
+  Notes:  This function scans through the given file line-by-line
+          looking for keywords.  It then expands those keywords by
+          adding or replacing the associated value string.  The changes,
+          if any, are written to a temporary file.  If the process
+          completes successfully, the temporary file replaces the
+          original and 'git add' is called to add the updated version to
+          the repositiory.
+
+          If there is an error opening either the source or temporary
+          file used by this function, sys.exit() will be called, which
+          will abort the commit that caused this pre-commit hook script
+          to be called.
   """
+  # FIX:  Creating a temporary file by simply adding '.tmp' to the pathname
+  #       could (in theory) lead to overwriting of some existing file that
+  #       the user actually wanted.  It'd be better to use something like
+  #       mkstemp(3).  Fortunately, Python has such magic:
+  #         https://docs.python.org/2/library/tempfile.html
+  #
+  #     - It would be nice if this function could be run stand-alone, so
+  #       that it could be used in more situations than just a pre-commit
+  #       script.  It does nice stuff.
+  #       Suggestion:  Move the calls to sys.exit() and 'git add' out of the
+  #       function and let the function return true/false or some other
+  #       status indication.  On success, do the 'git add'.  On failure
+  #       exit the program.
+  #
+  #     - Delete this FIX block.  ;)
+  # /FIX
+
+  # Try to open files.
+  #   rfile is the file to be read (source file)
+  #   wfile is the temporary file that will be written
+  # If opening the files or copying permissions fails, then bail out.
   tmppath = filepath + '.tmp'
-  # Try to open files. rfile is the reading file, wfile is the temp writing
-  # file. If this fails, abort commit.
   try:
     rfile = open( filepath, 'r' )
-    wfile = open( tmppath, 'w' )
-    # Copy over stat modes (rwx) from the original file. Important for scripts!
+    wfile = open( tmppath,  'w' )
+    # Copy over stat modes (rwx) from the original file.  Important for scripts!
     os.chmod( tmppath, os.stat( filepath ).st_mode )
   except Exception as e:
     os.remove( tmppath )
@@ -145,31 +177,35 @@ def kwsub( filepath ):
   # Begin substitution.
   subbed = False
   for line in rfile:
-    for key in kw:
-      for m in re.finditer( r'\$(' + key + ')([^$]*)\$', line ):
-        line = line[:m.start()] + '$' + kw[key] + '$' + line[m.end():]
-        subbed = True
-        # Debug line.
-        #print filepath + ': ' + line
+    if '$' in line:
+      for key in kw:
+        for m in re.finditer( r'\$(' + key + ')([^$]*)\$', line ):
+          line = line[:m.start()] + '$' + kw[key] + '$' + line[m.end():]
+          subbed = True
+          # DEBUG: print filepath + ': ' + line
     wfile.write( line )
 
+  # Close 'em.
   rfile.close()
   wfile.close()
 
+  # Update the files.
   if( subbed ):
+    # Replace the original file with the new one.
     os.remove( filepath )
     os.rename( tmppath, filepath )
     git( 'add ' + filepath )
   else:
+    # ...or just remove the tmpfile if no changes were made.
     os.remove( tmppath )
 
-  # Set environment variables so git metadata matches in-file metadata.
-  os.environ[ 'GIT_AUTHOR_NAME' ]  = an
-  os.environ[ 'GIT_AUTHOR_EMAIL' ] = ae
-  os.environ[ 'GIT_AUTHOR_DATE' ]  = ad.strftime( dfmt )
-  os.environ[ 'GIT_COMMITTER_NAME' ]  = cn
+  # Set environment variables so that git metadata matches in-file metadata.
+  os.environ[ 'GIT_AUTHOR_NAME'     ] = an
+  os.environ[ 'GIT_AUTHOR_EMAIL'    ] = ae
+  os.environ[ 'GIT_AUTHOR_DATE'     ] = ad.strftime( dfmt )
+  os.environ[ 'GIT_COMMITTER_NAME'  ] = cn
   os.environ[ 'GIT_COMMITTER_EMAIL' ] = ce
-  os.environ[ 'GIT_COMMITTER_DATE' ]  = cd.strftime( dfmt )
+  os.environ[ 'GIT_COMMITTER_DATE'  ] = cd.strftime( dfmt )
 
   # Done.
   return
@@ -185,13 +221,15 @@ def main():
   they are text files, and then determine whether or not they are marked
   for keyword substitution.
   """
-  for file in git( 'diff-index --cached --diff-filter=ACMRTUX ' + \
-                   '--name-only HEAD' ).split('\n'):
-    if( file ):
-      mime = mimetypes.guess_type( file )
-      if( (mime[0] is None or 'text' in mime[0]) and \
-          ('true' == git('check-attr kwsub ' + file).split(': ')[2]) ):
-        kwsub( file )
+  gcmd = 'diff-index --cached --diff-filter=ACMRTUX --name-only HEAD'
+  for fname in [ fnam for fnam in git( gcmd ).split('\n') if fnam ]:
+    # Try to determine the mime type of the file.
+    mime = mimetypes.guess_type( fname )
+    if( (mime[0] is None) or ('text' in mime[0]) ):
+      # Good chance it's a text file.  See if we're allowed to work on it.
+      if( 'true' == git( 'check-attr kwsub ' + fname ).split(': ')[2] ):
+        # Perform keyword substitution.
+        kwsub( fname )
   sys.exit( 0 )
 
 if __name__ == '__main__':

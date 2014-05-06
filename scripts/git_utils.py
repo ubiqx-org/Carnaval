@@ -3,7 +3,7 @@
 #
 # Copyright (C) 2012 Jose A. Rivera <jarrpa@redhat.com>
 #
-# $Date: 2014-04-03 23:31:49 -0500$
+# $Date: 2014-05-06 15:07:31 -0500$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -29,6 +29,9 @@
 # ---------------------------------------------------------------------------- #
 #
 # Notes:
+#
+# ToDo:
+#   - This module does its job, but it could sure use some cleanup.
 #
 # ============================================================================ #
 
@@ -112,6 +115,7 @@ def git_parse_date( datestr, fmt=False ):
   """
   # FIX:  This function does not appear to do anything worth-while.
   #       It returns either None or the tuple ( None, '' ).
+  #       Is it just incomplete?
 
   # Define acceptable formats.
   fmtstrs = { 'gittime'  : '%s %z', # NOTE: %s may not be cross-platform.
