@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_DatagramService.py; 2014-05-05 15:33:44 -0500; Christopher R. Hertel$
+# $Id: NBT_DatagramService.py; 2014-06-10 15:27:33 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -48,9 +48,7 @@
 #     (probably for good reason).
 #
 # ToDo:
-#
-#   - Write a fragment reassembly class.
-#   - Write more doctests.
+#   - Write more doctests?
 #
 # ============================================================================ #
 #
@@ -120,14 +118,20 @@ CONSTANTS:
 # Imports -------------------------------------------------------------------- #
 #
 #   struct                - Binary data packing and parsing tools.
+#   datetime              - Dates and times with microsecond resolution.
 #   NBT_NameService.Name  - NBT Name object, for handling L2-encoded names.
 #   NBT_Core.hexstr()     - Utility to convert binary strings into human-
 #                           readable format, more or less.
+#   NBT_Core.dLinkedList  - A doubly-linked list object, used to create an
+#                           LRU-ordered list within the Defrag class.
 #
 
-import struct                         # Binary data handling.
-from NBT_NameService import Name      # NBT Name class.
-from NBT_Core        import hexstr    # Hexify binary values.
+import struct                           # Binary data handling.
+import datetime as dt                   # Timestamp handling.
+
+from NBT_NameService import Name        # NBT Name class.
+from NBT_Core        import hexstr      # Hexify binary values.
+from NBT_Core        import dLinkedList # Doubly-linked list.
 
 
 # Constants ------------------------------------------------------------------ #
@@ -180,8 +184,8 @@ DS_ERR_DSTNAME = 0x84     # Malformed Destination Name (-124)
 #
 
 # Structure formats.
-_format_DS_hdr = struct.Struct( "!BBH4sH" )
-_format_LenOff = struct.Struct( "!HH" )
+_format_DS_hdr   = struct.Struct( "!BBH4sH" )
+_format_LenOff   = struct.Struct( "!HH" )
 
 
 # Classes -------------------------------------------------------------------- #
@@ -217,6 +221,14 @@ class DSHeader( object ):
 
   See:  http://tools.ietf.org/html/rfc1002#section-4.4
         http://ubiqx.org/cifs/NetBIOS.html#NBT.5.3
+
+  Properties:
+    msgType - Get/set the header message type (MSG_TYPE) field value.
+    hdrSNT  - Get/set the header Sending Node Type (SNT).
+    dgmId   - Get/set the Datagram ID (DGM_ID).
+    srcIP   - Get/set the source IPv4 address (RFC1001/1002 does not
+              support IPv6).
+    srcPort - Get/set the source port number.
   """
   def __init__( self, msgType = 0,
                       hdrSNT  = 0,
@@ -248,10 +260,11 @@ class DSHeader( object ):
             would know where to send the reply.
 
             Unfortunately, the Windows NBT implementation has completely
-            munged[1] the datagram service; there are no NBDD at all
-            and datagrams are instead broadcast to the local IP subnet,
+            munged[1] the datagram service; there is no NBDD at all and
+            datagrams are instead broadcast to the local IP subnet
             rather than being relayed to all members of the group.  This
-            is clearly incorrect behavior per the RFCs.
+            is clearly incorrect behavior per the RFCs, but it is the
+            most prevalent implementation.
 
             [1] http://en.wikipedia.org/wiki/Mung_(computer_term)
                 Also, from the TECO manual:
@@ -420,6 +433,14 @@ class DSMessage( DSHeader ):
 
   See:  http://tools.ietf.org/html/rfc1002#section-4.4
         http://ubiqx.org/cifs/NetBIOS.html#NBT.5.3
+
+  Properties:
+    srcName - The Calling Name, or source NBT name of the message.
+    dstName - The Called Name, or destination NBT Name.
+    usrData - The content of the datagram message; the payload.
+    maxData - The maximum number of bytes to be transmitted in a
+              single, unfragmented NBT Datagram message.  See the
+              discussion above.
   """
   def __init__( self, msgType = 0,
                       hdrSNT  = 0,
@@ -655,6 +676,18 @@ class DSFragment( DSMessage ):
   Only the datagram service datagram messages are ever fragmented.
   Datagram service error messages and NBDD message are never fragmented.
 
+  Properties:
+    hdrFM     - The header [F]irst and [M]ore bits.  The value of this
+                two-bit field indicates whether or not the message is
+                fragmented, and where the fragment belongs in the
+                sequence.
+                  10  - Unfragmented message (F=1, M=0).
+                  11  - First fragment of a fragmented message, with
+                        more to follow.
+                  01  - Intermediate fragment, with more to follow.
+                  00  - Last fragment of a fragmented message.
+    pktOffset - The offset, relative to the entire message payload, of
+                the content of a particular fragment.
   Doctest:
     >>> ip = chr( 192 ) + chr( 168 ) + chr( 0 ) + chr( 1 )
     >>> sn = Name( "MOONBEAM" ).getL2name()
@@ -761,6 +794,12 @@ class DSFragment( DSMessage ):
 class DirectUniqueDatagram( DSMessage ):
   """Direct Unique (unicast) datagram class.
 
+  This is a direct descendent of the <DSMessage> class, with a fixed
+  message type (<msgType>) of <DS_DGM_UNIQUE>.
+
+  Properties:
+    msgType - Get the header message type, which is always DS_DGM_UNIQUE.
+
   Doctest:
     >>> ip = chr( 10 ) + chr( 11 ) + chr( 12 ) + chr( 13 )
     >>> sn = Name( "Fooberry", scope="cheese" ).getL2name()
@@ -819,9 +858,6 @@ class DirectUniqueDatagram( DSMessage ):
       TypeError       - <usrData> is not of type <str>.
       ValueError      - <usrData> exceeds the 512 byte limit imposed by
                         NetBIOS.
-
-    Notes:  This is a direct descendent of the <DSMessage> class, with
-            a fixed message type (<msgType>) of <DS_DGM_UNIQUE>.
     """
     super( DirectUniqueDatagram, self ).__init__( msgType = DS_DGM_UNIQUE,
                                                   hdrSNT  = hdrSNT,
@@ -841,6 +877,12 @@ class DirectUniqueDatagram( DSMessage ):
 
 class DirectGroupDatagram( DSMessage ):
   """Direct Group (multicast) datagram class.
+
+  This is a direct descendant of the <DSMessage> class, with a fixed
+  message type (<msgType>) of <DS_DGM_GROUP>.
+
+  Properties:
+    msgType - Get the header message type, which is always DS_DGM_GROUP.
 
   Doctest:
     >>> ip = chr( 10 ) + chr( 12 ) + chr( 14 ) + chr( 18 )
@@ -900,9 +942,6 @@ class DirectGroupDatagram( DSMessage ):
       TypeError       - <usrData> is not of type <str>.
       ValueError      - <usrData> exceeds the 512 byte limit imposed by
                         NetBIOS.
-
-    Notes:  This is a direct descendant of the <DSMessage> class, with
-            a fixed message type (<msgType>) of <DS_DGM_GROUP>.
     """
     super( DirectGroupDatagram, self ).__init__( msgType = DS_DGM_GROUP,
                                                  hdrSNT  = hdrSNT,
@@ -920,6 +959,12 @@ class DirectGroupDatagram( DSMessage ):
 
 class BroadcastDatagram( DSMessage ):
   """Broadcast datagram class.
+
+  This is a direct descendant of the <DSMessage> class, with a fixed
+  message type (<msgType>) of DS_DGM_BCAST.
+
+  Properties:
+    msgType - Get the header message type, which is always DS_DGM_BCAST.
 
   Doctest:
     >>> ip = chr( 10 ) + chr( 1 ) + chr( 2 ) + chr( 3 )
@@ -981,10 +1026,7 @@ class BroadcastDatagram( DSMessage ):
       ValueError      - <usrData> exceeds the 512 byte limit imposed by
                         NetBIOS.
 
-    Notes:  This is a direct descendant of the <DSMessage> class, with
-            a fixed message type (<msgType>) of DS_DGM_BCAST.
-
-            The destination name (<dstName>) *must* be the wildcard name
+    Notes:  The destination name (<dstName>) *must* be the wildcard name
             with the scope appended, encoded in L2 format.  The simplest
             form of the wildcard name is:
               ' CKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\0'
@@ -1013,6 +1055,11 @@ class BroadcastDatagram( DSMessage ):
 
 class ErrorDatagram( DSHeader ):
   """Datagram Error Response message.
+
+  Properties:
+    errCode - Get/set the message error code, which should be one of the
+              DS_ERR_* error code values.
+    msgType - Get the header message type, which is always DS_DGM_ERROR.
 
   Doctest:
     >>> ip = chr( 10 ) + chr( 100 ) + chr( 102 ) + chr( 103 )
@@ -1128,6 +1175,11 @@ class DSQuery( DSHeader ):
 
   The query/response protocol is described in RFC1001 section 17.3, and
   briefly section 5.3.2 of RFC1002.
+
+  Properties:
+    qryName - Get/set the fully qualified NBT query name.
+    msgType - Get/set the message type, which whill be one of
+              [DS_DGM_QUERY, DS_DGM_POSRESP, DS_DGM_NEGRESP].
   """
   def __init__( self, msgType = 0,
                       hdrSNT  = 0,
@@ -1224,6 +1276,9 @@ class DSQuery( DSHeader ):
 class QueryNBDD( DSQuery ):
   """NBDD Query Request message.
 
+  Properties:
+    msgType - Get the message type, which will always be DS_DGM_QUERY.
+
   Doctest:
     >>> ip    = chr( 10 ) + chr( 0 ) + chr( 37 ) + chr( 42 )
     >>> qName = Name( "Tookah" ).getL2name()
@@ -1279,6 +1334,9 @@ class QueryNBDD( DSQuery ):
 class PositiveResponseNBDD( DSQuery ):
   """NBDD Positive Query Response message.
 
+  Properties:
+    msgType - Get the message type, which will always be DS_DGM_POSRESP.
+
   Doctest:
     >>> ip    = chr( 10 ) + chr( 10 ) + chr( 99 ) + chr( 88 )
     >>> qName = Name( "Teru" ).getL2name()
@@ -1326,6 +1384,10 @@ class PositiveResponseNBDD( DSQuery ):
 class NegativeResponseNBDD( DSQuery ):
   """NBDD Negative Query Response message.
 
+  Properties:
+    msgType - Get the message type, which will always be DS_DGM_NEGRESP.
+
+  Doctest:
     >>> ip    = chr( 10 ) + chr( 10 ) + chr( 44 ) + chr( 66 )
     >>> qName = Name( "Ruby" ).getL2name()
     >>> nNBDD = NegativeResponseNBDD( 7654, ip, DS_PORT, qName )
@@ -1367,6 +1429,346 @@ class NegativeResponseNBDD( DSQuery ):
   def __msgType( self ):
     return( DS_DGM_NEGRESP )
   msgType = property( __msgType, doc="Message Type; MSG_TYPE" )
+
+
+class Defrag( object ):
+  """Defragmentation pool.
+
+  Used to reconstruct original messages from fragments.
+
+  When a new fragment is added to a defrag pool, it is matched against
+  the other stored fragments to see if it can be combined with any of
+  them.  If so, the fragments are combined into a larger fragment.  If
+  the combined fragments complete a message, the message is returned.
+  Otherwise, the fragments continue to swim in the pool until all of
+  the missing pieces show up, or the pool times out.
+
+  The timeout applies to all matching fragments in a set.  When a new
+  fragment arrives, it is combined with matching fragments (if any), and
+  the timestamp for the matched set is updated.  A "set" is a collection
+  of fragments that have matching metadata (message type, datagram Id,
+  Sending Node Type, source IP and port, called and calling names).
+
+  Fragment sets that have timed out are removed lazily.  Each time a
+  fragment is added, the oldest sets in the pool are checked.  Sets that
+  have timed out, are thrown out of the pool (deleted).  By default, the
+  two eldest sets are checked, but this is a tunable parameter.  You can
+  also call the <checkTimeout()> method directly.
+
+  Properties:
+    timeout - Get/set fragment pool timeout value, in milliseconds.
+    ckCount - Get/set the timeout check retry count.
+
+  Doctest:
+    >>> ip = chr( 172 ) + chr( 18 ) + chr( 0 ) + chr( 1 )
+    >>> sn = Name( "RUBY" ).getL2name()
+    >>> dn = Name( "TERU" ).getL2name()
+    >>> ud = (24 * "It's not my fault!  " ).rstrip()
+    >>> DGD = DirectGroupDatagram( DS_SNT_B, 26, ip, DS_PORT, sn, dn, ud )
+    >>> DGD.maxData = 16
+    >>> DgmList = DGD.composeList()
+    >>> print len( DgmList ), len( ud )
+    30 478
+    >>> from random import randrange
+    >>> fs = Defrag( timeout=200 )
+    >>> while( DgmList ):
+    ...   frag = ParseDgm( DgmList.pop( randrange( 0, len( DgmList ) ) ) )
+    ...   result = fs.addFrag( frag )
+    >>> len( DgmList )
+    0
+    >>> print result.msgType, result.dgmId, len( result.usrData )
+    17 26 478
+    >>> print "Called Name.: [%s]" % hexstr( result.srcName )
+    Called Name.: [ FCFFECFJCACACACACACACACACACACACA\\x00]
+  """
+  class _fragSet( object ):
+    # Maintain a matching set of fragments.
+    #
+    # This internal class is used to keep track of fragments that belong
+    # together (form a set), and to combine those fragments into a single
+    # message when all of the pieces are in place.
+    #
+    # Fragment sets are created based on matching message metadata.  In
+    # particular, fragments added to a set *should* all have he same:
+    #   * The message type,
+    #   * Sending Node Type,
+    #   * The datagram Id,
+    #   * Source IP address and port number,
+    #   * Calling and Called names.
+    #
+
+    def __init__( self, key=None, frag=None ):
+      # Create a new fragment set.
+      #
+      # Input:
+      #   key   - The dictionary lookup key associated with the fragment
+      #           set.
+      #   frag  - A DSFragment object (or None).  This will be added as
+      #           the first fragment in the set.  If <frag> is None, the
+      #           set will be empty.  In either case, the set will be
+      #           incomplete.  By definition, a fragmented message must
+      #           consist of at least two fragments.
+      #
+      # Notes:  The <frag>, if it is not None, cannot be a complete
+      #         message (it wouldn't be a fragment) and it cannot
+      #         overlap or be beyond the terminus of any other fragment
+      #         in the set because (!) the set is currently empty.
+
+      # Initialize fields.
+      self._key       = key                   # Dictionary key.
+      self._fsList    = None                  # Fragment list.
+      self._timestamp = dt.datetime.utcnow()  # Per-set timestamp.
+      self._fsAddFrag( frag )                 # Add the given fragment, if any.
+
+    def _fsAddFrag( self, frag=None ):
+      # Add a fragment to an existing fragment set.
+      #
+      # Input:
+      #   frag  - A DSFragment object instance (representing a received
+      #           fragment).
+      #
+      # Output: True, False, or a completed message.
+      #         True:   Returned if the fragment was successfully added
+      #                 to the set.
+      #         False:  Returned to indicate that a fragment collision
+      #                 occurred (payload ranges overlapped) or that
+      #                 there is a fragment at an offset greater than a
+      #                 fragment that is marked as the terminating
+      #                 (last) fragment in the set.  In either case, the
+      #                 set is invalid and should be discarded.
+      #         A completed message will be one of the following object
+      #         types:
+      #           * DirectUniqueDatagram
+      #           * DirectGroupDatagram
+      #           * BroadcastDatagram
+      #
+      if( (not frag) or (not frag.usrData) ):
+        # Don't waste time with empty fragments.
+        return( True )
+
+      # Create a fragment tuple.  An <_fsList> tuple contains the following:
+      #     * The payload offset.
+      #     * The offset of the next fragment, or zero (0) if this is
+      #       the last fragment in the set.
+      #     * The fragment content (payload).
+      if( frag.hdrFM & DS_MORE_FLAG ):
+        nextFrag = frag.pktOffset + len( frag.usrData )
+      else:
+        nextFrag = 0
+      fragTuple = (frag.pktOffset, nextFrag, frag.usrData)
+
+      # If the list is empty add the tuple, update the timestamp, and return.
+      if( not self._fsList ):
+        self._fsList    = [ fragTuple ]
+        self._timestamp = dt.datetime.utcnow()
+        return( True )
+
+      # Non-empty list.
+      #   Figure out where the new tuple fits in the list.
+      i = 0
+      llen = len( self._fsList )
+      while( (i < llen) and (self._fsList[i][0] < frag.pktOffset) ):
+        i += 1
+
+      # Can we merge the tuple with a right-hand neighbor?
+      if( i < llen ):
+        # There is at least one tuple greater than the new one.
+        if( fragTuple[1] == self._fsList[i][0] ):
+          # Merge them.
+          oldFrag   = self._fsList.pop( i )
+          fragTuple = (fragTuple[0], oldFrag[1], (fragTuple[2] + oldFrag[2]))
+        elif( (0 == fragTuple[1]) or (fragTuple[1] > self._fsList[i][0]) ):
+          # Overlapping fragments, or a fragment beyond the terminal fragment.
+          return( False )
+        # else: the new and found fragments are not immediate neighbors.
+
+      # Can we merge the tuple with a left-hand neighbor?
+      if( i > 0 ):
+        j = i - 1                         # Left neighbor index.
+        lnNextOffset = self._fsList[j][1] # Left neighbor's next packet offset.
+        # There is at least one tuple less than the new one.
+        if( lnNextOffset == frag.pktOffset ):
+          # Merge them.
+          oldFrag   = self._fsList.pop( j )
+          i         = j
+          fragTuple = (oldFrag[0], fragTuple[1], (oldFrag[2]+fragTuple[2]))
+        elif( (0 == lnNextOffset) or (lnNextOffset > fragTuple[0]) ):
+          # Overlapping fragments, or a fragment beyond the terminal fragment.
+          return( False )
+        # else: the new and found fragments are not immediate neighbors.
+
+      # If the new fragment completes the set, we can create the message
+      # object and return it.  The set is then no longer needed.
+      if( 0 == fragTuple[0] == fragTuple[1] ):
+        # Our current tuple represents a completed message.
+        # What type of message are we re-creating?
+        if( DS_DGM_BCAST == frag.msgType ):
+          klas = BroadcastDatagram
+        elif( DS_DGM_GROUP == frag.msgType ):
+          klas = DirectGroupDatagram
+        else:
+          klas = DirectUniqueDatagram
+        # Create and return the fragment set message object.
+        return( klas( hdrSNT  = frag.hdrSNT,
+                      dgmId   = frag.dgmId,
+                      srcIP   = frag.srcIP,
+                      srcPort = frag.srcPort,
+                      srcName = frag.srcName,
+                      dstName = frag.dstName,
+                      usrData = fragTuple[2] ) )
+
+      # else: Place the tuple into the set at position <i>, then
+      #       update the timestamp, and return successfully.
+      self._fsList.insert( i, fragTuple )
+      self._timestamp = dt.datetime.utcnow()
+      return( True )
+
+    def _fsExpired( self, timmy=None ):
+      # Determine whether or not the set has timed out.
+      #
+      # Input:
+      #   timmy - The timeout value, as a datetime.timedelta object.
+      #
+      # Output: True if the difference between then and now is greater than
+      #         <timmy>, else False.
+      #
+      if( (dt.datetime.utcnow() - self._timestamp) > timmy ):
+        return( True )
+      return( False )
+
+  # Defrag class methods...
+  #
+  def __init__( self, timeout=5000, ckCount=2 ):
+    """Create and initialize a Defrag pool.
+
+    Input:
+      timeout - Fragment list inactivity timeout, in milliseconds.
+                Values less than 250 are stored as 250.  Values greater
+                than 65,535 set to to 65,535 (sixty-five and a half
+                seconds-ish).  The default timeout is 5000 (5 seconds).
+      ckCount - Unless disabled, <checkTimeout()> is called each time a
+                fragment is added to the pool.  By default, it is called
+                twice per call to <addFrag()>, which should be just a
+                little bit more than enough to keep the pool clean.
+                Setting this value to zero disables the timeout check.
+
+    Errors:
+      AssertionError  - Raised if either input is not of type <int>.
+      AssertionError  - Raised if either input is negative.
+    """
+    # <timeout>   - The number of milliseconds (1/1000 sec) that must have
+    #               elapsed since the last update to a fragment set before
+    #               the fragment set is considered to have timed out.
+    # <ckCount>   - The number of LRU fragment sets to be checked each
+    #               time a new fragment is added to the pool.
+    # <_fsetDict> - A dictionary to map fragment keys to fragSets.  The
+    #               keys are formed from message header fields.  The
+    #               values are <dLinkedList.Node> objects which, in turn
+    #               contain the <_fragSet> objects used to keep track of
+    #               sets of fragments.
+    # <_fsetLRU>  - A doubly-linked list used to keep the <_fragSet>
+    #               instances in order from most recently to least
+    #               recently used.
+    #
+    self.__timeout( timeout )
+    self.__ckCount( ckCount )
+    self._fsetDict = {}
+    self._fsetLRU  = dLinkedList()
+
+  def addFrag( self, frag=None ):
+    """Add a fragment to the fragment pool.
+
+    Input:  frag  - A DSFragment message fragment object.
+
+    Errors: AssertionError  - Raised if the input is not a DSFragment
+                              object.
+
+    Output: If the input fragment completes a message, the message is
+            returned (and the fragments are removed from the pool).
+            The message may be one of the following types:
+              * DirectUniqueDatagram
+              * DirectGroupDatagram
+              * BroadcastDatagram
+            Otherwise, None is returned.
+    """
+    # Sanity check.
+    assert( isinstance( frag, DSFragment ) ), \
+      "Expected a DSFragment, not type %s." % type( frag ).__name__
+
+    # Create the key by re-creating the header structure and adding
+    # the calling and called names.  This could be short-circuted if
+    # we used the actual message header (with FM bits removed) instead
+    # of parsing it and then rebuilding it.
+    key = _format_DS_hdr.pack( frag.msgType,
+                               frag.hdrSNT,  # FM bits *NOT* in the key.
+                               frag.dgmId,
+                               frag.srcIP,
+                               frag.srcPort )
+    key += frag.srcName + frag.dstName
+
+    # Add the fragment to the fragment pool.
+    if( key in self._fsetDict ):
+      # There is already a matching fragment set.
+      node = self._fsetDict[ key ]
+      self._fsetLRU.remove( node )
+      result = node.Data._fsAddFrag( frag )
+      if( True == result ):
+        # Re-insert the node at the top of the LRU queue.
+        self._fsetLRU.insert( node )
+      else:
+        # Delete the dictionary entry; the fragSet is no longer in use.
+        del self._fsetDict[ key ]
+        if( False == result ):
+          return( None )  # A mangled fragSet has been deleted.
+        return( result )  # Successfully defragged a message.
+    else:
+      # No matching fragment set; create one and add it at the top of the list.
+      node = self._fsetLRU.Node( self._fragSet( key, frag ) )
+      self._fsetLRU.insert( node )
+      self._fsetDict[ key ] = self._fsetLRU.Head
+
+    # Call checkTimeout().
+    i = self._ckCount
+    while( (i > 0) and self.checkTimeout() ):
+      i -= 1
+    return( None )  # Fragment was added to the pool, no message was generated.
+
+  def checkTimeout( self ):
+    """Check the oldest set(s) in the pool, and delete if expired.
+    """
+    node = self._fsetLRU.Tail
+    if( node and (node.Data._fsExpired( self._timeout )) ):
+      del self._fsetDict[ node.key ]
+      self._fsetLRU.remove( node )
+      return( True )
+    return( False )
+
+  def __timeout( self, timeout=None ):
+    # Get/set the set timeout duration.
+    #   <timeout> is the length of time, in milliseconds, that a
+    #   <_fragSet()> may be idle before it has "timed out" and can
+    #   be deleted, expressed in milliseconds.
+    if( timeout is None ):
+      ms = (self._timeout.microseconds / 1000) + (1000 * self._timeout.seconds)
+      return( ms )
+    assert isinstance( timeout, int ), "<timeout> must be an int value."
+    assert ( timeout >= 0 ), "<timeout> must not be negative."
+    ms = max( 250, min( timeout, 0xFFFF ) )
+    self._timeout = dt.timedelta( milliseconds=ms )
+
+  def __ckCount( self, ckCount=None ):
+    # Get/set the check count value.
+    #   The <ckCount> value is used to set the maximum number of times the
+    #   pool will be checked for past-due sets, per call to addFrag().
+    if( ckCount is None ):
+      return( self._ckCount )
+    assert isinstance( ckCount, int ), "<ckCount> must be an int value."
+    assert ( ckCount >= 0 ), "<ckCount> must not be negative."
+    self._ckCount = ckCount
+
+  # Properties
+  timeout = property( __timeout, __timeout, doc="Fragment pool timeout length" )
+  ckCount = property( __ckCount, __ckCount, doc="Timeout check retry count" )
 
 
 # Functions ------------------------------------------------------------------ #
