@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_Core.py; 2014-05-05 01:38:53 -0500; Christopher R. Hertel$
+# $Id: NBT_Core.py; 2014-06-10 13:27:30 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -103,31 +103,31 @@ _NBT_HEX_XLATE = "0123456789ABCDEF"
 class NBTerror( Exception ):
   """NBT errors.
 
-    A set of error codes, defined by numbers (starting with 1001)
-    specific to the NBT transport implementation.
+  A set of error codes, defined by numbers (starting with 1001)
+  specific to the NBT transport implementation.
 
-    Class Attributes:
-      error_dict  - A dictionary that maps error codes to descriptive
-                    names.  This dictionary defines the set of valid
-                    NBTerror error codes.
+  Class Attributes:
+    error_dict  - A dictionary that maps error codes to descriptive
+                  names.  This dictionary defines the set of valid
+                  NBTerror error codes.
 
-    Instance Attributes:
-      eCode   - The error code number that was used to raise the
-                exception.
-      message - A(n optional) descriptive string to help the user
-                interpret a particular instance of an NBTerror.
-      value   - A(n optional) value of almost any type.  If <value> is
-                not None, it must be convertable into a string so that
-                it can be printed when the error message is displayed.
-                The interpretation of this value depends upon the error
-                message.
+  Instance Attributes:
+    eCode   - The error code number that was used to raise the
+              exception.
+    message - A(n optional) descriptive string to help the user
+              interpret a particular instance of an NBTerror.
+    value   - A(n optional) value of almost any type.  If <value> is
+              not None, it must be convertable into a string so that
+              it can be printed when the error message is displayed.
+              The interpretation of this value depends upon the error
+              message.
 
-    Error Codes:
-      1001  - NBT Semantic Error encountered.
-      1002  - NBT Syntax Error encountered.
-      1003  - RFC883 Label String Pointer (LSP) encountered.
-      1004  - An LSP was expected, but not found.
-      1005  - NBT message could not be parsed.
+  Error Codes:
+    1001  - NBT Semantic Error encountered.
+    1002  - NBT Syntax Error encountered.
+    1003  - RFC883 Label String Pointer (LSP) encountered.
+    1004  - An LSP was expected, but not found.
+    1005  - NBT message could not be parsed.
   """
   error_dict = {
     1001 : "NBT Semantic Error",
@@ -209,7 +209,8 @@ class NBTerror( Exception ):
                       when the exception is raised.
 
     Doctest:
-      >>> print NBTerror( 1005, 'Mein Luftkissenfahrzeug ist voller Aale' )
+      >>> s = 'Mein Luftkissenfahrzeug ist voller Aale'
+      >>> print NBTerror( 1005, s )
       1005: Malformed Message; Mein Luftkissenfahrzeug ist voller Aale.
     """
     if self.eCode in self.error_dict:
@@ -222,6 +223,114 @@ class NBTerror( Exception ):
       return( msg + '.' )
     return( "????: NBT Error; Unkown NBT exception raised." )
 
+
+class dLinkedList( object ):
+  """
+  Doubly-linked list.
+
+  A simple implementation of a doubly-linked list.
+
+  This implementation is intentionally simple.  It is missing a few
+  conveniences, such as a count of the nodes in the list, and it does
+  no error checking.  Be careful.
+
+  Instance Attributes:
+    Head  - The first node in the list.
+    Tail  - The last node in the list.
+
+  If the list is empty, both <Head> and <Tail> will be None.
+
+  Doctest:
+    >>> lst = dLinkedList()
+    >>> [ d for d in lst.elements() ]
+    []
+    >>> for i in range( 1, 6 ):
+    ...   lst.insert( dLinkedList.Node( "node0"+str(i) ) )
+    >>> lst.remove( lst.Head )
+    >>> lst.remove( lst.Tail )
+    >>> n = lst.Head.Next.Next
+    >>> n.Data
+    'node02'
+    >>> lst.remove( n )
+    >>> [ d for d in lst.elements() ]
+    ['node04', 'node03']
+  """
+  class Node( object ):
+    """A node in the doubly-linked list.
+
+    Instance Attributes:
+      Next  - The next node in the linked list, or None to indicate the
+              end of the list.
+      Prev  - The previous node in the linked list, or None to indicate
+              that the current node is the first node in the list.
+      Data  - The payload of the node.  That is, whatever it is that
+              the user is storing within the node.
+
+    Note: The attribute names all begin with an upper case letter
+          because "next" is the name of a Python built-in function (see
+          https://docs.python.org/2/library/functions.html#next).
+    """
+    def __init__( self, Data=None ):
+      """Create and initialize a <dLinkedList> node.
+
+      Input:
+        Data  - Node payload; the data being stored within the linked
+                list node.
+      """
+      self.Next = self.Prev = None
+      self.Data = Data
+
+  def __init__( self ):
+    """Create and initialize a <dLinkedList> list.
+    """
+    self.Head = None
+    self.Tail = None
+
+  def insert( self, newNode=None, after=None ):
+    """Add a <dLinkedList.Node()> object to an existing list.
+
+    Input:
+      newNode - The new <dLinkedList.Node()> object to be inserted.
+      after   - An optional node, that is already included in the list,
+                after which the new node is to be inserted.  If this is
+                None, the new node will be inserted at the head of the
+                list.
+    """
+    if( after ):
+      newNode.Next = after.Next
+      after.Next   = newNode
+    else:
+      newNode.Next = self.Head
+      self.Head    = newNode
+    newNode.Prev = after
+    if( newNode.Next ):
+      newNode.Next.Prev = newNode
+    else:
+      self.Tail = newNode
+
+  def remove( self, oldNode ):
+    """Remove a node from the list.
+
+    Input:
+      oldNode - The node to be removed from the list.
+    """
+    if( oldNode.Prev is None ):
+      self.Head = oldNode.Next
+    else:
+      oldNode.Prev.Next = oldNode.Next
+
+    if( oldNode.Next is None ):
+      self.Tail = oldNode.Prev
+    else:
+      oldNode.Next.Prev = oldNode.Prev
+
+  def elements( self ):
+    """A generator that iterates the Data fields from within the list.
+    """
+    n = self.Head
+    while( n is not None ):
+      yield n.Data
+      n = n.Next
 
 # Functions ------------------------------------------------------------------ #
 #
