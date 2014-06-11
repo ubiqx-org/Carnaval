@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_NameService.py; 2014-05-05 19:44:44 -0500; Christopher R. Hertel$
+# $Id: NBT_NameService.py; 2014-06-11 13:18:14 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -133,7 +133,7 @@ CONSTANTS:
     NS_RR_CLASS_IN    = 0x0001  # Internet Class; NBT uses only this class.
 
     ResourceRecord.RR_NAME; Label String Pointer.
-    NS_RR_LSP = "\xC0\x0C"        # The only Label String Pointer used in NBT.
+    NS_RR_LSP = "\\xC0\\x0C"      # The only Label String Pointer used in NBT.
 
   Question Records:
     QuestionRecord.Q_TYPE; Question Record types.
@@ -330,10 +330,9 @@ class Name( object ):
   the rest of the encoded name is to be found.
 
   Doctest:
-    >>> name = "fooberry".upper()
-    >>> name = Name( name )
+    >>> name = Name( "fooberry".upper() )
     >>> newname = Name()
-    >>> newname.setNetBIOSname( name.getNetBIOSname(), ' ', '\x1E', 'scope' )
+    >>> newname.setNetBIOSname( name.getNetBIOSname(), ' ', '\\x1E', 'scope' )
     >>> str( newname )
     'FOOBERRY<1E>.scope'
   """
@@ -1470,8 +1469,16 @@ class AddressRecord( object ):
 
   Doctest:
     >>> ip = chr( 10 ) + chr( 64 ) + chr( 109 ) + chr( 73 )
-    >>> hexstr( AddressRecord( True, NS_ONT_H, ip ).compose() )
+    >>> ar = AddressRecord( True, NS_ONT_H, ip )
+    >>> hexstr( ar.compose() )
     '\\\\xE0\\\\x00\\\\x0A@mI'
+    >>> print ar.dump( 0 )
+    RDATA (Address Record):
+      NBflags.: 0xe000
+            G...: True
+            ONT.: 0x6000 = H node
+      NBaddr..: 10.64.109.73
+    <BLANKLINE>
   """
   def __init__( self, G=False, ONT=NS_ONT_B, IP=None ):
     """Create an Address Record.
@@ -1535,10 +1542,10 @@ class AddressRecord( object ):
     ipv4 = tuple( ord( octet ) for octet in tuple( self.__NBaddr() ) )
     ind = ' ' * indent
     s  = ind + "RDATA (Address Record):\n"
-    s += ind + "  NBflags.: 0x%04x\n"   % self.__NBflags()
-    s += ind + "          G...: %s\n"         % self.__Gbit()
-    s += ind + "          ONT.: 0x%X = %s\n"  % _TupONT()
-    s += ind + "  NBaddr..: %u.%u.%u.%u" % ipv4
+    s += ind + "  NBflags.: 0x%04x\n" % self.__NBflags()
+    s += ind + "        G...: %s\n"        % self.__Gbit()
+    s += ind + "        ONT.: 0x%X = %s\n" % _TupONT()
+    s += ind + "  NBaddr..: %u.%u.%u.%u\n" % ipv4
     return( s )
 
   def compose( self ):
