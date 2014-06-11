@@ -29,9 +29,9 @@ Setting up your repository to support keyword substitution:
 *.py kwsub=true
 0.README kwsub=true
 
-4) Make suer that your username and e'mail address are correctly assigned in
+4) Make sure that your username and e'mail address are correctly assigned in
    the <repository>/.git/config file.  If you have a GitHub account, your
    e'mail address should match one of the addresses you registered on GitHub.
 
 ____
-$Id: 0.README; 2014-05-06 15:35:20 -0500; Christopher R. Hertel$
+$Id: 0.README; 2014-06-11 12:46:35 -0500; Christopher R. Hertel$
