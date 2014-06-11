@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_DatagramService.py; 2014-06-10 15:27:33 -0500; Christopher R. Hertel$
+# $Id: NBT_DatagramService.py; 2014-06-11 13:02:22 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -67,9 +67,15 @@ presented an API, but the original code is never (well, maybe rarely)
 used any more.  A remarkably useful guide to the NetBIOS API can be
 found here:  http://www.netbiosguide.com/
 
+NBT is transport protocol that provides the semantics needed to support
+the NetBIOS API.  On systems such as DOS, OS/2, or Windows, programs
+that make use of the NetBIOS or NetBEUI API can use NBT transport
+without needing to be modified or recompiled.  On other platforms,
+NBT is typically implemented in a stand-alone fashion (as seen here).
+
 The NBT Datagram Service is rarely implemented as it was designed.  This
 module provides the tools needed for creating either an "RFC-correct"
-implementation, or the more common "do what Windows does" variety.
+implementation, or the more common "what Windows does" variety.
 
 One of the goals of this project is that the modules should make it easy
 to create correctly formatted messages, but also possible to place all
@@ -151,7 +157,7 @@ DS_DGM_NEGRESP  = 0x16    # NBDD negative response.
 DS_DGM_MSGMASK  = 0x17    # MSG_TYPE subfield mask.
 
 # Header.FLAGS mask:
-DS_FLAGS_MASK = 0x0F      # Bitmask for the Flags field.
+DS_FLAGS_MASK   = 0x0F    # Bitmask for the Flags field.
 
 # Header.FLAGS.SNT (Sending Node Type)
 DS_SNT_B      = 0x00      # B node.
@@ -167,9 +173,9 @@ DS_MORE_FLAG  = 0x01      # 'M'ore flag.
 DS_FM_MASK    = 0x03      # Mask for First and More bits.
 
 # Datagram error codes (ERROR_CODE).
-DS_ERR_NONAME  = 0x82     # Destination Name Not Present (-126)
-DS_ERR_SRCNAME = 0x83     # Malformed Source Name (-125)
-DS_ERR_DSTNAME = 0x84     # Malformed Destination Name (-124)
+DS_ERR_NONAME   = 0x82    # Destination Name Not Present (-126)
+DS_ERR_SRCNAME  = 0x83    # Malformed Source Name (-125)
+DS_ERR_DSTNAME  = 0x84    # Malformed Destination Name (-124)
 
 
 # Globals -------------------------------------------------------------------- #
@@ -336,7 +342,7 @@ class DSHeader( object ):
                 DS_SNT_M: "M node",
                 DS_SNT_H: "H node or NBDD" }
       s = xlate[self.hdrSNT] if( self.hdrSNT in xlate ) else "<impossible>"
-      return( "0b{:02b} = ".format( self.hdrSNT >> 2 ) + s )
+      return( "0b{0:02b} = ".format( self.hdrSNT >> 2 ) + s )
 
     def _FmtFragType():
       # Format and return the fragmentation status as a string.
@@ -346,7 +352,7 @@ class DSHeader( object ):
                          0x03: "First Fragment" }
       fm = (self._hdrFlags & DS_FM_MASK)
       s  = xlate[fm] if( fm in xlate ) else "<impossible>"
-      return( "0b{:02b} = ".format( fm ) + s )
+      return( "0b{0:02b} = ".format( fm ) + s )
 
     ipv4 = tuple( ord( octet ) for octet in tuple( self.srcIP ) )
     ind = ' ' * indent
@@ -378,11 +384,11 @@ class DSHeader( object ):
                                  self._srcPort ) )
 
   # Properties.
-  msgType   = property( __msgType,  __msgType,  doc="Message Type; MSG_TYPE" )
-  hdrSNT    = property( __hdrSNT,   __hdrSNT,   doc="Sender Node Type; SNT" )
-  dgmId     = property( __dgmId,    __dgmId,    doc="Datagram ID; DGM_ID" )
-  srcIP     = property( __srcIP,    __srcIP,    doc="Source IPv4 address" )
-  srcPort   = property( __srcPort,  __srcPort,  doc="Header.SOURCE_PORT" )
+  msgType = property( __msgType,  __msgType,  doc="Message Type; MSG_TYPE" )
+  hdrSNT  = property( __hdrSNT,   __hdrSNT,   doc="Sender Node Type; SNT" )
+  dgmId   = property( __dgmId,    __dgmId,    doc="Datagram ID; DGM_ID" )
+  srcIP   = property( __srcIP,    __srcIP,    doc="Source IPv4 address" )
+  srcPort = property( __srcPort,  __srcPort,  doc="Header.SOURCE_PORT" )
 
 
 class DSMessage( DSHeader ):
@@ -1460,26 +1466,39 @@ class Defrag( object ):
     ckCount - Get/set the timeout check retry count.
 
   Doctest:
+    >>> # Define source and destination addresses.
     >>> ip = chr( 172 ) + chr( 18 ) + chr( 0 ) + chr( 1 )
     >>> sn = Name( "RUBY" ).getL2name()
     >>> dn = Name( "TERU" ).getL2name()
+    >>> # Create the datagram message payload.
     >>> ud = (24 * "It's not my fault!  " ).rstrip()
+    >>> # Now create the group datagram message object.
     >>> DGD = DirectGroupDatagram( DS_SNT_B, 26, ip, DS_PORT, sn, dn, ud )
+    >>> # Set a ridiculously low threshold and create fragments.
     >>> DGD.maxData = 16
     >>> DgmList = DGD.composeList()
     >>> print len( DgmList ), len( ud )
     30 478
+    >>> # Randomly select fragments to rebuild the message.
     >>> from random import randrange
     >>> fs = Defrag( timeout=200 )
     >>> while( DgmList ):
     ...   frag = ParseDgm( DgmList.pop( randrange( 0, len( DgmList ) ) ) )
     ...   result = fs.addFrag( frag )
+    >>> # Simple validations.
     >>> len( DgmList )
     0
-    >>> print result.msgType, result.dgmId, len( result.usrData )
-    17 26 478
-    >>> print "Called Name.: [%s]" % hexstr( result.srcName )
+    >>> s  = "Message Type: 0x%02X\\nDatagram ID.: %d\\n" + \\
+    ... "Payload Size: %d\\n"
+    >>> s %= (result.msgType, result.dgmId, len( result.usrData ))
+    >>> s += "Called Name.: [%s]\\n" % hexstr( result.srcName )
+    >>> s += "Payload Okay: " + str( bool( ud == result.usrData ) )
+    >>> print s
+    Message Type: 0x11
+    Datagram ID.: 26
+    Payload Size: 478
     Called Name.: [ FCFFECFJCACACACACACACACACACACACA\\x00]
+    Payload Okay: True
   """
   class _fragSet( object ):
     # Maintain a matching set of fragments.
