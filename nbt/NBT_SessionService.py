@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_SessionService.py; 2014-05-05 23:35:05 -0500; Christopher R. Hertel$
+# $Id: NBT_SessionService.py; 2014-06-17 14:09:09 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -31,6 +31,10 @@
 # See Also:
 #   The 0.README file included with the distribution.
 #
+# ---------------------------------------------------------------------------- #
+#              This code was developed in participation with the
+#                   Protocol Freedom Information Foundation.
+#                          <www.protocolfreedom.org>
 # ---------------------------------------------------------------------------- #
 #
 # Notes:
