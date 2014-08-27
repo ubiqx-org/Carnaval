@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_NameService.py; 2014-06-17 14:09:09 -0500; Christopher R. Hertel$
+# $Id: NBT_NameService.py; 2014-08-26 20:14:23 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
