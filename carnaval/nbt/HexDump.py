@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: HexDump.py; 2014-08-26 20:32:38 -0500; Christopher R. Hertel$
+# $Id: HexDump.py; 2014-08-26 20:34:32 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
