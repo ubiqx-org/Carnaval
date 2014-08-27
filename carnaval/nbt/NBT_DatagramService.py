@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_DatagramService.py; 2014-08-26 20:14:23 -0500; Christopher R. Hertel$
+# $Id: NBT_DatagramService.py; 2014-08-26 20:18:38 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -140,8 +140,8 @@ import struct                           # Binary data handling.
 import datetime as dt                   # Timestamp handling.
 
 from NBT_NameService import Name        # NBT Name class.
-from NBT_Core        import hexstr      # Hexify binary values.
 from NBT_Core        import dLinkedList # Doubly-linked list.
+from HexDump         import hexstr      # Hexify binary values.
 
 
 # Constants ------------------------------------------------------------------ #

@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_SessionService.py; 2014-08-26 20:14:23 -0500; Christopher R. Hertel$
+# $Id: NBT_SessionService.py; 2014-08-26 20:18:38 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -135,7 +135,7 @@ CONSTANTS:
 
 import struct                 # Binary data handling.
 from NBT_Core import NBTerror # NBT exception class.
-from NBT_Core import hexstr   # Hexify binary values.
+from HexDump  import hexstr   # Hexify binary values.
 
 
 # Constants ------------------------------------------------------------------ #

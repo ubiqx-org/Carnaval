@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_NameService.py; 2014-08-26 20:14:23 -0500; Christopher R. Hertel$
+# $Id: NBT_NameService.py; 2014-08-26 20:18:38 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -175,8 +175,8 @@ CONSTANTS:
 import struct                         # Binary data handling.
 
 from NBT_Core import NBTerror         # NBT exception class.
-from NBT_Core import hexbyte, hexstr  # Byte to hex string conversion.
-from NBT_Core import hexdump          # Hexdump raw blocks of data.
+from HexDump  import hexbyte, hexstr  # Byte to hex string conversion.
+from HexDump  import hexdump          # Hexdump raw blocks of data.
 
 
 # Constants ------------------------------------------------------------------ #
