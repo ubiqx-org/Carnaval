@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_Core.py; 2014-08-26 20:18:38 -0500; Christopher R. Hertel$
+# $Id: NBT_Core.py; 2014-09-11 16:12:35 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -173,18 +173,27 @@ class NBTerror( Exception ):
     Input:
       eCode   - An NBTerror error code.  The available error codes are
                 given in the <error_dict> class attribute.  Any other
-                code will generate a malformed
+                code will generate a ValueError exception.
       message - An optional string used to explain the circumstances
                 under which the exception was raised.
       value   - An optional value of any type, to be interpreted based
                 upon the eCode value and the method called.  See the
                 documentation for each method.
+
+    Errors: ValueError  - Thrown if the given error code is not a
+                          defined NBTerror error code.
+
+    Doctest:
+    >>> NBTerror()
+    Traceback (most recent call last):
+      ...
+    ValueError: Unknown error code: None.
     """
-    self.eCode, self.message = ( -1, None )
-    if eCode in self.error_dict:
-      self.eCode   = eCode
-      self.message = message
-      self.value   = value
+    if( eCode not in self.error_dict ):
+      raise ValueError( "Unknown error code: %s." % str( eCode ) )
+    self.eCode   = eCode
+    self.message = message
+    self.value   = value
 
   def __str__( self ):
     """Formatted error message.
