@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: SMB1_Messages.py; 2014-09-12 21:52:46 -0500; Christopher R. Hertel$
+# $Id: SMB1_Messages.py; 2014-09-13 09:46:50 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -294,19 +294,19 @@ class _SMB1_Header( object ):
   def __tid( self, tid=None ):
     # Get/set Treeconnect ID.
     if( tid is None ):
-      return( tid )
+      return( self._tid )
     self._tid = (0xFFFF & tid)
 
   def __uid( self, uid=None ):
     # Get/set authenticated user ID.
     if( uid is None ):
-      return( uid )
+      return( self._uid )
     self._uid = (0xFFFF & uid)
 
   def __mid( self, mid=None ):
     # Get/set Multiplex ID.
     if( mid is None ):
-      return( mid )
+      return( self._mid )
     self._mid = (0xFFFF & mid)
 
   def dump( self, indent=0 ):
@@ -749,7 +749,7 @@ def ParseSMB1( msg=None ):
 
   # Create and return the message object.
   if( 0 == (SMB_FLAGS_REPLY & flags) ):
-    # It's a request message.  Extract the dialect list.
+    # It's a request message.  Validate the dialect list.
     bCount = uShort
     if( bCount < 3 ):
       raise SMBerror( 1001, "Empty SMB1 NegProt dialect list" )
@@ -763,22 +763,16 @@ def ParseSMB1( msg=None ):
                                 pid      = 0,
                                 mid      = mid,
                                 dialects = dialects )
-    npr.status       = ntErr
-    npr._pidHigh     = pidH
-    npr._secFeatures = secSig
-    npr._reserved    = rsvd
-    npr.tid          = tid
-    npr._pidLow      = pidL
-    npr.uid          = uid
-    return( npr )
+  else:
+    # If'n it's not a request, then it's a response.
+    dIndex = uShort if( wCount ) else None
+    npr = SMB1_NegProt_Response( flags  = flags,
+                                 flags2 = flags2,
+                                 pid    = 0,
+                                 mid    = mid,
+                                 dIndex = dIndex )
 
-  # If'n it's not a request, then it's a response.
-  dIndex = uShort if( wCount ) else None
-  npr = SMB1_NegProt_Response( flags  = flags,
-                               flags2 = flags2,
-                               pid    = 0,
-                               mid    = mid,
-                               dIndex = dIndex )
+  # Fill in the remaining fields.
   npr.status       = ntErr
   npr._pidHigh     = pidH
   npr._secFeatures = secSig
