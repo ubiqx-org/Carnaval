@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_DatagramService.py; 2014-08-26 20:18:38 -0500; Christopher R. Hertel$
+# $Id: NBT_DatagramService.py; 2014-09-12 20:40:15 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -130,10 +130,10 @@ CONSTANTS:
 #   struct                - Binary data packing and parsing tools.
 #   datetime              - Dates and times with microsecond resolution.
 #   NBT_NameService.Name  - NBT Name object, for handling L2-encoded names.
-#   NBT_Core.hexstr()     - Utility to convert binary strings into human-
-#                           readable format, more or less.
 #   NBT_Core.dLinkedList  - A doubly-linked list object, used to create an
 #                           LRU-ordered list within the Defrag class.
+#   NBT_Core.hexstr()     - Utility to convert binary strings into human-
+#                           readable format, more or less.
 #
 
 import struct                           # Binary data handling.
@@ -141,7 +141,7 @@ import datetime as dt                   # Timestamp handling.
 
 from NBT_NameService import Name        # NBT Name class.
 from NBT_Core        import dLinkedList # Doubly-linked list.
-from HexDump         import hexstr      # Hexify binary values.
+from common.HexDump  import hexstr      # Hexify binary values.
 
 
 # Constants ------------------------------------------------------------------ #

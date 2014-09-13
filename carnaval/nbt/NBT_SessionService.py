@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_SessionService.py; 2014-08-26 20:18:38 -0500; Christopher R. Hertel$
+# $Id: NBT_SessionService.py; 2014-09-12 20:40:15 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -129,13 +129,15 @@ CONSTANTS:
 
 # Imports -------------------------------------------------------------------- #
 #
-#   struct    - Binary data packing and parsing tools.
-#   NBT_Core  - Objects common to all NBT transport services.
+#   struct          - Binary data packing and parsing tools.
+#   NBT_Core        - Objects common to all NBT transport services.
+#   common.HexDump  - Output formatting functions.
 #
 
-import struct                 # Binary data handling.
-from NBT_Core import NBTerror # NBT exception class.
-from HexDump  import hexstr   # Hexify binary values.
+import struct                       # Binary data handling.
+
+from NBT_Core       import NBTerror # NBT exception class.
+from common.HexDump import hexstr   # Hexify binary values.
 
 
 # Constants ------------------------------------------------------------------ #
