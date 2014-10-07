@@ -5,8 +5,13 @@ Carnaval
 
 ...is an SMB protocol suite implementation in Python.
 
-This project is new.  So far we have only a partial implementation of the
-NBT transport layer.  Stay tuned.
+This project is still fairly new.
+So far we have a complete low-level implementation of the NBT transport 
+layer, which is a good start.  We also have SMB1 protocol negotiation, 
+but we won't be doing much more with SMB1 for a while.  The next step is 
+SMB2 packing and parsing.
+
+Stay tuned.
 
 
 Patch Submissions
@@ -99,6 +104,10 @@ CIFS::  Common Internet File System.  CIFS is the "marketing upgrade"
         references to legacy implementations.  The term is still popular
         among sales engineers.
 
+DFS::   Distributed File System.  Microsoft's DFS is fairly simple.  The 
+        part we care about is the logical namespace, which is described in
+        [MS-DFSC].
+
 NBT::   NetBIOS over TCP transport protocol.  NBT is the virtual LAN
         protocol specified by IETF Standard #19 which, in turn, consists of
         RFC1001 and RFC1002.  NBT provides a mechanism for supporting the
@@ -139,6 +148,8 @@ SMB3::  A.K.A. SMBv3 or SMB2.2;  SMB3 is, in fact, a dialect of SMB2.  It
 References
 ----------
 
+All of the references listed below are available online.
+
 [IMPCIFS]:: Hertel, Christopher R., "Implementing CIFS - The Common Internet
             File System", Prentice Hall, August 2003, ISBN:013047116X,
             http://www.ubiqx.org/cifs/
@@ -173,4 +184,4 @@ References
 
 Timestamp
 ---------
-$Id: 0.README; 2014-06-17 14:06:49 -0500; Christopher R. Hertel$
+$Id: 0.README; 2014-10-07 15:36:03 -0500; Christopher R. Hertel$
