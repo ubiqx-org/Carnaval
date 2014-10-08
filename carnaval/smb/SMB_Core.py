@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: SMB_Core.py; 2014-09-12 21:52:46 -0500; Christopher R. Hertel$
+# $Id: SMB_Core.py; 2014-10-07 22:38:48 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -63,10 +63,19 @@ REFERENCES:
             http://msdn.microsoft.com/en-us/library/cc246482.aspx
 """
 
+# Imports -------------------------------------------------------------------- #
+#
+#   ErrorCodeExceptions - Provides the CodedError() class, upon which the
+#                         SMBerror class is built.
+#
+
+from common.ErrorCodeExceptions import CodedError
+
+
 # Classes -------------------------------------------------------------------- #
 #
 
-class SMBerror( Exception ):
+class SMBerror( CodedError ):
   """SMB1/2/3 exceptions.
 
   An exception class with an associated set of error codes, defined by
@@ -78,121 +87,31 @@ class SMBerror( Exception ):
                   names.  This dictionary defines the set of valid
                   SMBerror error codes.
 
-  Instance Attributes:
-    eCode   - The error code number that was used to raise the
-              exception.
-    message - A(n optional) descriptive string to help the user
-              interpret a particular instance of SMBerror.
-    value   - A(n optional) value of almost any type.  If <value> is
-              not None, it must be convertable into a string so that
-              it can be printed when the error message is displayed.
-              The interpretation of this value depends upon the error
-              message.
-
   Error Codes:
     1001  - SMB Semantic Error encountered.
     1002  - SMB Syntax Error encountered.
     1003  - SMB Protocol mismatch ("<FF>SMB" not found).
+
+  See Also: common.ErrorCodeExceptions.CodedError
+
+  Doctest:
+    >>> print SMBerror.errStr( 1002 )
+    SMB Syntax Error
+    >>> a, b = SMBerror.errRange()
+    >>> a < b
+    True
+    >>> SMBerror()
+    Traceback (most recent call last):
+      ...
+    ValueError: Undefined error code: None.
+    >>> s = 'Die Flipperwaldt gersput'
+    >>> print SMBerror( 1003, s )
+    1003: SMB Protocol Mismatch; Die Flipperwaldt gersput.
   """
   error_dict = {
     1001 : "SMB Semantic Error",
     1002 : "SMB Syntax Error",
     1003 : "SMB Protocol Mismatch"
     }
-
-  @classmethod
-  def errStr( cls, eCode=None ):
-    """Return the description associated with an SMBerror error code.
-
-    Input:  eCode - An SMBerror error code.
-
-    Output: A string, which is the text associated with the given
-            error code, or None if the error code is not defined.
-
-    Doctest:
-      >>> print SMBerror.errStr( 1002 )
-      SMB Syntax Error
-    """
-    if( eCode ):
-      eCode = int( eCode )
-      if( eCode in cls.error_dict ):
-        return( cls.error_dict[ eCode ] )
-    return( None )
-
-  @classmethod
-  def errRange( cls ):
-    """Return the minimum and maximum error code values as a tuple.
-
-    Output: A tuple containing the minimum and maximum values of the
-            SMBerror error codes that are defined.
-
-    Notes:  Error codes should be defined in sequential order with no
-            gaps, but don't take that as a promise.
-
-    Doctest:
-      >>> a, b = SMBerror.errRange()
-      >>> a < b
-      True
-    """
-    return( min( cls.error_dict ), max( cls.error_dict ) )
-
-  def __init__( self, eCode=None, message=None, value=None ):
-    """Create an SMBerror instance.
-
-    Input:
-      eCode   - An SMBerror error code.  The available error codes are
-                given in the <error_dict> class attribute.  Any other
-                code will generate a ValueError exception.
-      message - An optional string used to explain the circumstances
-                under which the exception was raised.
-      value   - An optional value of any type, to be interpreted based
-                upon the eCode value and the method called.  See the
-                documentation for each method.
-
-    Errors: ValueError  - Thrown if the given error code is not a
-                          defined SMBerror error code.
-
-    Doctest:
-    >>> SMBerror()
-    Traceback (most recent call last):
-      ...
-    ValueError: Unknown error code: None.
-    """
-    if( eCode not in self.error_dict ):
-      raise ValueError( "Unknown error code: %s." % str( eCode ) )
-    self.eCode   = eCode
-    self.message = message
-    self.value   = value
-
-  def __str__( self ):
-    """Formatted error message.
-
-    Output:
-      A string, the format of which is:
-        <nnnn> ': ' <Description> ['; ' <Message>][' (' <Value> ')'] '.'
-      where:
-        <nnnn>        is the error code, or "????" if the error code
-                      was incorrectly specified.
-        <Description> is the general description assigned to the error
-                      code.
-        <Message>     is the (optional) instance-specific message given
-                      when the exception is raised.
-        <Value>       is the (optional) instance-specific value given
-                      when the exception is raised.
-
-    Doctest:
-      >>> s = 'Die Flipperwaldt gersput'
-      >>> print SMBerror( 1003, s )
-      1003: SMB Protocol Mismatch; Die Flipperwaldt gersput.
-    """
-    if self.eCode in self.error_dict:
-      tup  = (str( self.eCode ).zfill( 4 ), self.error_dict[ self.eCode ] )
-      msg  = "%s: %s" % tup
-      if self.message:
-        msg += ("; " + self.message)
-      if self.value:
-        msg += (" (%s)" % str( self.value ) )
-      return( msg + '.' )
-    return( "????: NBT Error; Unkown NBT exception raised." )
 
 # ============================================================================ #

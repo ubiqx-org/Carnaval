@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_Core.py; 2014-09-11 16:12:35 -0500; Christopher R. Hertel$
+# $Id: NBT_Core.py; 2014-10-07 22:38:48 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -91,10 +91,19 @@ References:
     http://msdn.microsoft.com/en-us/library/dd891412.aspx
 """
 
+# Imports -------------------------------------------------------------------- #
+#
+#   ErrorCodeExceptions - Provides the CodedError() class, upon which the
+#                         NBTerror class is built.
+#
+
+from common.ErrorCodeExceptions import CodedError
+
+
 # Classes -------------------------------------------------------------------- #
 #
 
-class NBTerror( Exception ):
+class NBTerror( CodedError ):
   """NBT errors.
 
   A set of error codes, defined by numbers (starting with 1001)
@@ -105,23 +114,28 @@ class NBTerror( Exception ):
                   names.  This dictionary defines the set of valid
                   NBTerror error codes.
 
-  Instance Attributes:
-    eCode   - The error code number that was used to raise the
-              exception.
-    message - A(n optional) descriptive string to help the user
-              interpret a particular instance of an NBTerror.
-    value   - A(n optional) value of almost any type.  If <value> is
-              not None, it must be convertable into a string so that
-              it can be printed when the error message is displayed.
-              The interpretation of this value depends upon the error
-              message.
-
   Error Codes:
     1001  - NBT Semantic Error encountered.
     1002  - NBT Syntax Error encountered.
     1003  - RFC883 Label String Pointer (LSP) encountered.
     1004  - An LSP was expected, but not found.
     1005  - NBT message could not be parsed.
+
+  See Also: common.ErrorCodeExceptions.CodedError
+
+  Doctest:
+    >>> print NBTerror.errStr( 1002 )
+    NBT Syntax Error
+    >>> a, b = NBTerror.errRange()
+    >>> (a < b) and (1001 == a)
+    True
+    >>> NBTerror()
+    Traceback (most recent call last):
+      ...
+    ValueError: Undefined error code: None.
+    >>> s = 'Mein Luftkissenfahrzeug ist voller Aale'
+    >>> print NBTerror( 1005, s )
+    1005: Malformed Message; Mein Luftkissenfahrzeug ist voller Aale.
   """
   error_dict = {
     1001 : "NBT Semantic Error",
@@ -130,101 +144,6 @@ class NBTerror( Exception ):
     1004 : "No Label String Pointer",
     1005 : "Malformed Message"
     }
-
-  @classmethod
-  def errStr( cls, eCode=None ):
-    """Return the description associated with an NBTerror error code.
-
-    Input:  eCode - An NBTerror error code.
-
-    Output: A string, which is the text associated with the given
-            error code, or None if the error code is not defined.
-
-    Doctest:
-      >>> print NBTerror.errStr( 1002 )
-      NBT Syntax Error
-    """
-    if( eCode ):
-      eCode = int( eCode )
-      if( eCode in cls.error_dict ):
-        return( cls.error_dict[ eCode ] )
-    return( None )
-
-  @classmethod
-  def errRange( cls ):
-    """Return the minimum and maximum error code values as a tuple.
-
-    Output: A tuple containing the minimum and maximum values of the
-            NBTerror error codes that are defined.
-
-    Notes:  Error codes should be defined in sequential order with no
-            gaps, but don't take that as a promise.
-
-    Doctest:
-      >>> a, b = NBTerror.errRange()
-      >>> a < b
-      True
-    """
-    return( min( cls.error_dict ), max( cls.error_dict ) )
-
-  def __init__( self, eCode=None, message=None, value=None ):
-    """Create an NBTerror instance.
-
-    Input:
-      eCode   - An NBTerror error code.  The available error codes are
-                given in the <error_dict> class attribute.  Any other
-                code will generate a ValueError exception.
-      message - An optional string used to explain the circumstances
-                under which the exception was raised.
-      value   - An optional value of any type, to be interpreted based
-                upon the eCode value and the method called.  See the
-                documentation for each method.
-
-    Errors: ValueError  - Thrown if the given error code is not a
-                          defined NBTerror error code.
-
-    Doctest:
-    >>> NBTerror()
-    Traceback (most recent call last):
-      ...
-    ValueError: Unknown error code: None.
-    """
-    if( eCode not in self.error_dict ):
-      raise ValueError( "Unknown error code: %s." % str( eCode ) )
-    self.eCode   = eCode
-    self.message = message
-    self.value   = value
-
-  def __str__( self ):
-    """Formatted error message.
-
-    Output:
-      A string, the format of which is:
-        <nnnn> ': ' <Description> ['; ' <Message>][' (' <Value> ')'] '.'
-      where:
-        <nnnn>        is the error code, or "????" if the error code
-                      was incorrectly specified.
-        <Description> is the general description assigned to the error
-                      code.
-        <Message>     is the (optional) instance-specific message given
-                      when the exception is raised.
-        <Value>       is the (optional) instance-specific value given
-                      when the exception is raised.
-
-    Doctest:
-      >>> s = 'Mein Luftkissenfahrzeug ist voller Aale'
-      >>> print NBTerror( 1005, s )
-      1005: Malformed Message; Mein Luftkissenfahrzeug ist voller Aale.
-    """
-    if self.eCode in self.error_dict:
-      tup  = (str( self.eCode ).zfill( 4 ), self.error_dict[ self.eCode ] )
-      msg  = "%s: %s" % tup
-      if self.message:
-        msg += ("; " + self.message)
-      if self.value:
-        msg += (" (%s)" % str( self.value ) )
-      return( msg + '.' )
-    return( "????: NBT Error; Unkown NBT exception raised." )
 
 
 class dLinkedList( object ):
@@ -258,6 +177,7 @@ class dLinkedList( object ):
     >>> [ d for d in lst.elements() ]
     ['node04', 'node03']
   """
+
   class Node( object ):
     """A node in the doubly-linked list.
 
