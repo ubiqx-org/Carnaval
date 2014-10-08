@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: SMB_Core.py; 2014-10-07 22:38:48 -0500; Christopher R. Hertel$
+# $Id: SMB_Core.py; 2014-10-08 02:19:20 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -38,9 +38,6 @@
 # ---------------------------------------------------------------------------- #
 #
 # ToDo:
-#   - The SMBerror class is almost identical to the NBTerror class in
-#     ../nbt/NBT_Core.  It should be a fairly simple task to create a
-#     base class somewhere in ../common.
 #
 # ============================================================================ #
 #
@@ -108,6 +105,7 @@ class SMBerror( CodedError ):
     >>> print SMBerror( 1003, s )
     1003: SMB Protocol Mismatch; Die Flipperwaldt gersput.
   """
+  # This one assignment is all that's needed to create the class:
   error_dict = {
     1001 : "SMB Semantic Error",
     1002 : "SMB Syntax Error",
