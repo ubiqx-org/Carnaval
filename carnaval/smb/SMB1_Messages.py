@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: SMB1_Messages.py; 2014-09-13 09:46:50 -0500; Christopher R. Hertel$
+# $Id: SMB1_Messages.py; 2015-01-15 20:15:20 -0600; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -683,15 +683,14 @@ def ParseSMB1( msg=None ):
   Errors:
     ValueError        - Thrown if the input message is too small to be a
                         complete SMB message.
-    SMBerror( 1001 )  - SMB Semantic Error; thrown if:
+    SMBerror( 1001 )  - SMB Syntax Error; the dialect list in an SMB1
+                        NegProt request is not formatted correctly.
+    SMBerror( 1002 )  - SMB Semantic Error; thrown if:
                         1) The command code in the message is not
                            SMB_COM_NEGOTIATE (that is, not a supported
                            command).
                         2) The message is an SMB1 NegProt request with
                            no dialects listed.
-    SMBerror( 1002 )  - SMB Syntax Error; the dialect list in an SMB1
-                        NegProt request is not formatted correctly.
-
     SMBerror( 1003 )  - SMB Protocol Mismatch; thrown if the first four
                         bytes of the message are not "<FF>SMB".
 
@@ -742,7 +741,7 @@ def ParseSMB1( msg=None ):
   # Make sure that we can handle the command we've received.
   if( SMB_COM_NEGOTIATE != cmd ):
     s = "Unknown or Unsupported SMB Command Code <{0:02X}>".format( cmd )
-    raise SMBerror( 1001, s )
+    raise SMBerror( 1002, s )
 
   # Grab the next two fields.
   wCount, uShort = _format_SMB1BH.unpack( msg[32:35] )
@@ -752,9 +751,9 @@ def ParseSMB1( msg=None ):
     # It's a request message.  Validate the dialect list.
     bCount = uShort
     if( bCount < 3 ):
-      raise SMBerror( 1001, "Empty SMB1 NegProt dialect list" )
+      raise SMBerror( 1002, "Empty SMB1 NegProt dialect list" )
     if( ('\x02' != msg[35]) or ('\0' != msg[-1]) ):
-      raise SMBerror( 1002, "Malformed SMB1 NegProt dialect list" )
+      raise SMBerror( 1001, "Malformed SMB1 NegProt dialect list" )
     # Extract the dialect strings.
     dialects = msg[36:-1].split( "\0\x02" )
     # Create and update the object.

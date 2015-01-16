@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: SMB_Core.py; 2014-10-08 02:19:20 -0500; Christopher R. Hertel$
+# $Id: SMB_Core.py; 2015-01-15 20:15:20 -0600; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -35,10 +35,6 @@
 #              This code was developed in participation with the
 #                   Protocol Freedom Information Foundation.
 #                          <www.protocolfreedom.org>
-# ---------------------------------------------------------------------------- #
-#
-# ToDo:
-#
 # ============================================================================ #
 #
 """SMB1/2/3 Network File Protocols: Core components
@@ -76,7 +72,7 @@ class SMBerror( CodedError ):
   """SMB1/2/3 exceptions.
 
   An exception class with an associated set of error codes, defined by
-  numbers (starting at 1001).  The error codes are specific to this
+  numbers (starting at 1000).  The error codes are specific to this
   exception class.
 
   Class Attributes:
@@ -85,15 +81,16 @@ class SMBerror( CodedError ):
                   SMBerror error codes.
 
   Error Codes:
-    1001  - SMB Semantic Error encountered.
-    1002  - SMB Syntax Error encountered.
+    1000  - Warning message (operation succeded with caveats).
+    1001  - SMB Syntax Error encountered.
+    1002  - SMB Semantic Error encountered.
     1003  - SMB Protocol mismatch ("<FF>SMB" not found).
 
   See Also: common.ErrorCodeExceptions.CodedError
 
   Doctest:
     >>> print SMBerror.errStr( 1002 )
-    SMB Syntax Error
+    SMB Semantic Error
     >>> a, b = SMBerror.errRange()
     >>> a < b
     True
@@ -105,10 +102,11 @@ class SMBerror( CodedError ):
     >>> print SMBerror( 1003, s )
     1003: SMB Protocol Mismatch; Die Flipperwaldt gersput.
   """
-  # This one assignment is all that's needed to create the class:
+  # This assignment is all that's needed to create the class:
   error_dict = {
-    1001 : "SMB Semantic Error",
-    1002 : "SMB Syntax Error",
+    1000 : "Warning",
+    1001 : "SMB Syntax Error",
+    1002 : "SMB Semantic Error",
     1003 : "SMB Protocol Mismatch"
     }
 
