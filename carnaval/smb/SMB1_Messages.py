@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: SMB1_Messages.py; 2015-01-15 20:15:20 -0600; Christopher R. Hertel$
+# $Id: SMB1_Messages.py; 2015-01-15 20:21:30 -0600; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
