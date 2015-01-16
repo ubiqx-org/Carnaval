@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_Core.py; 2014-10-07 22:38:48 -0500; Christopher R. Hertel$
+# $Id: NBT_Core.py; 2015-01-16 02:04:58 -0600; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -106,7 +106,7 @@ from common.ErrorCodeExceptions import CodedError
 class NBTerror( CodedError ):
   """NBT errors.
 
-  A set of error codes, defined by numbers (starting with 1001)
+  A set of error codes, defined by numbers (starting with 1000)
   specific to the NBT transport implementation.
 
   Class Attributes:
@@ -115,19 +115,25 @@ class NBTerror( CodedError ):
                   NBTerror error codes.
 
   Error Codes:
-    1001  - NBT Semantic Error encountered.
-    1002  - NBT Syntax Error encountered.
+    1000  - Warning.
+    1001  - NBT Syntax Error encountered.
+    1002  - NBT Semantic Error encountered.
     1003  - RFC883 Label String Pointer (LSP) encountered.
     1004  - An LSP was expected, but not found.
     1005  - NBT message could not be parsed.
 
   See Also: common.ErrorCodeExceptions.CodedError
 
+  Code 1000 represents a warning.  Warnings may be safely caught and
+  ignored, or reported, or otherwise handled.  Warnings should only be
+  raised when it is safe to continue without taking any particular
+  action.
+
   Doctest:
     >>> print NBTerror.errStr( 1002 )
-    NBT Syntax Error
+    NBT Semantic Error
     >>> a, b = NBTerror.errRange()
-    >>> (a < b) and (1001 == a)
+    >>> (a < b) and (1000 == a)
     True
     >>> NBTerror()
     Traceback (most recent call last):
@@ -138,8 +144,9 @@ class NBTerror( CodedError ):
     1005: Malformed Message; Mein Luftkissenfahrzeug ist voller Aale.
   """
   error_dict = {
-    1001 : "NBT Semantic Error",
-    1002 : "NBT Syntax Error",
+    1000 : "Warning",
+    1001 : "NBT Syntax Error",
+    1002 : "NBT Semantic Error",
     1003 : "Label String Pointer",
     1004 : "No Label String Pointer",
     1005 : "Malformed Message"

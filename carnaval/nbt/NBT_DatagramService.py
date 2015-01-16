@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_DatagramService.py; 2014-09-12 20:40:15 -0500; Christopher R. Hertel$
+# $Id: NBT_DatagramService.py; 2015-01-16 02:04:58 -0600; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -1803,8 +1803,11 @@ def ParseDgm( msg=None ):
   Input:
     msg - A byte string (type str) received from the network.
 
-  Errors: TypeError   - Raised if the input is not a of type str.
-          ValueError  - Raised if the input is None, the empty string,
+  Errors:
+    NBTerror( 1005 )  - Raised if the message type cannot be determined
+                        from the input.
+    TypeError         - Raised if the input is not a of type str.
+    ValueError        - Raised if the input is None, the empty string,
                         or is too short to be parsed correctly.
 
   Output: An NBT Datagram Service message object, which will be one of
@@ -1830,10 +1833,11 @@ def ParseDgm( msg=None ):
   def _DGmsg():
     # Parse a message message.
     #
-    # Errors: ValueError        - Raised if the input parameter fails
-    #                             basic sanity checks.
-    #         NBTerror( 1003 )  - A Label String Pointer was encountered.
-    #                             This should never happen.
+    # Errors:
+    #   ValueError        - Raised if the input parameter fails basic
+    #                       sanity checks.
+    #   NBTerror( 1003 )  - A Label String Pointer was encountered.
+    #                       This should never happen.
     #
     # Output: One of the three datagram message types, or a DSFragment
     #         if the message being parsed is a fragment.

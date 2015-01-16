@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_SessionService.py; 2014-09-12 20:40:15 -0500; Christopher R. Hertel$
+# $Id: NBT_SessionService.py; 2015-01-16 02:04:58 -0600; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -329,7 +329,7 @@ def ParseMsg( msg=None ):
 
   Input:  msg - At least 4 bytes, received from the wire.
 
-  Errors: NBTerror( 1001 )  - Session message length exceeds maximum.
+  Errors: NBTerror( 1002 )  - Session message length exceeds maximum.
           NBTerror( 1005 )  - Invalid session service message type.
           ValueError        - Missing or incomplete message.  Four bytes
                               are expected.
@@ -363,7 +363,7 @@ def ParseMsg( msg=None ):
     mLen = _formatLong.unpack( msg[:4] )[0]
     if( 0x20000 <= mLen ):
       s = "Session Message length exceeds the 17-bit maximum imposed by NBT %d."
-      raise NBTerror( 1001, s, mLen )
+      raise NBTerror( 1002, s, mLen )
     return( (SS_SESSION_MESSAGE, mLen) )
   if( SS_SESSION_KEEPALIVE == mType ):
     return( (SS_SESSION_KEEPALIVE,) )
@@ -384,7 +384,7 @@ def ParseCNames( msg=None ):
                 be the 68 bytes immediately following the 4 bytes of the
                 message header.
 
-  Errors: NBTerror( 1002 )  - Thrown if either the called or calling name
+  Errors: NBTerror( 1001 )  - Thrown if either the called or calling name
                               is not a valid NBT name.
           ValueError        - Missing or incomplete message.  Sixty-eight
                               bytes are expected.
@@ -396,10 +396,10 @@ def ParseCNames( msg=None ):
     raise ValueError( "Missing or short message." )
   called = msg[:34]
   if( not _L1Okay( called ) ):
-    raise NBTerror( 1002, "Malformed Called name in Session Request" )
+    raise NBTerror( 1001, "Malformed Called name in Session Request" )
   calling = msg[34:68]
   if( not _L1Okay( calling ) ):
-    raise NBTerror( 1002, "Malformed Calling name in Session Request" )
+    raise NBTerror( 1001, "Malformed Calling name in Session Request" )
   return( (called, calling) )
 
 def ParseErrCode( msg=None ):
