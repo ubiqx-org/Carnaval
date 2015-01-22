@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014,2015 by Christopher R. Hertel
 #
-# $Id: HexDump.py; 2015-01-21 21:45:50 -0600; Christopher R. Hertel$
+# $Id: HexDump.py; 2015-01-21 22:33:03 -0600; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -71,9 +71,10 @@ def hexbyte( data=None ):
   Output: A two-byte string representing the hex value of first byte
           of the input.  For example: '\\t' --> '09'.
 
-  Errors: ValueError  - Raised if the input is not of type str or the
-                        input string is empty.  We need at least (and
-                        will use at most) one byte.
+  Errors:
+    AssertionError  - Raised if the input is not of type <str>.
+    ValueError      - Raised if the input string is empty.  We need at
+                      least (and will use at most) one byte.
 
   Notes:  This function converts the input byte into a two-character
           hex string, whether or not the input byte is a printable
@@ -85,9 +86,8 @@ def hexbyte( data=None ):
     <08>
   """
   # Check for garblage.
-  if( not isinstance( data, str ) ):
-    s = type( data ).__name__
-    raise ValueError( "Expected a string of 1 or more bytes, got a %s." % s  )
+  assert( isinstance( data, str ) ), \
+    "Expected type <str>, got <%s>." % type( data ).__name__
   if( len( data ) < 1 ):
     raise ValueError( "Cannot hexlify the empty string." )
 
@@ -105,7 +105,8 @@ def hexstr( data=None ):
   Output: A string in which nonprinting characters in the original
           string will be represented using "\\xXX" notation.
 
-  Errors: AssertionError  - Raised if the input is not of type str.
+  Errors:
+    AssertionError  - Raised if the input is not of type str.
 
   Notes:  This is similar to the standard binascii.b2a_hex() function,
           except that it doesn't produce single-character escape
@@ -199,36 +200,36 @@ def hexstrchop( data=None, linemax=72 ):
   return( llist )
 
 
-def hexdumpln( offset=0, data=None ):
+def hexdumpln( data=None, offset=0 ):
   """Return a hex-dumped string representing up to 16 bytes.
 
-  Input:  offset  - The offset within <data> at which to find the 16
-                    or less bytes that are to be dumped.
-          data    - The string of bytes, including the bytes to be
+  Input:  data    - The string of bytes, including the bytes to be
                     dumped.  Must be of type str.
+          offset  - The offset within <data> at which to find the 16
+                    or less bytes that are to be dumped.
 
-  Errors: ValueError  - Raised if the input is not of type str.
+  Errors:
+    AssertionError  - Raised if the input is not of type str.
 
-  Output: If <data> is None, None will be returned.  If the range of
-          bytes indicated by the input is empty, the empty string is
-          returned.  Otherwise, the output is a string representing
-          up to 16 bytes of input, in fairly traditional hexdump
-          format.  The line is NOT terminated with a newline.
+  Output: If <data> is None, None will be returned.
+          If the range of bytes indicated by the input is empty, the
+          empty string is returned.  Otherwise, the output is a string
+          representing up to 16 bytes of input, in fairly traditional
+          hexdump format. The line is NOT terminated with a newline.
 
   Notes:  This implementation uses a unicode-encoded hollow bullet
           to represent non-printing characters.
 
   Doctest:
-  >>> print hexdumpln( 8, _HEX_XLATE + "Hello, Whirled" )
+  >>> print hexdumpln( _HEX_XLATE + "Hello, Whirled", 8 )
   000008:  38 39 41 42 43 44 45 46  48 65 6c 6c 6f 2c 20 57  |89ABCDEFHello, W|
   """
   # Reality check.
   if( data is None ):
     return( None )
   # Check for garblage.
-  if( not isinstance( data, str ) ):
-    s = type( data ).__name__
-    raise ValueError( "Expected a string of bytes, not a(n) %s." % s  )
+  assert( isinstance( data, str ) ), \
+    "Expected type <str>, got <%s>." % type( data ).__name__
 
   # Do the work.
   line = data[offset:][:16]
@@ -256,7 +257,8 @@ def hexdump( data=None ):
           with a newline character.  The empty string is returned if
           <data> is the empty string or None.
 
-  Errors: ValueError  - Raised if the input is not of type str.
+  Errors:
+    AssertionError  - Raised if the input is not of type str.
 
   Doctest:
   >>> print hexdump( _HEX_XLATE + "Hello, Whirled" )
@@ -264,13 +266,17 @@ def hexdump( data=None ):
   000010:  48 65 6c 6c 6f 2c 20 57  68 69 72 6c 65 64        |Hello, Whirled  |
   <BLANKLINE>
   """
-  # This forces the sanity checks in hexdumpln() to be run.
-  s = hexdumpln( 0, data )
-  if( not s ):
+  # Reality check.
+  if( not data ):
     return( '' )
-  # It's now safe to dump the rest of <data>.
-  for offset in range( 16, len( data ), 16 ):
-    s += '\n' + hexdumpln( offset, data )
-  return( s + '\n' )
+  # Check for garblage.
+  assert( isinstance( data, str ) ), \
+    "Expected type <str>, got <%s>." % type( data ).__name__
+
+  # Quick 'n easy...
+  s = ''
+  for offset in range( 0, len( data ), 16 ):
+    s += hexdumpln( data, offset ) + '\n'
+  return( s )
 
 # ============================================================================ #
