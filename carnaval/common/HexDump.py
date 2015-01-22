@@ -2,9 +2,9 @@
 #                                  HexDump.py
 #
 # Copyright:
-#   Copyright (C) 2014 by Christopher R. Hertel
+#   Copyright (C) 2014,2015 by Christopher R. Hertel
 #
-# $Id: HexDump.py; 2014-08-26 20:18:38 -0500; Christopher R. Hertel$
+# $Id: HexDump.py; 2015-01-21 21:45:50 -0600; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -100,29 +100,33 @@ def hexstr( data=None ):
   """Convert non-printing bytes in a string of bytes to hex escapes.
 
   Input:  data  - The string of bytes to convert.  The input must be of
-                  type str.  The empty string is acceptable.
+                  type <str>.  The empty string is acceptable.
 
   Output: A string in which nonprinting characters in the original
-          string will be represented using '\\xXX' notation.
+          string will be represented using "\\xXX" notation.
 
-  Errors: ValueError  - Raised if the input is not of type str.
+  Errors: AssertionError  - Raised if the input is not of type str.
 
   Notes:  This is similar to the standard binascii.b2a_hex() function,
-          except that it doesn't produce escape sequences (e.g., "\\t").
+          except that it doesn't produce single-character escape
+          sequences (e.g., "\\t").  All of the escapes are in the
+          "\\xXX" format.
 
           This function operates on octet strings only.  NetBIOS does
           not understand Unicode.  Sorry.
           See:  http://blogs.msdn.com/b/larryosterman/archive/2007/07/
                 11/how-do-i-compare-two-different-netbios-names.aspx
 
+          You can convert Unicode strings to the <str> format using the
+          .encode() method and your preferred encoding scheme.
+
   Doctest:
     >>> print hexstr( "\\tOcelot\\nBanana" )
     \\x09Ocelot\\x0ABanana
   """
   # Check for garblage.
-  if( not isinstance( data, str ) ):
-    s = type( data ).__name__
-    raise ValueError( "Expected a string of bytes, got '%s'." % s  )
+  assert( isinstance( data, str ) ), \
+    "Expected type <str>, got <%s>." % type( data ).__name__
 
   s = ''
   for b in [ ord( x ) for x in data ]:
@@ -131,6 +135,68 @@ def hexstr( data=None ):
     else:
       s += chr( b )
   return( s )
+
+
+def hexstrchop( data=None, linemax=72 ):
+  """Chop the the output of HexDump.hexstr() into smaller chunks.
+
+  Input:  data    - The string of bytes to convert.  The input must be
+                    of type <str>.  The empty string is acceptable.
+                    This is the same as the input to <hexstr()>.
+          linemax - Maximum length of the resulting chunks.  This value
+                    must be at least 4.  The default is 72.
+
+  Output: A list of strings, none of which are more than <linemax>
+          bytes in length.  Any given string may be up to three bytes
+          less than <linemax>, because the lines will be broken on a
+          "\\xXX" escape sequence.
+
+  Errors: AssertionError  - Raised if the input is not of type str, or
+                            if <linemax> is less than 4.
+
+  Notes:  This function was written to make it easier to handle chunks
+          of text (or binary data) in DocString output.
+
+  Doctest:
+    >>> s  = '"Tofu donkey." said the caterpillar, but Nesbit '
+    >>> s += 'disagreed.  "You can\\'t have pickled cheese", she said.'
+    >>> print '\\n'.join( hexstrchop( s, 62 ) )
+    "Tofu donkey." said the caterpillar, but Nesbit disagreed.  "Y
+    ou can't have pickled cheese", she said.
+    >>> print '\\n'.join( hexstrchop( "\\t\\t\\t\\t", 9 ) )
+    \\x09\\x09
+    \\x09\\x09
+    >>> print '\\n'.join( hexstrchop( "Z\\n\\n", 4 ) )
+    Z
+    \\x0A
+    \\x0A
+    >>> for ln in hexstrchop( "gooberry", 4 ):
+    ...   print ln
+    goob
+    erry
+  """
+  # Check input.
+  assert( linemax >= 4 ), \
+    "Cannot wrap to less than 4 columns."
+
+  # Generate the hexified string.
+  hstr = hexstr( data )
+  # Parse it and wrap it.
+  llen, hslen, llist = (0, len(hstr), [])
+  while( hslen > linemax ):
+    loc = hstr[(linemax-3):(linemax+1)].find( "\\x" )
+    if( loc < 0 ):
+      loc = linemax
+    else:
+      loc = linemax + (loc - 3)
+    llist.append( hstr[:loc] )
+    hstr = hstr[loc:]
+    hslen = len( hstr )
+
+  # Add in the remainder, if any, and return the result.
+  if( hstr ):
+    llist.append( hstr )
+  return( llist )
 
 
 def hexdumpln( offset=0, data=None ):
@@ -147,7 +213,7 @@ def hexdumpln( offset=0, data=None ):
           bytes indicated by the input is empty, the empty string is
           returned.  Otherwise, the output is a string representing
           up to 16 bytes of input, in fairly traditional hexdump
-          format.
+          format.  The line is NOT terminated with a newline.
 
   Notes:  This implementation uses a unicode-encoded hollow bullet
           to represent non-printing characters.
@@ -181,27 +247,30 @@ def hexdumpln( offset=0, data=None ):
 
 
 def hexdump( data=None ):
-  """Print a hex dump so that packets can be visually inspected.
+  """Produce a hex dump so that packets can be visually inspected.
 
   Input:  data  - The string of bytes to to be dumped.  The input must
                   be of type str.
 
-  Output: None; the dump is printed to stdout.
+  Output: A string, formatted as a hex dump.  Each line is terminated
+          with a newline character.  The empty string is returned if
+          <data> is the empty string or None.
 
   Errors: ValueError  - Raised if the input is not of type str.
 
   Doctest:
-  >>> hexdump( _HEX_XLATE + "Hello, Whirled" )
+  >>> print hexdump( _HEX_XLATE + "Hello, Whirled" )
   000000:  30 31 32 33 34 35 36 37  38 39 41 42 43 44 45 46  |0123456789ABCDEF|
   000010:  48 65 6c 6c 6f 2c 20 57  68 69 72 6c 65 64        |Hello, Whirled  |
+  <BLANKLINE>
   """
   # This forces the sanity checks in hexdumpln() to be run.
   s = hexdumpln( 0, data )
   if( not s ):
-    return
-  print s
+    return( '' )
   # It's now safe to dump the rest of <data>.
   for offset in range( 16, len( data ), 16 ):
-    print hexdumpln( offset, data )
+    s += '\n' + hexdumpln( offset, data )
+  return( s + '\n' )
 
 # ============================================================================ #
