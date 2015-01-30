@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_SessionService.py; 2015-01-16 02:04:58 -0600; Christopher R. Hertel$
+# $Id: NBT_SessionService.py; 2015-01-29 21:23:17 -0600; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -134,7 +134,7 @@ CONSTANTS:
 #   common.HexDump  - Output formatting functions.
 #
 
-import struct                       # Binary data handling.
+import struct       # Binary data handling.
 
 from NBT_Core       import NBTerror # NBT exception class.
 from common.HexDump import hexstr   # Hexify binary values.
@@ -236,8 +236,8 @@ def SessionRequest( CalledName, CallingName ):
     >>> req = SessionRequest( called, calling )
     >>> print "0x%02X" % ParseMsg( req )
     0x81
-    >>> print "Called:  [%s]\\nCalling: [%s]" % ParseCNames( req[4:] )
-    Called:  [ EHEPFCEHEPEOFKEPEMEBCACACACACACA\0]
+    >>> print "Called.: [%s]\\nCalling: [%s]" % ParseCNames( req[4:] )
+    Called.: [ EHEPFCEHEPEOFKEPEMEBCACACACACACA\0]
     Calling: [ EMEJENECFFFCEHEFFCFKCACACACACACA\0]
   """
   # Check both names.
@@ -246,7 +246,7 @@ def SessionRequest( CalledName, CallingName ):
   if( not _L1Okay( CallingName ) ):
     raise ValueError( "Malformed Calling Name: %s." % hexstr( CallingName ) )
   # Return the composed message.
-  return( '\x81\0\0\x44' + CalledName + CallingName )
+  return( "\x81\0\0\x44" + CalledName + CallingName )
 
 def PositiveResponse():
   """Return a Positive Session Response message.
@@ -258,7 +258,7 @@ def PositiveResponse():
     >>> print "0x%02X" % ParseMsg( PositiveResponse() )[0]
     0x82
   """
-  return( '\x82\0\0\0' )
+  return( "\x82\0\0\0" )
 
 def NegativeResponse( errCode=0 ):
   """Return a Negative Session Response message.
@@ -277,15 +277,18 @@ def NegativeResponse( errCode=0 ):
   """
   assert( errCode in [ 0x80, 0x81, 0x82, 0x83, 0x8F ] ), \
       "Invalid error code 0x%02X" % errCode
-  return( '\x83\0\0\x01' + chr( errCode )  )
+  return( "\x83\0\0\x01" + chr( errCode )  )
 
 def RetargetResponse( rdrIP=None, rdrPort=0 ):
   """Create a Retarget Response message.
 
   Input:
     rdrIP   - The IPv4 address of the server to which the client is
-              being redirected.  See the notes, below.
-    rdrPort - The port number to which the client is being redirected.
+              being redirected, given as a four byte string (type
+              <str>).  See the notes, below.
+    rdrPort - The port number to which the client is being redirected,
+              given as an integer.  This value will be silently
+              truncated to a 16-bit unsigned value.
 
   Output: A composed Retarget Response message.
 
@@ -308,7 +311,7 @@ def RetargetResponse( rdrIP=None, rdrPort=0 ):
   """
   ip   = (rdrIP[:4] if( rdrIP ) else (4 * '\0'))
   port = (rdrPort & 0xFFFF)
-  return( '\x84\0\0\x06' + _formatIPPort.pack( ip, port ) )
+  return( "\x84\0\0\x06" + _formatIPPort.pack( ip, port ) )
 
 def Keepalive():
   """Return a Session Keepalive message.
@@ -322,7 +325,7 @@ def Keepalive():
     >>> print "0x%02X" % ParseMsg( ka )
     0x85
   """
-  return( '\x85\0\0\0' )
+  return( "\x85\0\0\0" )
 
 def ParseMsg( msg=None ):
   """Parse the leading 4 bytes of a Session Service message.
@@ -359,22 +362,16 @@ def ParseMsg( msg=None ):
     raise ValueError( "Missing or short message." )
 
   mType = ord( msg[0] )
-  if( SS_SESSION_MESSAGE   == mType ):
+  if( mType in [SS_SESSION_KEEPALIVE, SS_SESSION_REQUEST, SS_POSITIVE_RESPONSE,
+                SS_NEGATIVE_RESPONSE, SS_RETARGET_RESPONSE] ):
+    return( (mType,) )
+  elif( SS_SESSION_MESSAGE == mType ):
     mLen = _formatLong.unpack( msg[:4] )[0]
     if( 0x20000 <= mLen ):
       s = "Session Message length exceeds the 17-bit maximum imposed by NBT %d."
       raise NBTerror( 1002, s, mLen )
     return( (SS_SESSION_MESSAGE, mLen) )
-  if( SS_SESSION_KEEPALIVE == mType ):
-    return( (SS_SESSION_KEEPALIVE,) )
-  if( SS_SESSION_REQUEST   == mType ):
-    return( (SS_SESSION_REQUEST,) )
-  if( SS_POSITIVE_RESPONSE == mType ):
-    return( (SS_POSITIVE_RESPONSE,) )
-  if( SS_NEGATIVE_RESPONSE == mType ):
-    return( (SS_NEGATIVE_RESPONSE,) )
-  if( SS_RETARGET_RESPONSE == mType ):
-    return( (SS_RETARGET_RESPONSE,) )
+
   raise NBTerror( 1005, "Unknown Session Service message code", mType )
 
 def ParseCNames( msg=None ):

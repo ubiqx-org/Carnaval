@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_DatagramService.py; 2015-01-16 02:04:58 -0600; Christopher R. Hertel$
+# $Id: NBT_DatagramService.py; 2015-01-29 21:23:17 -0600; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -289,34 +289,72 @@ class DSHeader( object ):
     self._srcIP     = (srcIP[:4] if( srcIP ) else (4 * '\0'))
     self._srcPort   = (srcPort & 0xFFFF)
 
-  def __msgType( self, msgType=None ):
-    # Get/set the Header.MSG_TYPE value.
-    if( msgType is None ):
-      return( self._msgType )
-    self._msgType = (msgType & DS_DGM_MSGMASK)
+  @property
+  def msgType( self ):
+    """Header.MSG_TYPE value; the message type.
+    Errors:
+      ValueError      - Thrown if the assigned value cannot be converted
+                        to an integer.
+      AssertionError  - Thrown if the assigned value is not a valid
+                        message type.
+    """
+    return( self._msgType )
+  @msgType.setter
+  def msgType( self, msgType=None ):
+    msgType = int( msgType )
+    assert( msgType == (msgType & DS_DGM_MSGMASK) ), \
+      "Unknown message type: 0x%02X\n" % msgType
+    self._msgType = msgType
 
-  def __hdrSNT( self, hdrSNT=None ):
-    # Get/set the Sender Node Type in the Header.FLAGS field.
-    if( hdrSNT is None ):
-      return( DS_SNT_MASK & self._hdrFlags )
-    self._hdrFlags = (self._hdrFlags & ~DS_SNT_MASK) | (DS_SNT_MASK & hdrSNT)
+  @property
+  def hdrSNT( self ):
+    """Sender Node Type subfield of the Header.FLAGS field.
+    Errors:
+      ValueError      - Thrown if the assigned value cannot be converted
+                        to an integer.
+      AssertionError  - Thrown if the assigned value is not a valid
+                        sender node type.
+    """
+    return( DS_SNT_MASK & self._hdrFlags )
+  @hdrSNT.setter
+  def hdrSNT( self, hdrSNT=None ):
+    hdrSNT = int( hdrSNT )
+    hs_masked = (hdrSNT & DS_SNT_MASK)
+    assert( hdrSNT == hs_masked ), \
+      "Incorrect Sender Node Type: 0x%02X\n" % hdrSNT
+    self._hdrFlags = (self._hdrFlags & ~DS_SNT_MASK) | hs_masked
 
-  def __dgmId( self, dgmId=None ):
-    # Get/set the Message ID (Header.DGM_ID).
-    if( dgmId is None ):
-      return( self._dgmId )
+  @property
+  def dgmId( self ):
+    """Message Identifier; Header.DGM_ID.
+    Errors:
+      ValueError  - Thrown if the assigned value cannot be converted to
+                    an integer.
+    """
+    return( self._dgmId )
+  @dgmId.setter
+  def dgmId( self, dgmId=None ):
     self._dgmId = (0xFFFF & int( dgmId ))
 
-  def __srcIP( self, srcIP=None ):
-    # Get/set the Header.SOURCE_IP address of the message.
-    if( srcIP is None ):
-      return( self._srcIP )
+  @property
+  def srcIP( self ):
+    """Source IPv4 address; Header.SOURCE_IP.
+    """
+    return( self._srcIP )
+  @srcIP.setter
+  def srcIP( self, srcIP=None ):
     self._srcIP = (srcIP[:4] if( srcIP ) else (4 * '\0'))
 
-  def __srcPort( self, srcPort=None ):
-    # Get/set the Header.SOURCE_PORT value.
-    if( srcPort is None ):
-      return( self._srcPort )
+  @property
+  def srcPort( self ):
+    """Source UDP port; Header.SOURCE_PORT.
+    Errors:
+      ValueError  - Thrown if the assigned value cannot be converted to
+                    an integer.
+   """
+    return( self._srcPort )
+  @srcPort.setter
+  def srcPort( self, srcPort=None ):
     self._srcPort = (0xFFFF & int( srcPort ))
 
   def dump( self, indent=0 ):
@@ -386,13 +424,6 @@ class DSHeader( object ):
                                  self._dgmId,
                                  self._srcIP,
                                  self._srcPort ) )
-
-  # Properties.
-  msgType = property( __msgType,  __msgType,  doc="Message Type; MSG_TYPE" )
-  hdrSNT  = property( __hdrSNT,   __hdrSNT,   doc="Sender Node Type; SNT" )
-  dgmId   = property( __dgmId,    __dgmId,    doc="Datagram ID; DGM_ID" )
-  srcIP   = property( __srcIP,    __srcIP,    doc="Source IPv4 address" )
-  srcPort = property( __srcPort,  __srcPort,  doc="Header.SOURCE_PORT" )
 
 
 class DSMessage( DSHeader ):
@@ -505,9 +536,9 @@ class DSMessage( DSHeader ):
                                        srcPort = srcPort )
 
     # Do a minor amount of cleanup before storing the values.
-    self.__srcName( '' if( srcName is None ) else srcName )
-    self.__dstName( '' if( dstName is None ) else dstName )
-    self.__usrData( '' if( usrData is None ) else usrData )
+    self.srcName = ( '' if( srcName is None ) else srcName )
+    self.dstName = ( '' if( dstName is None ) else dstName )
+    self.usrData = ( '' if( usrData is None ) else usrData )
 
     # Packet offset.  Will be zero in un- or pre-fragmented messages.
     self._pktOffset = 0
@@ -520,62 +551,70 @@ class DSMessage( DSHeader ):
     # though anything less than 256 is probably a very bad idea.
     self._maxData  = 512
 
-  def __srcName( self, srcName=None ):
-    # Get/set the source (calling) name.
-    if( srcName is None ):
-      return( self._srcName )
-    assert isinstance( srcName, str ), "srcName is not of type str."
+  @property
+  def srcName( self):
+    """The source (calling) name.
+    Errors:
+      AssertionError  - Thrown if the assigned value is not of type <str>.
+    """
+    return( self._srcName )
+  @srcName.setter
+  def srcName( self, srcName=None ):
+    assert isinstance( srcName, str ), "Assigned value must be type <str>."
     self._srcName = srcName
 
-  def __dstName( self, dstName=None ):
-    # Get/set the destination (called) name.
-    if( dstName is None ):
-      return( self._dstName )
-    assert isinstance( dstName, str ), "dstName is not of type str."
+  @property
+  def dstName( self ):
+    """The destination (called) name.
+    Errors:
+      AssertionError  - Thrown if the assigned value is not of type <str>.
+    """
+    return( self._dstName )
+  @dstName.setter
+  def dstName( self, dstName=None ):
+    assert isinstance( dstName, str ), "Assigned value must be type <str>."
     self._dstName = dstName
 
-  def __usrData( self, usrData=None ):
-    # Get/set the message Data portion of the datagram; USER_DATA.
-    #
-    # Errors: TypeError   - The input is not of type <str>.
-    #         ValueError  - The input exceeds the 512 byte limit
-    #                       imposed by NetBIOS.
-    #
-    # Notes:  If, for testing purposes or due to temporary insanity,
-    #         you want to try sending a payload larger than the 512
-    #         byte limit, you can catch and ignore the ValueError
-    #         exception.
-    #
-    if( usrData is None ):
-      return( self._usrData )
+  @property
+  def usrData( self ):
+    """Data portion of the datagram; USER_DATA.
+
+    Errors: TypeError   - The input is not of type <str>.
+            ValueError  - The input exceeds the 512 byte limit
+                          imposed by NetBIOS.
+
+    Notes:  If, for testing purposes or due to temporary insanity, you
+            want to try sending a payload larger than the 512 byte
+            limit, you can catch and ignore the ValueError exception.
+    """
+    return( self._usrData )
+  @usrData.setter
+  def usrData( self, usrData=None ):
     if( not isinstance( usrData, str ) ):
       s = type( usrData ).__name__
-      raise TypeError( "User_Data must be of type str, not %s." % s )
+      raise TypeError( "User_Data must be of type <str>, not %s." % s )
     self._usrData = usrData
     if( len( usrData ) > 512 ):
       raise ValueError( "Message data exceeds NetBIOS maximum size." )
 
-  def __maxData( self, maxData=None ):
-    # Get/set the maximum datagram payload size.
-    #
-    # Input:
-    #   maxData - The maximum size (in bytes) of the payload of the
-    #             NBT datagram.  If the data exceeds this size, it
-    #             will be fragmented and sent in multiple datagrams.
-    #
-    # Output: If the input is None, this function will return the
-    #         current maxData value.  Otherwise, no value (None) is
-    #         returned.
-    #
-    # Notes:  This method will silently enforce a data fragment size in
-    #         the range 1..512.  You can assign a value above 512 by
-    #         setting the <_maxData> attribute directly.  Values above
-    #         512 should only be used for testing.  Smaller values can
-    #         be used to force NBT datagram fragmentation, also for
-    #         testing.
-    #
-    if( maxData is None ):
-      return( self._maxData )
+  @property
+  def maxData( self ):
+    """Maximum datagram payload size.
+
+    Errors:
+      ValueError  - Thrown if the assigned value cannot be converted to
+                    an integer.
+
+    Notes:  This property silently enforces a data fragment size in the
+            range 1..512.  You can assign a value above 512 by setting
+            the <_maxData> attribute directly.  Values above 512 should
+            only be used for testing.  Smaller values can be used to
+            force NBT datagram fragmentation, also for testing.
+    """
+    return( self._maxData )
+  @maxData.setter
+  def maxData( self, maxData=None ):
+    maxData = int( maxData )
     self._maxData = max( 1, min( 512, maxData ) )
 
   def dump( self, indent=0 ):
@@ -665,12 +704,6 @@ class DSMessage( DSHeader ):
 
     # Return the list of composed messages.
     return( msgList )
-
-  # Properties.
-  srcName = property( __srcName, __srcName, doc="Source NBT Name" )
-  dstName = property( __dstName, __dstName, doc="Destination NBT Name" )
-  usrData = property( __usrData, __usrData, doc="Message Payload" )
-  maxData = property( __maxData, __maxData, doc="Fragmentation Threshold" )
 
 
 class DSFragment( DSMessage ):
@@ -769,18 +802,36 @@ class DSFragment( DSMessage ):
     self._hdrFlags  = (DS_FLAGS_MASK & hdrFlags)
     self._pktOffset = pktOffset
 
-  def __hdrFM( self, hdrFM=None ):
-    # Get/set the [F]irst and [M]ore bits in the Header.FLAGS field.
-    if( hdrFM is None ):
-      return( DS_FM_MASK & self._hdrFlags )
-    self._hdrFlags = (self._hdrFlags & ~DS_FM_MASK) | (DS_FM_MASK & hdrFM)
+  @property
+  def hdrFM( self ):
+    """The [F]irst and [M]ore bits in the Header.FLAGS field.
 
-  def __pktOffsest( self, pktOffset=None ):
-    # Get/set the packet offset of the payload of this message, relative to
-    # the original payload.
-    if( pktOffset is None ):
-      return( self._pktOffset )
-    self._pktOffset = pktOffset
+    Errors:
+      ValueError  - Thrown if the assigned value cannot be converted to
+                    an integer.
+    """
+    return( DS_FM_MASK & self._hdrFlags )
+  @hdrFM.setter
+  def hdrFM( self, hdrFM=None ):
+    hdrFM = (DS_FM_MASK & int( hdrFM ))
+    self._hdrFlags = (self._hdrFlags & ~DS_FM_MASK) | hdrFM
+
+  @property
+  def pktOffset( self ):
+    """The packet offset of the payload of the message.
+
+    Errors:
+      ValueError  - Thrown if the assigned value cannot be converted to
+                    an integer.
+
+    Notes:  The packet offset is the position of the <usrData> of this
+            particular fragment relative to the whole of the original
+            (pre-fragmented) message.
+    """
+    return( self._pktOffset )
+  @pktOffset.setter
+  def pktOffset( self, pktOffset=None ):
+    self._pktOffset = int( pktOffset )
 
   def compose( self ):
     """Create a wire-form bytes tring of the fragment.
@@ -795,10 +846,6 @@ class DSFragment( DSMessage ):
     body   = self._srcName + self._dstName + self._usrData
     lenOff = _format_LenOff.pack( len( body ), self._pktOffset )
     return( hdr + lenOff + body )
-
-  # Properties.
-  hdrFM     = property( __hdrFM,      __hdrFM,      doc="First and More bits" )
-  pktOffset = property( __pktOffsest, __pktOffsest, doc="Packet offset" )
 
 
 class DirectUniqueDatagram( DSMessage ):
@@ -837,6 +884,12 @@ class DirectUniqueDatagram( DSMessage ):
                    => Vorplzoo<20>
       User_Data.....: We are the android sisters.
     <BLANKLINE>
+    >>> print DUD.msgType
+    16
+    >>> DUD.msgType = DS_DGM_BCAST
+    Traceback (most recent call last):
+      ...
+    AttributeError: can't set attribute
   """
   def __init__( self, hdrSNT  = 0,
                       dgmId   = 0,
@@ -878,11 +931,13 @@ class DirectUniqueDatagram( DSMessage ):
                                                   dstName = dstName,
                                                   usrData = usrData )
 
-  # ToDo: Figure out a better way to remove the getter from the
-  #       inherited properties.
-  def __msgType( self ):
+  # Override the <msgType> property to make it read-only, and always
+  # return <DS_DGM_UNIQUE>.
+  @property
+  def msgType( self ):
+    """The <DirectUniqueDatagram> message type is <DS_DGM_UNIQUE>.
+    """
     return( DS_DGM_UNIQUE )
-  msgType = property( __msgType, doc="Message Type; MSG_TYPE" )
 
 
 class DirectGroupDatagram( DSMessage ):
@@ -921,6 +976,12 @@ class DirectGroupDatagram( DSMessage ):
                    => OFFONOFF<42>
       User_Data.....: Last night, I had a digital dream.
     <BLANKLINE>
+    >>> print DGD.msgType
+    17
+    >>> DGD.msgType = DS_DGM_BCAST
+    Traceback (most recent call last):
+      ...
+    AttributeError: can't set attribute
   """
   def __init__( self, hdrSNT  = 0,
                       dgmId   = 0,
@@ -962,9 +1023,13 @@ class DirectGroupDatagram( DSMessage ):
                                                  dstName = dstName,
                                                  usrData = usrData )
 
-  def __msgType( self ):
+  # Override the <msgType> property to make it read-only, and always
+  # return <DS_DGM_GROUP>.
+  @property
+  def msgType( self ):
+    """The <DirectGroupDatagram> message type is <DS_DGM_GROUP>.
+    """
     return( DS_DGM_GROUP )
-  msgType = property( __msgType, doc="Message Type; MSG_TYPE" )
 
 
 class BroadcastDatagram( DSMessage ):
@@ -1003,6 +1068,12 @@ class BroadcastDatagram( DSMessage ):
                    => *<00>.circus
       User_Data.....: A zen country singer?
     <BLANKLINE>
+    >>> print BD.msgType
+    18
+    >>> BD.msgType = DS_DGM_BCAST
+    Traceback (most recent call last):
+      ...
+    AttributeError: can't set attribute
   """
   def __init__( self, hdrSNT  = 0,
                       dgmId   = 0,
@@ -1058,9 +1129,13 @@ class BroadcastDatagram( DSMessage ):
                                                dstName = dstName,
                                                usrData = usrData )
 
-  def __msgType( self ):
+  # Override the <msgType> property to make it read-only, and always
+  # return <DS_DGM_BCAST>.
+  @property
+  def msgType( self ):
+    """The <BroadcastDatagram> message type is <DS_DGM_BCAST>.
+    """
     return( DS_DGM_BCAST )
-  msgType = property( __msgType, doc="Message Type; MSG_TYPE" )
 
 
 class ErrorDatagram( DSHeader ):
@@ -1085,6 +1160,12 @@ class ErrorDatagram( DSHeader ):
       Source Port.: 138
     Error.....: 0x82 = Destination Name Not Present
     <BLANKLINE>
+    >>> print ED.msgType
+    19
+    >>> ED.msgType = DS_DGM_BCAST
+    Traceback (most recent call last):
+      ...
+    AttributeError: can't set attribute
   """
   def __init__( self, hdrSNT  = 0,
                       dgmId   = 0,
@@ -1105,29 +1186,37 @@ class ErrorDatagram( DSHeader ):
                 of the single-byte DS_ERR_* values.
 
     Errors:
-      ValueError  - Raised if the error code is not one of the values
-                    defined in RFC1002.
+      ValueError  - Raised if the error code is not an integer or is not
+                    one of the values defined in RFC1002.
     """
     super( ErrorDatagram, self ).__init__( msgType = DS_DGM_ERROR,
                                            hdrSNT  = hdrSNT,
                                            dgmId   = dgmId,
                                            srcIP   = srcIP,
                                            srcPort = srcPort )
-    self.__errCode( errCode )
+    self.errCode = errCode
 
-  def __errCode( self, errCode=None ):
-    # Get/set the ERROR_CODE value.
-    #
-    # Throws a ValueError if the error code is outside of the defined range.
-    if( errCode is None ):
-      return( self._errCode )
-    # Set the error code.
-    ec = (0xFF & int( errCode ))  # Minor cleanup.
-    if( ec not in [DS_ERR_NONAME, DS_ERR_SRCNAME, DS_ERR_DSTNAME] ):
-      raise ValueError( "Unknown error code: 0x%02X." % ec )
-    self._errCode = ec
+  @property
+  def errCode( self ):
+    """Error message error code; ERROR_CODE value.
+    Errors:
+      ValueError  - Raised if the error code is not an integer or is not
+                    one of the values defined in RFC1002.
+    """
+    return( self._errCode )
+  @errCode.setter
+  def errCode( self, errCode=None ):
+    errCode = (0xFF & int( errCode ))  # Minor cleanup.
+    if( errCode not in [DS_ERR_NONAME, DS_ERR_SRCNAME, DS_ERR_DSTNAME] ):
+      raise ValueError( "Unknown error code: 0x%02X." % errCode )
+    self._errCode = errCode
 
-  def __msgType( self ):
+  # Override the <msgType> property to make it read-only, and always
+  # return <DS_DGM_ERROR>.
+  @property
+  def msgType( self ):
+    """The <ErrorDatagram> message type is <DS_DGM_ERROR>.
+    """
     # Getter only.
     return( DS_DGM_ERROR )
 
@@ -1167,10 +1256,6 @@ class ErrorDatagram( DSHeader ):
                                self._srcPort )
     return( hdr + chr( self._errCode ) )
 
-  # Properties.
-  errCode = property( __errCode, __errCode, doc="Error Code" )
-  msgType = property( __msgType,            doc="Message Type; MSG_TYPE" )
-
 
 class DSQuery( DSHeader ):
   """NBDD Query message.
@@ -1188,7 +1273,7 @@ class DSQuery( DSHeader ):
 
   Properties:
     qryName - Get/set the fully qualified NBT query name.
-    msgType - Get/set the message type, which whill be one of
+    msgType - Get/set the message type, which should be one of
               [DS_DGM_QUERY, DS_DGM_POSRESP, DS_DGM_NEGRESP].
   """
   def __init__( self, msgType = 0,
@@ -1225,22 +1310,36 @@ class DSQuery( DSHeader ):
                                      dgmId   = dgmId,
                                      srcIP   = srcIP,
                                      srcPort = srcPort )
-    self.__qryName( '' if( qryName is None ) else qryName )
+    self.qryName = ( '' if( qryName is None ) else qryName )
 
-  def __qryName( self, qryName=None ):
-    # Get/set the query name.
-    if( qryName is None ):
-      return( self._qryName )
+  @property
+  def qryName( self ):
+    """The fully qualified NBT Query Name (in L2-encoded format).
+    Errors:
+      AssertionError  - The assigned value is not of type <str>.
+    """
+    return( self._qryName )
+  @qryName.setter
+  def qryName( self, qryName=None ):
     assert isinstance( qryName, str ), "Query Name is not of type str."
     self._qryName = qryName
 
-  def __msgType( self, msgType=None ):
-    # Get/set the message type.
-    if( msgType is None ):
-      return( DS_DGM_ERROR )
+  @property
+  def msgType( self ):
+    """Header.MSG_TYPE value; the message type.
+    Errors:
+      ValueError      - Thrown if the assigned value cannot be converted
+                        to an integer.
+      AssertionError  - Thrown if the assigned value is not a valid
+                        message type.
+    """
+    return( self._msgType )
+  @msgType.setter
+  def msgType( self, msgType=None ):
+    msgType = int( msgType )
     if( msgType not in [ DS_DGM_QUERY, DS_DGM_POSRESP, DS_DGM_NEGRESP ] ):
       raise ValueError( "Invalid query message type (0x%02X)." % msgType )
-    self._msgType = (msgType & DS_DGM_MSGMASK)
+    self._msgType = msgType
 
   def dump( self, indent=0 ):
     """Produce a formatted representation of an NBDD query message.
@@ -1277,10 +1376,6 @@ class DSQuery( DSHeader ):
                                self._srcIP,
                                self._srcPort )
     return( hdr + self._qryName )
-
-  # Properties.
-  qryName = property( __qryName, __qryName, doc="Query name; DESTINATION_NAME" )
-  msgType = property( __msgType, __msgType, doc="Message Type; MSG_TYPE" )
 
 
 class QueryNBDD( DSQuery ):
@@ -1336,9 +1431,13 @@ class QueryNBDD( DSQuery ):
                                        srcPort = srcPort,
                                        qryName = qryName )
 
-  def __msgType( self ):
+  # Override the <msgType> property to make it read-only, and always
+  # return <DS_DGM_QUERY>.
+  @property
+  def msgType( self ):
+    """The <QueryNBDD> message type is <DS_DGM_QUERY>.
+    """
     return( DS_DGM_QUERY )
-  msgType = property( __msgType, doc="Message Type; MSG_TYPE" )
 
 
 class PositiveResponseNBDD( DSQuery ):
@@ -1386,9 +1485,13 @@ class PositiveResponseNBDD( DSQuery ):
                                                   srcPort = srcPort,
                                                   qryName = qryName )
 
-  def __msgType( self ):
+  # Override the <msgType> property to make it read-only, and always
+  # return <DS_DGM_POSRESP>.
+  @property
+  def msgType( self ):
+    """The <PositiveResponseNBDD> message type is <DS_DGM_POSRESP>.
+    """
     return( DS_DGM_POSRESP )
-  msgType = property( __msgType, doc="Message Type; MSG_TYPE" )
 
 
 class NegativeResponseNBDD( DSQuery ):
@@ -1436,9 +1539,13 @@ class NegativeResponseNBDD( DSQuery ):
                                                   srcPort = srcPort,
                                                   qryName = qryName )
 
-  def __msgType( self ):
+  # Override the <msgType> property to make it read-only, and always
+  # return <DS_DGM_BCAST>.
+  @property
+  def msgType( self ):
+    """The <NegativeResponseNBDD> message type is <DS_DGM_NEGRESP>.
+    """
     return( DS_DGM_NEGRESP )
-  msgType = property( __msgType, doc="Message Type; MSG_TYPE" )
 
 
 class Defrag( object ):
@@ -1667,7 +1774,7 @@ class Defrag( object ):
     Input:
       timeout - Fragment list inactivity timeout, in milliseconds.
                 Values less than 250 are stored as 250.  Values greater
-                than 65,535 set to to 65,535 (sixty-five and a half
+                than 65,535 are set to 65,535 (sixty-five and a half
                 seconds-ish).  The default timeout is 5000 (5 seconds).
       ckCount - Unless disabled, <checkTimeout()> is called each time a
                 fragment is added to the pool.  By default, it is called
@@ -1676,7 +1783,8 @@ class Defrag( object ):
                 Setting this value to zero disables the timeout check.
 
     Errors:
-      AssertionError  - Raised if either input is not of type <int>.
+      ValueError      - Raised if the input value cannot be converted to
+                        an integer.
       AssertionError  - Raised if either input is negative.
     """
     # <timeout>   - The number of milliseconds (1/1000 sec) that must have
@@ -1693,8 +1801,8 @@ class Defrag( object ):
     #               instances in order from most recently to least
     #               recently used.
     #
-    self.__timeout( timeout )
-    self.__ckCount( ckCount )
+    self.timeout = timeout
+    self.ckCount = ckCount
     self._fsetDict = {}
     self._fsetLRU  = dLinkedList()
 
@@ -1766,32 +1874,49 @@ class Defrag( object ):
       return( True )
     return( False )
 
-  def __timeout( self, timeout=None ):
-    # Get/set the set timeout duration.
-    #   <timeout> is the length of time, in milliseconds, that a
-    #   <_fragSet()> may be idle before it has "timed out" and can
-    #   be deleted, expressed in milliseconds.
-    if( timeout is None ):
-      ms = (self._timeout.microseconds / 1000) + (1000 * self._timeout.seconds)
-      return( ms )
-    assert isinstance( timeout, int ), "<timeout> must be an int value."
-    assert ( timeout >= 0 ), "<timeout> must not be negative."
-    ms = max( 250, min( timeout, 0xFFFF ) )
-    self._timeout = dt.timedelta( milliseconds=ms )
+  @property
+  def timeout( self ):
+    """Fragment pool timeout duration.
 
-  def __ckCount( self, ckCount=None ):
-    # Get/set the check count value.
-    #   The <ckCount> value is used to set the maximum number of times the
-    #   pool will be checked for past-due sets, per call to addFrag().
-    if( ckCount is None ):
-      return( self._ckCount )
-    assert isinstance( ckCount, int ), "<ckCount> must be an int value."
+    Errors:
+      ValueError      - Thrown if the assigned value cannot be converted
+                        to an integer.
+      AssertionError  - Thrown if the assigned value is negative.
+
+    Notes:  <timeout> is the length of time, in milliseconds, that a
+            fragment set may be idle before it has "timed out" and can
+            be deleted.  The timeout is expressed in milliseconds.
+            Assigned values are silently forced into the range
+            250...65535.
+    """
+    ms = (self._timeout.microseconds / 1000) + (1000 * self._timeout.seconds)
+    return( ms )
+  @timeout.setter
+  def timeout( self, timeout=None ):
+    timeout = int( timeout )
+    assert ( timeout >= 0 ), "<timeout> cannot be negative."
+    timeout = max( 250, min( timeout, 0xFFFF ) )
+    self._timeout = dt.timedelta( milliseconds=timeout )
+
+  @property
+  def ckCount( self ):
+    """Timeout check count value.
+
+    Errors:
+      ValueError      - Thrown if the assigned value cannot be converted
+                        to an integer.
+      AssertionError  - Thrown if the assigned value is negative.
+
+    Notes:  This value is used to set the maximum number of times the
+            pool will be checked for past-due sets, per call to
+            addFrag().  The default is 2.
+    """
+    return( self._ckCount )
+  @ckCount.setter
+  def ckCount( self, ckCount=None ):
+    ckCount = int( ckCount )
     assert ( ckCount >= 0 ), "<ckCount> must not be negative."
     self._ckCount = ckCount
-
-  # Properties
-  timeout = property( __timeout, __timeout, doc="Fragment pool timeout length" )
-  ckCount = property( __ckCount, __ckCount, doc="Timeout check retry count" )
 
 
 # Functions ------------------------------------------------------------------ #
