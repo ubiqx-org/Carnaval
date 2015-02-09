@@ -3,13 +3,13 @@ Hi!
 Carnaval
 --------
 
-...is an SMB protocol suite implementation in Python.
+...is an SMB2+ protocol suite implementation in Python.
 
 This project is still fairly new.
-So far we have a complete low-level implementation of the NBT transport 
-layer, which is a good start.  We also have SMB1 protocol negotiation, 
-but we won't be doing much more with SMB1 for a while.  The next step is 
-SMB2 packing and parsing.
+So far we have a complete low-level implementation of the NBT transport
+layer, which is a good start.  We also have SMB1 protocol negotiation
+and SMB1 Echo, but we won't be doing much more with SMB1 for a while.
+The next step is SMB2 packing and parsing.
 
 Stay tuned.
 
@@ -22,8 +22,9 @@ please note the licensing philosophy discussion below.  If you submit
 patches, we reserve the right to re-license the resulting code.  That
 includes docstrings and such-like that are part of the finished product.
 
-The goal is to ensure that we can contribute portions of the project to the
-Python Software Foundation (PSF), which has its own licensing requirements.
+The goal is to ensure that we can contribute some or all of the project
+to the Python Software Foundation (PSF), which has its own licensing
+requirements.
 
 See:  https://wiki.python.org/moin/PythonSoftwareFoundationLicenseFaq
 
@@ -31,33 +32,35 @@ See:  https://wiki.python.org/moin/PythonSoftwareFoundationLicenseFaq
 Licensing Philosophy
 --------------------
 
-This code is provided with the hope that it is both usable and useful, but
-without any promises regarding net weight, color, the quality of the bits
-used to represent the code on any computer or in any form of data
-transmission, fitness for any specific purpose, or the number of jelly beans
-in the giant jam jar.  We're just putting this out there with the wild wish
-that it will make someone happier than they already hopefully are.
+This code is provided with the hope that it is both usable and useful,
+but without any promises regarding net weight, color, the quality of the
+bits used to represent the code on any computer or in any form of data
+transmission, fitness for any specific purpose, or the number of jelly
+beans in the giant jam jar.  We're just putting this out there with the
+wild wish that it will make someone happier than they already hopefully
+are.
 
 These modules are licensed under either the GNU Lesser General Public
-License (LGPL) or the GNU Affero General Public License.  If there were a
-GNU Affero LGPL we would use that instead of the regular LGPL.  In all
-cases, we are using version 3.0 of the licenses or (as they say) any later
-version.
+License (LGPL) or the GNU Affero General Public License.  If there were
+a GNU Affero LGPL we would use that instead of the regular LGPL.  In all
+cases, we are using version 3.0 of the licenses or (as they say) any
+later version.
 
 In general, code modules that provide classes but which are not really
 programs on their own are licensed under the LGPL.  Example programs,
-working servers, testing programs, etc., are licensed under the AGPL.  See
-the individual files for specifics, but the licensing is intended to make
-sense.
+working servers, testing programs, etc., are licensed under the AGPL.
+See the individual files for specifics, but the licensing is intended to
+make sense.
 
 As explained above, if the code proves to be useful, stable, weighty,
-popular, florescent, effervescent, or otherwise beneficial to the general
-populace, we may attempt to donate important modules to the Python Software
-Foundation (PSF).  Doing so would require that the donated code be released
-under an additional license.
+witty, popular, florescent, effervescent, or otherwise beneficial to the
+general populace, we may attempt to donate important modules to the
+Python Software Foundation (PSF).  Doing so would require that the
+donated code be released under an additional license.
 
 AGPL:  https://www.gnu.org/licenses/agpl.html +
 LGPL:  https://www.gnu.org/licenses/lgpl.html
+
 
 Ramblings
 ---------
@@ -84,65 +87,68 @@ We are trying to meet the following goals:
   that that it's not only clear what the code is doing, but why it's doing
   it.
 
-That's pretty lofty, particularly since we've only gotten as far as the NBT
-transport layer so far.  On the other hand, the project has some experienced
-SMB folks involved and what we've produced so far is living up to our goals.
+That's pretty lofty, particularly since we've only gotten as far as the
+NBT transport layer and a couple of SMB1 commands so far.  On the other
+hand, the project has some experienced SMB folks involved and what we've
+produced so far is living up to our high expectations.
 
 
 Words
 -----
 
 CIFS::  Common Internet File System.  CIFS is the "marketing upgrade"
-        name that was bestowed upon the SMB protocol in the mid-1990's.  For
-        a while, some in the community used the CIFS name to refer to the
-        suite of protocols that centered upon SMB, including SMB, NBT, the
-        Browser protocols, DFS, Mailslot protocol, and a few others.
-        Unfortunately, some lawyers got hold of the name and used it to
-        refer to what we now call SMB1 (see below).  Confusion reigned, and
-        the term lost all relevance.  CIFS is now considered a dead name.
-        Microsoft doesn't use it any more, except in older documentation or
-        references to legacy implementations.  The term is still popular
-        among sales engineers.
+        name that was bestowed upon the SMB protocol in the mid-1990's.
+        For a while, some in the community used the CIFS name to refer
+        to the suite of protocols that centered upon SMB, including SMB,
+        NBT, the Browser protocols, DFS, Mailslot protocol, and a few
+        others.  Unfortunately, some lawyers got hold of the name and
+        used it to refer to what we now call SMB1 (see below).
+        Confusion reigned, and the term lost all relevance.  CIFS is now
+        considered a dead name.  Microsoft doesn't use it any more,
+        except in older documentation or references to legacy
+        implementations.  The term is still popular among sales
+        engineers.
 
-DFS::   Distributed File System.  Microsoft's DFS is fairly simple.  The 
-        part we care about is the logical namespace, which is described in
-        [MS-DFSC].
+DFS::   Distributed File System.  Microsoft's DFS is fairly simple.  The
+        part we care about is the logical namespace, which is described
+        in [MS-DFSC].
 
 NBT::   NetBIOS over TCP transport protocol.  NBT is the virtual LAN
-        protocol specified by IETF Standard #19 which, in turn, consists of
-        RFC1001 and RFC1002.  NBT provides a mechanism for supporting the
-        semantics of the NetBIOS API over TCP/UPD/IP internetworks.  (See
-        [NBGUIDE], [IMPCIFS], [RFC1001], and [RFC1002].)
+        protocol specified by IETF Standard #19 which, in turn, consists
+        of RFC1001 and RFC1002.  NBT provides a mechanism for supporting
+        the semantics of the NetBIOS API over TCP/UPD/IP internetworks.
+        (See [NBGUIDE], [IMPCIFS], [RFC1001], and [RFC1002].)
 
 SMB::   Server Message Block protocol.  SMB was originally created by
-        IBM in the early 1980's for use with PC-DOS.  SMB was updated and
-        extended for use with OS/2, and was eventually ported to Windows.
-        The ported version, known as "NT LM 0.12", has remained very much
-        the same since then.
+        IBM in the early 1980's for use with PC-DOS.  SMB was updated
+        and extended for use with OS/2, and was eventually ported to
+        Windows.  The ported version, known as "NT LM 0.12", has
+        remained very much the same since then.
 
-SMB1::  Also known as SMBv1, CIFS, or "NT LM 0.12", SMB1 is the designation
-        given to the "NT LM 0.12" dialect of the original SMB protocol as
-        implemented in all versions of Windows since Windows NT 3.51.  The
-        SMB1 name may be thought of as excluding older OS/2 LAN Manger and
-        DOS versions of SMB, except that the Windows NT LAN Manager
-        implementation is (mostly) backward compatible with those older
-        versions.  (See [MS-CIFS]; changes to SMB1 between Windows NT4 and
-        all subsequent Windows versions are documented in [MS-SMB].)
+SMB1::  Also known as SMBv1, CIFS, or "NT LM 0.12"; SMB1 is the
+        designation given to the "NT LM 0.12" dialect of the original
+        SMB protocol as implemented in all versions of Windows since
+        Windows NT 3.51.  The SMB1 name may be thought of as excluding
+        older OS/2 LAN Manger and DOS versions of SMB, except that the
+        Windows NT LAN Manager implementation is (mostly) backward
+        compatible with those older versions.  (See [MS-CIFS]; changes
+        to SMB1 between Windows NT4 and all subsequent Windows versions
+        are documented in [MS-SMB].)
 
-SMB2::  A.K.A. SMBv2;  SMB2 is not a dialect of SMB1, it is a different
-        protocol.  It does, however, share many characteristics with SMB1.
-        SMB2 was introduced in Windows Vista.  This original release was not
-        particularly ambitious, and its existence was hardly noticed at the
-        time.  SMBv2.1 was released with Windows 7.  SMB2.2 was scheduled
-        for release with Windows 8, but see the description of SMB3.
-        (See [MS-SMB2].)
+SMB2::  A.K.A. SMBv2; SMB2 is not a dialect of SMB1, it is a different
+        protocol.  It does, however, share many characteristics with
+        SMB1.  SMB2 was introduced in Windows Vista.  This original
+        release was not particularly ambitious, and its existence was
+        hardly noticed at the time.  SMBv2.1 was released with Windows
+        7.  SMB2.2 was scheduled for release with Windows 8, but see the
+        description of SMB3.  (See [MS-SMB2].)
 
-SMB3::  A.K.A. SMBv3 or SMB2.2;  SMB3 is, in fact, a dialect of SMB2.  It
+SMB3::  A.K.A. SMBv3 or SMB2.2; SMB3 is, in fact, a dialect of SMB2.  It
         was originally intended to be released as SMB version 2.2 but it
-        contained a number of new features and so was re-dubbed SMB3 (what
-        you might call a "marketing upgrade").  SMB3 supports I/O over RDMA
-        as well as scale-out and failover clustering.  SMB3 is documented in
-        [MS-SMB2].
+        contained a number of new features and so was re-dubbed SMB3
+        (another "marketing upgrade").  SMB3 supports I/O over RDMA as
+        well as scale-out and failover clustering.  SMB3 is documented
+        in [MS-SMB2].
 
 
 References
@@ -184,4 +190,4 @@ All of the references listed below are available online.
 
 Timestamp
 ---------
-$Id: 0.README; 2014-10-07 22:30:46 -0500; Christopher R. Hertel$
+$Id: 0.README; 2015-02-09 11:51:21 -0600; Christopher R. Hertel$
