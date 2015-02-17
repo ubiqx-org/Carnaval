@@ -3,12 +3,13 @@ Scripts
 
 This directory contains:
 
-* git_utils.py:     A utility module.
-* git_keywords.py:  A git pre-commit script.
+* `git_utils.py`:     A utility module.
+* `git_keywords.py`:  A git pre-commit script.
+* Other stuff:        Other stuff.
 
-These are used to perform keyword substitution on program files as they are
-committed to the repository, adding or updating the information associated
-with specific keywords.
+The Python scripts are used to perform keyword substitution on program files
+as they are committed to the repository, adding or updating the information
+associated with specific keywords.
 
 Carnaval uses keywords in its source files, which helps us keep track of
 what happened when and who did it.  Yes, git also provides that information
@@ -18,20 +19,20 @@ substitution mitigates that problem.
 
 Setting up your repository to support keyword substitution:
 
-1. Make sure git_keywords.py is executable.
+1. Make sure `git_keywords.py` is executable.
 
-2. In the <repository>/.git/hooks directory:
-    $ ln -s ../../scripts/git_keywords.py pre-commit
+2. In the `<repository>/.git/hooks` directory:
 
-3. Make sure that the <repository>/.gitattributes file contains something
+ $ ln -s ../../scripts/git_keywords.py pre-commit
+
+3. Make sure that the `<repository>/.gitattributes` file contains something
    that looks sort of like this:
 
  *.py kwsub=true
  0.README kwsub=true
 
 4. Make sure that your username and e'mail address are correctly assigned in
-   the <repository>/.git/config file.  If you have a GitHub account, your
-   e'mail address should match one of the addresses you registered on GitHub.
-
+   the `<repository>/.git/config` file.  If you are using a GitHub account,
+   your e'mail address should probably be the address you're using on GitHub.
 ____
-$Id: 0.README; 2014-10-11 18:02:55 -0500; Christopher R. Hertel$
+$Id: 0.README; 2015-02-17 13:20:30 -0600; Christopher R. Hertel$
