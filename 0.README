@@ -143,12 +143,17 @@ SMB2::  A.K.A. SMBv2; SMB2 is not a dialect of SMB1, it is a different
         7.  SMB2.2 was scheduled for release with Windows 8, but see the
         description of SMB3.  (See [MS-SMB2].)
 
-SMB3::  A.K.A. SMBv3 or SMB2.2; SMB3 is, in fact, a dialect of SMB2.  It
-        was originally intended to be released as SMB version 2.2 but it
-        contained a number of new features and so was re-dubbed SMB3
-        (another "marketing upgrade").  SMB3 supports I/O over RDMA as
-        well as scale-out and failover clustering.  SMB3 is documented
-        in [MS-SMB2].
+SMB3::  A.K.A. SMBv3 or SMB2.2; SMB3 is, in fact, a set of dialects of
+        SMB2.  It was originally intended to be released as SMB version
+        2.2 but it contained a number of new features and so was
+        re-dubbed SMB3 (another "marketing upgrade").  SMB3 supports I/O
+        over RDMA as well as scale-out and failover clustering.  SMB3 is
+        documented in [MS-SMB2].
+
+SMB2+:: The SMB2 and SMB3 dialects; SMB2 and SMB3 are the same protocol
+        with two different names.  That's confusing, so the community
+        has started to use "SMB2+" when referring to the protocol, and
+        all of its collective dialects.  Again, see [MS-SMB2].
 
 
 References
@@ -190,4 +195,4 @@ All of the references listed below are available online.
 
 Timestamp
 ---------
-$Id: 0.README; 2015-02-09 11:51:21 -0600; Christopher R. Hertel$
+$Id: 0.README; 2015-02-17 12:57:05 -0600; Christopher R. Hertel$
