@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_NameService.py; 2015-03-15 15:11:05 -0500; Jose A. Rivera$
+# $Id: NBT_NameService.py; 2015-03-15 15:36:31 -0500; Jose A. Rivera$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -1880,7 +1880,7 @@ class NameQueryResponse( NSHeader, ResourceRecord ):
     # TTL.
     self.TTL   = TTL
     # ...and set the address list by calling the __AddrList() method.
-    self.__AddrList( aList if( aList ) else [] )
+    self.__AddrList( AddrList if( AddrList ) else [] )
 
   @property
   def AddrList( self ):
@@ -2317,7 +2317,7 @@ class NameRefreshRequest( NameRegistrationRequest ):
     self.RDbit  = False
 
 
-class NameReleaseRequestandDemand( NameRegistrationRequest ):
+class NameReleaseRequestAndDemand( NameRegistrationRequest ):
   """Name Release Request or Name Release Demand message.
 
   A Name Release sent in B mode is a Name Release Demand; no response is
@@ -2403,7 +2403,7 @@ class NameReleaseResponse( NameRegistrationResponse ):
     """
     flags  = NS_R_BIT | NS_OPCODE_RELEASE | NS_NM_AA_BIT
     NSHeader.__init__( self, TrnId, flags, (0, 1, 0, 0) )
-    ResourceRecord.__init__( self, L2name, NS_RR_TYPE_NB, TTL, 6 )
+    ResourceRecord.__init__( self, L2name, NS_RR_TYPE_NB, 0, 6 )
     AddressRecord.__init__( self, G, ONT, IP )
     self.Rcode = Rcode
 
@@ -2805,7 +2805,7 @@ def ParseMsg( msg=None ):
         offset += n.setL2name( msg[12] )
       else:
         raise
-    return( (offset, n.getL2name()) )
+    return( (offset, n.L2name) )
 
   def _readQueRec():
     # Parse a Question Record from a message.
@@ -2866,7 +2866,7 @@ def ParseMsg( msg=None ):
     if( (1, 0, 0, 0 ) != Counts ):
       raise NBTerror( 1005, "Invalid record count in query request" )
     # Parse the Question Record.
-    offset, Qtype, Qname = _readQueRec()
+    _, Qtype, Qname = _readQueRec()
     if( NS_Q_TYPE_NBSTAT == Qtype ):
       # Node Status Request.
       Req = NodeStatusRequest( TrnId, Qname )
@@ -2898,7 +2898,7 @@ def ParseMsg( msg=None ):
       num_names = ord( msg[offset] )
       offset += 1
       NameList = []
-      for i in range( num_names ):
+      for _ in range( num_names ):
         # Unpack the name records.
         NB_name  = msg[offset:][:16]
         NBflags, = _format_Short.unpack( msg[(16+offset):][:2] )
@@ -2914,7 +2914,7 @@ def ParseMsg( msg=None ):
       aL = []
       if( 0 == Rcode ):
         # The response is positive, so collect the name records.
-        for i in range( RDlen/6 ):
+        for _ in range( RDlen/6 ):
           aL.append( _format_AddrEntry.unpack( msg[offset:][:6] ) )
           offset += 6
       Resp = NameQueryResponse( TrnId, RD, RA, Rcode, RRname, TTL, aL )
@@ -2938,19 +2938,20 @@ def ParseMsg( msg=None ):
     if( (1, 0, 0, 1) != Counts ):
       s = "Invalid record count in %s request" % _OPcodeDict[ OPcode ]
       raise NBTerror( 1005, s )
-    # Parse the Question and Resource Records.
-    offset, Qtype, Qname = _readQueRec()
-    offset, RRtype, TTL, RDlen, RRname = _readResRec( 12 )
+    # Parse the Resource Record.
+    offset, _, TTL, _, RRname = _readResRec( 12 )
     # Rdata
     NBflags, IP = _format_AddrEntry.unpack( msg[offset:][:6] )
     # Now figure out what type of request it really is.
     RD = bool( NMflags & NS_NM_RD_BIT )
     B  = bool( NMflags & NS_NM_B_BIT )
+    G   = bool( NBflags & NS_GROUP_BIT )
+    ONT = (NBflags & NS_ONT_MASK)
     # Build the message object.
     if( OPcode in [ NS_OPCODE_REFRESH, NS_OPCODE_ALTREFRESH ] ):
       Req = NameRefreshRequest( TrnId, RRname, TTL, G, ONT, IP )
     elif( NS_OPCODE_RELEASE == OPcode ):
-      Req = NameReleaseRequestandDemand( TrnId, B, RRname, G, ONT, IP )
+      Req = NameReleaseRequestAndDemand( TrnId, B, RRname, G, ONT, IP )
     elif( NS_OPCODE_MULTIHOMED == OPcode ):
       Req = MultiHomedNameRegistrationRequest( TrnId, RRname, TTL, ONT, IP )
     elif( RD ):
@@ -2975,9 +2976,8 @@ def ParseMsg( msg=None ):
     if( (0, 1, 0, 0) != Counts ):
       s = "release" if( NS_OPCODE_RELEASE == OPcode ) else "registration"
       raise NBTerror( 1005, "Invalid record count in %s response" % s )
-    offset, RRtype, TTL, RDlen, RRname = _readResRec( 12 )
+    offset, _, TTL, _, RRname = _readResRec( 12 )
     NBflags, IP = _format_AddrEntry.unpack( msg[offset:][6] )
-    B   = bool( NMflags & NS_NM_B_BIT )
     RD  = bool( NMflags & NS_NM_RD_BIT )
     G   = bool( NBflags & NS_GROUP_BIT )
     ONT = (NBflags & NS_ONT_MASK)
@@ -3003,9 +3003,9 @@ def ParseMsg( msg=None ):
     #
     if( (0, 1, 0, 0) != Counts ):
       raise NBTerror( 1005, "Invalid record count in WACK response" )
-    offset, RRtype, TTL, RDlen, RRname = _readResRec( 12 )
+    offset, _, TTL, _, RRname = _readResRec( 12 )
     RDflags = _format_Short.unpack( msg[offset:][2] )
-    Resp = WaitForAcknowledgementResponse( TranId, RRname, TTL, RDflags )
+    Resp = WaitForAcknowledgementResponse( TrnId, RRname, TTL, RDflags )
     Resp.NMflags = NMflags
     return( Resp )
 
