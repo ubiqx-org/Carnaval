@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_NameService.py; 2015-03-19 16:10:00 -0500; Christopher R. Hertel$
+# $Id: NBT_NameService.py; 2015-03-19 17:01:51 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -992,19 +992,19 @@ class Name( object ):
 
   @property
   def Pad( self ):
-    """Getter the padding byte value."""
+    """Get the padding byte value."""
     tup = self.PadSuffix()
     return( tup[0] if( tup ) else None )
 
   @property
   def Suffix( self ):
-    """Getter" method for the suffix byte value."""
+    """Get the suffix byte value."""
     tup = self.PadSuffix()
     return( tup[1] if( tup ) else None )
 
   @property
   def LSP( self ):
-    """If the name is terminated by an LSP, return the offset value.
+    """If the L2 name is terminated by an LSP, return the offset value.
 
     Output: None, if there is no label string pointer (LSP) in the L2
             name, or an integer in the range 0..0x3FFF representing the
@@ -1013,7 +1013,10 @@ class Name( object ):
 
     Notes:  Once again, in practice the NBT protocol only ever uses
             0xC00C as an L2 name with an LSP.  This code is excessively
-            pedantic in its implementation of LSP support.
+            pedantic in its implementation of LSP support, allowing you
+            to try other values if you so choose.  It would be
+            interesting to see which implementations handle LSPs
+            completely and which fail in interesting ways.
     """
     if( self._LSP is None ):
       self._decodeAll()
@@ -2631,14 +2634,9 @@ class LocalNameTable( object ):
     self._nameDict = {}
     if( NameList ):
       for L1name, Hidden, Nflags in NameList:
-        if( not isinstance( L1name, str ) ):
-          s = type( L1name ).__name__
-          raise TypeError( "The NBT name must be of type str, not %s." % s )
-        if( 32 != len( L1name ) ):
-          raise ValueError( "Malformed L1-encoded NBT name [%s]" % L1name )
-        # Name_Flags are stored internally without the Owner Node Type (ONT).
-        Nflags = (Nflags & (NS_GROUP_BIT | NS_STATE_MASK))
-        self._nameDict[ L1name ] = (bool(Hidden), Nflags)
+        # Fudge: We know that <Status> is masked in updateEntry() so we
+        #        just pass <Nflags> as-is.
+        self.updateEntry( L1name, Hidden, (Nflags & NS_GROUP_BIT), Nflags )
 
   def updateEntry( self, L1name=None,
                          Hidden=False,
@@ -2660,7 +2658,9 @@ class LocalNameTable( object ):
       raise TypeError( "The NBT name must be of type str, not %s." % s )
     if( 32 != len( L1name ) ):
       raise ValueError( "Malformed L1-encoded NBT name [%s]" % L1name )
-    # Add the entry.  Name_Flags are stored internally without Owner Node Type.
+    # Add the entry.
+    #   Name_Flags are stored internally without Owner Node Type, since
+    #   that value is global to the whole list.
     Name_Flags  = (NS_GROUP_BIT if( Group ) else 0x0000)
     Name_Flags |= (NS_STATE_MASK & Status)
     self._nameDict[ L1name ] = (bool(Hidden), Name_Flags)
