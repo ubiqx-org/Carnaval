@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_NameService.py; 2015-03-19 15:29:47 -0500; Christopher R. Hertel$
+# $Id: NBT_NameService.py; 2015-03-19 16:10:00 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -58,7 +58,7 @@
 #   - "NAME UPDATE REQUEST" and "NAME OVERWRITE REQUEST & DEMAND" need
 #     to be clarified.  See the Alert box in #NBT.4.3.1.2.
 #   - The 0x8/0x9 Name Refresh OPcode confusion.
-#   - The RedirectNameQueryResponse in RFC1002 could use some
+#   - The RedirectNameQueryResponse in [RFC1002] could use some
 #     clarification.
 #
 # ToDo:
@@ -71,6 +71,27 @@
 #     or fields (like the TTL field) that should be zero in some cases.
 #     Why keep the wire values?  Only for testing and disgnostics.  What
 #     mistakes do other implementations make?
+#
+# References:
+#
+#   [IMPCIFS] Hertel, Christopher R., "Implementing CIFS - The Common
+#             Internet File System", Prentice Hall, August 2003
+#             ISBN:013047116X
+#             http://www.ubiqx.org/cifs/
+#
+#   [MS-CIFS] Microsoft Corporation, "Common Internet File System (CIFS)
+#             Protocol Specification"
+#             http://msdn.microsoft.com/en-us/library/ee442092.aspx
+#
+#   [RFC1001] Protocol Standard for a NetBIOS Service on a TCP/UDP
+#             Transport: Concepts and Methods
+#             Karl Auerbach, Avnish Aggarwal, et. al., IETF, March, 1987
+#             See: http://www.rfc-editor.org/rfc/rfc1001.txt
+#
+#   [RFC1002] Protocol Standard for a NetBIOS Service on a TCP/UDP
+#             Transport: Detailed Specifications
+#             Karl Auerbach, Avnish Aggarwal, et. al., IETF, March, 1987
+#             See: http://www.rfc-editor.org/rfc/rfc1002.txt
 #
 # ============================================================================ #
 #
@@ -137,7 +158,7 @@ CONSTANTS:
     ResourceRecord.RR_TYPE;  Resource Record types.
     NS_RR_TYPE_A      : Not used in practice in NBT.
     NS_RR_TYPE_NS     : Not used in practice in NBT.
-    NS_RR_TYPE_NULL   : Specifie in RFC1002, but typically not used.
+    NS_RR_TYPE_NULL   : Specified in [RFC1002]; typically not used.
     NS_RR_TYPE_NB     : NetBIOS Name record.
     NS_RR_TYPE_NBSTAT : Node (Adapter) Status request/response.
 
@@ -167,7 +188,7 @@ CONSTANTS:
     NS_GROUP_BIT      : If set, the name is a NetBIOS group name.
 
     RDATA.NODE_NAME.NAME_FLAGS;  RDATA in a Node Status Reply.
-    See [RFC1002:Pg28].
+    See: [RFC1002; 4.2.18]
     NS_NAMEFLAG_MASK  : All defined bits in the NAME_FLAGS field.
     NS_STATE_MASK     : Mask for DRG, CNF, ACT, and PRM bits.
     NS_DRG            : If set, name is being released.
@@ -434,7 +455,8 @@ class Name( object ):
             http://docs.python.org/2/reference/datamodel.html#object.__repr__
 
     Doctest:
-      >>> print Name( "MITSCHLAG", scope="Himmelschpitz.org" ).__repr__()
+      >>> n = Name( "MITSCHLAG", scope="Himmelschpitz.org" ).__repr__()
+      >>> print n
       Name( 'MITSCHLAG', '\\x20', '\\x20', 'Himmelschpitz.org', None )
     """
     # Ensure that the name is fully decoded, or is empty.
@@ -605,9 +627,7 @@ class Name( object ):
             - <lsp> must be None or of type <int>.
             - All other input values must be None or of type <str>.
 
-            The 255 overall length limit is specified in [RFC1002],
-            section 4.1.
-              See: http://www.rfc-editor.org/rfc/rfc1002.txt
+            The 255 overall length limit is specified in [RFC1002; 4.1].
 
             By convention, the name should be given in upper case. This
             method does not convert the name to upper case, nor does it
@@ -972,14 +992,14 @@ class Name( object ):
 
   @property
   def Pad( self ):
-    # "Getter" method for the padding byte value.
-    tup = self.getPadSuffix()
+    """Getter the padding byte value."""
+    tup = self.PadSuffix()
     return( tup[0] if( tup ) else None )
 
   @property
   def Suffix( self ):
-    # "Getter" method for the suffix byte value.
-    tup = self.getPadSuffix()
+    """Getter" method for the suffix byte value."""
+    tup = self.PadSuffix()
     return( tup[1] if( tup ) else None )
 
   @property
