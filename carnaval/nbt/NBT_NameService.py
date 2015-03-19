@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_NameService.py; 2015-03-19 10:33:57 -0500; Christopher R. Hertel$
+# $Id: NBT_NameService.py; 2015-03-19 15:29:47 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -90,80 +90,90 @@ CONSTANTS:
     NS_PORT = 137         # The default NBT Name Service listener port.
 
   Name Service Header:
+
+    The Header.FLAGS field has the following format:
+
+      0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
+    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+    | R |    OPCODE     |         NM_FLAGS          |     RCODE     |
+    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
     Header.FLAGS.R_BIT; 'R'esponse bit.
-    NS_R_BIT  = 0x8000    # True (1) in response messages, else 0.
+    NS_R_BIT  : True (1) in response messages, else 0.
 
     Header.FLAGS.OPCODE; Name service OPcodes.
-    NS_OPCODE_MASK        = 0x7800          # Mask         = 0x0F
-    NS_OPCODE_QUERY       = 0x0000          # Query        = 0x00
-    NS_OPCODE_REGISTER    = 0x2800          # Registration = 0x05
-    NS_OPCODE_RELEASE     = 0x3000          # Release      = 0x06
-    NS_OPCODE_WACK        = 0x3800          # WACK         = 0x07
-    NS_OPCODE_REFRESH     = 0x4000          # Refresh      = 0x08
-    NS_OPCODE_ALTREFRESH  = 0x4800          # Refresh      = 0x09
-    NS_OPCODE_MULTIHOMED  = NS_OPCODE_MASK  # Multi-homed  = 0x0F
+    NS_OPCODE_MASK        : OpCode Mask
+    NS_OPCODE_QUERY       : Query
+    NS_OPCODE_REGISTER    : Registration
+    NS_OPCODE_RELEASE     : Release
+    NS_OPCODE_WACK        : WACK
+    NS_OPCODE_REFRESH     : Refresh
+    NS_OPCODE_ALTREFRESH  : Refresh (Typo version; do not send)
+    NS_OPCODE_MULTIHOMED  : Multi-homed
 
     Header.FLAGS.NM_FLAGS; See RFC 883 for history.
-    NS_NM_FLAGS_MASK  = 0x0790  # Mask
-    NS_NM_AA_BIT      = 0x0400  # Authoritative Answer
-    NS_NM_TC_BIT      = 0x0200  # TrunCation flag
-    NS_NM_RD_BIT      = 0x0100  # Recursion Desired
-    NS_NM_RA_BIT      = 0x0080  # Recursion Available
-    NS_NM_B_BIT       = 0x0010  # Broadcast flag
+    NS_NM_FLAGS_MASK  : NM_FLAGS Mask
+    NS_NM_AA_BIT      : Authoritative Answer
+    NS_NM_TC_BIT      : TrunCation flag
+    NS_NM_RD_BIT      : Recursion Desired
+    NS_NM_RA_BIT      : Recursion Available
+    NS_NM_B_BIT       : Broadcast flag
 
     Header.FLAGS.RCODE; Result Code.
-    NS_RCODE_MASK     = 0x0007        # Subfield mask
-    NS_RCODE_POS_RSP  = 0x0000        # Positive Response
-    NS_RCODE_FMT_ERR  = 0x0001        # Format Error
-    NS_RCODE_SRV_ERR  = 0x0002        # Server failure
-    NS_RCODE_NAM_ERR  = 0x0003        # Name Error
-    NS_RCODE_IMP_ERR  = 0x0004        # Unsupported request
-    NS_RCODE_RFS_ERR  = 0x0005        # Refused
-    NS_RCODE_ACT_ERR  = 0x0006        # Active error
-    NS_RCODE_CFT_ERR  = NS_RCODE_MASK # Name in conflict
+    NS_RCODE_MASK     : RCODE subfield mask
+    NS_RCODE_POS_RSP  : Positive Response
+    NS_RCODE_FMT_ERR  : Format Error
+    NS_RCODE_SRV_ERR  : Server failure
+    NS_RCODE_NAM_ERR  : Name Error
+    NS_RCODE_IMP_ERR  : Unsupported request
+    NS_RCODE_RFS_ERR  : Refused
+    NS_RCODE_ACT_ERR  : Active error
+    NS_RCODE_CFT_ERR  : Name in conflict
 
     Header.FLAGS; All possible Header.FLAGS bits.
-    NS_HEADER_FLAGS_MASK = 0xFF97     # Full HEADER.FLAGS mask
+    NS_HEADER_FLAGS_MASK  : Full HEADER.FLAGS mask
 
   Resource Records:
     ResourceRecord.RR_TYPE;  Resource Record types.
-    NS_RR_TYPE_A      = 0x0001  # Not used in practice,
-    NS_RR_TYPE_NS     = 0x0002  # not used in practice.
-    NS_RR_TYPE_NULL   = 0x000A  # In RFC1002; typically not used.
-    NS_RR_TYPE_NB     = 0x0020  # NetBIOS Name record.
-    NS_RR_TYPE_NBSTAT = 0x0021  # Node (Adapter) Status request/response.
+    NS_RR_TYPE_A      : Not used in practice in NBT.
+    NS_RR_TYPE_NS     : Not used in practice in NBT.
+    NS_RR_TYPE_NULL   : Specifie in RFC1002, but typically not used.
+    NS_RR_TYPE_NB     : NetBIOS Name record.
+    NS_RR_TYPE_NBSTAT : Node (Adapter) Status request/response.
 
     ResourceRecord.RR_CLASS; Resource Record class.
-    NS_RR_CLASS_IN    = 0x0001  # Internet Class; NBT uses only this class.
+    NS_RR_CLASS_IN    : Internet Class; NBT uses only this class.
 
     ResourceRecord.RR_NAME; Label String Pointer.
-    NS_RR_LSP = "\\xC0\\x0C"      # The only Label String Pointer used in NBT.
+    NS_RR_LSP         : There is only one Label String Pointer value
+                      : used in NBT.  This is it.
 
   Question Records:
     QuestionRecord.Q_TYPE; Question Record types.
-    NS_Q_TYPE_NB      = NS_RR_TYPE_NB     # Name Query.
-    NS_Q_TYPE_NBSTAT  = NS_RR_TYPE_NBSTAT # Node Status Query.
+    NS_Q_TYPE_NB      : Name Query.
+    NS_Q_TYPE_NBSTAT  : Node Status Query.
 
     QuestionRecord.Q_CLASS; Question Record class.
-    NS_Q_CLASS_IN     = NS_RR_CLASS_IN    # Same as the RR IN class.
+    NS_Q_CLASS_IN     : Same as the RR IN class.
 
   RData:
     RDATA.NB_FLAGS values; Owner Node Type and type of name (group/unique).
-    NS_NBFLAG_MASK = 0xE000     # NBFlag mask.
-    NS_ONT_B       = 0x0000     # Owner Node Type is B (B-mode).
-    NS_ONT_P       = 0x2000     # Owner Node Type is P (P-mode).
-    NS_ONT_M       = 0x4000     # Owner Node Type is M (M-mode).
-    NS_ONT_H       = 0x6000     # Owner Node Type is H (H-mode).
-    NS_ONT_MASK    = NS_ONT_H   # Owner Node Type (ONT) mask.
-    NS_GROUP_BIT   = 0x8000     # If set, the name is a NetBIOS group name.
+    NS_NBFLAG_MASK    : NBFlag mask.
+    NS_ONT_B          : Owner Node Type is B (B-mode).
+    NS_ONT_P          : Owner Node Type is P (P-mode).
+    NS_ONT_M          : Owner Node Type is M (M-mode).
+    NS_ONT_H          : Owner Node Type is H (H-mode).
+    NS_ONT_MASK       : Owner Node Type (ONT) mask.
+    NS_GROUP_BIT      : If set, the name is a NetBIOS group name.
 
-    RDATA.NODE_NAME.NAME_FLAGS (in a Node Status Reply).
-    NS_NAMEFLAG_MASK = 0xFE00   # (NS_NBFLAG_MASK | NS_STATE_MASK).
-    NS_STATE_MASK    = 0x1E00   # Mask for (DRG | CNF | ACT | PRM).
-    NS_DRG           = 0x1000   # If set, name is being released.
-    NS_CNF           = 0x0800   # If set, name is in conflict.
-    NS_ACT           = 0x0400   # Always set.  Name is active.
-    NS_PRM           = 0x0200   # Machine's permanent name.  Not used.
+    RDATA.NODE_NAME.NAME_FLAGS;  RDATA in a Node Status Reply.
+    See [RFC1002:Pg28].
+    NS_NAMEFLAG_MASK  : All defined bits in the NAME_FLAGS field.
+    NS_STATE_MASK     : Mask for DRG, CNF, ACT, and PRM bits.
+    NS_DRG            : If set, name is being released.
+    NS_CNF            : If set, name is in conflict.
+    NS_ACT            : Name is active.  (Always set.)
+    NS_PRM            : Machine's permanent name.  Not used.
 """
 
 # Imports -------------------------------------------------------------------- #
@@ -1000,7 +1010,7 @@ class NSHeader( object ):
   See:  http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.2
   """
   def __init__( self, TrnId=0, Flags=0, Counts=(0, 0, 0, 0) ):
-    """Create an NBT Name Service message.
+    """Create an NBT Name Service message header.
 
     Input:
       TrnId   - The Transaction Id.
@@ -1015,35 +1025,47 @@ class NSHeader( object ):
             parameters.  It is assumed that those checks have already
             been done.
     """
-    self._TrnId = (0xFFFF & int( TrnId ))
-    self._Flags = (0xFFFF & int( Flags ))
-    self._QDcount = 0x0001 if Counts[0] else 0x0000
-    self._ANcount = 0x0001 if Counts[1] else 0x0000
-    self._NScount = 0x0001 if Counts[2] else 0x0000
-    self._ARcount = 0x0001 if Counts[3] else 0x0000
+    self.TrnId = TrnId
+    self.Flags = Flags
+    self.QDcount = Counts[0]
+    self.ANcount = Counts[1]
+    self.NScount = Counts[2]
+    self.ARcount = Counts[3]
 
   @property
   def TrnId( self ):
-    """Transaction ID; NAME_TRN_ID"""
+    """Get/set Transaction ID; NAME_TRN_ID (USHORT).
+
+    Errors:
+      [ TypeError,    - Either of these may be thrown if the assigned
+        ValueError ]    value cannot be converted into an <int>.
+    """
     return( self._TrnId )
   @TrnId.setter
-  def TrnId( self, TrnId=None ):
+  def TrnId( self, TrnId ):
     self._TrnId = (0xFFFF & int( TrnId ))
 
   @property
   def Flags( self ):
-    """The 2-octet Header Flags; FLAGS"""
+    """The 2-octet Header Flags; FLAGS (USHORT).
+
+    Errors:
+      [ TypeError,    - Either of these may be thrown if the assigned
+        ValueError ]    value cannot be converted into an <int>.
+
+    Notes:  This property represents the Header.FLAGS field as a whole.
+    """
     return( self._Flags )
   @Flags.setter
-  def Flags( self, Flags=None ):
-    self._Flags  = (0xFFFF & int( Flags ))
+  def Flags( self, Flags ):
+    self._Flags  = (NS_HEADER_FLAGS_MASK & int( Flags ))
 
   @property
   def Rbit( self ):
     """Response Flag; FLAGS.R"""
     return( bool( self._Flags & NS_R_BIT ) )
   @Rbit.setter
-  def Rbit( self, R=None ):
+  def Rbit( self, R ):
     if( R ):
       self._Flags |= NS_R_BIT
     else:
@@ -1054,7 +1076,7 @@ class NSHeader( object ):
     """Operation Code; FLAGS.OPCODE"""
     return( self._Flags & NS_OPCODE_MASK )
   @OPcode.setter
-  def OPcode( self, OPcode=None ):
+  def OPcode( self, OPcode ):
     self._Flags = (self._Flags & ~NS_OPCODE_MASK) | (OPcode & NS_OPCODE_MASK)
 
   @property
@@ -1062,7 +1084,7 @@ class NSHeader( object ):
     """Name Flags: FLAGS.NM_FLAGS"""
     return( self._Flags & NS_NM_FLAGS_MASK )
   @NMflags.setter
-  def NMflags( self, NMflags=None ):
+  def NMflags( self, NMflags ):
     self._Flags &= ~NS_NM_FLAGS_MASK
     self._Flags |= (NMflags & NS_NM_FLAGS_MASK)
 
@@ -1071,7 +1093,7 @@ class NSHeader( object ):
     """Authoritative Answer bit; FLAGS.NM_FLAGS.AA"""
     return( bool( self._Flags & NS_NM_AA_BIT ) )
   @AAbit.setter
-  def AAbit( self, AA=None ):
+  def AAbit( self, AA ):
     if( AA ):
       self._Flags |= NS_NM_AA_BIT
     else:
@@ -1082,7 +1104,7 @@ class NSHeader( object ):
     """TrunCation bit; FLAGS.NM_FLAGS.TC"""
     return( bool( self._Flags & NS_NM_TC_BIT ) )
   @TCbit.setter
-  def TCbit( self, TC=None ):
+  def TCbit( self, TC ):
     if( TC ):
       self._Flags |= NS_NM_TC_BIT
     else:
@@ -1093,7 +1115,7 @@ class NSHeader( object ):
     """Recursion Desired bit; FLAGS.NM_FLAGS.RD"""
     return( bool( self._Flags & NS_NM_RD_BIT ) )
   @RDbit.setter
-  def RDbit( self, RD=None ):
+  def RDbit( self, RD ):
     if( RD ):
       self._Flags |= NS_NM_RD_BIT
     else:
@@ -1104,7 +1126,7 @@ class NSHeader( object ):
     """Recursion Available bit; FLAGS.NM_FLAGS.RA"""
     return( bool( self._Flags & NS_NM_RA_BIT ) )
   @RAbit.setter
-  def RAbit( self, RA=None ):
+  def RAbit( self, RA ):
     if( RA ):
       self._Flags |= NS_NM_RA_BIT
     else:
@@ -1115,7 +1137,7 @@ class NSHeader( object ):
     """Broadcast bit; FLAGS.NM_FLAGS.B"""
     return( bool( self._Flags & NS_NM_B_BIT ) )
   @Bbit.setter
-  def Bbit( self, B=None ):
+  def Bbit( self, B ):
     if( B ):
       self._Flags |= NS_NM_B_BIT
     else:
@@ -1126,9 +1148,7 @@ class NSHeader( object ):
     """Return Code; FLAGS.NM_FLAGS.RCODE"""
     return( self._Flags & NS_RCODE_MASK )
   @Rcode.setter
-  def Rcode( self, Rcode=None ):
-    if( Rcode is None ):
-      return( self._Flags & NS_RCODE_MASK )
+  def Rcode( self, Rcode ):
     self._Flags = (self._Flags & ~NS_RCODE_MASK) | (Rcode & NS_RCODE_MASK)
 
   @property
@@ -1136,7 +1156,7 @@ class NSHeader( object ):
     """Question Records; QDCOUNT"""
     return( self._QDcount )
   @QDcount.setter
-  def QDcount( self, QDcount=None ):
+  def QDcount( self, QDcount ):
     # The QDcount must be 0 or 1.
     self._QDcount = 0x0001 if QDcount else 0x0000
 
@@ -1145,7 +1165,7 @@ class NSHeader( object ):
     """Answer Records; ANCOUNT"""
     return( self._ANcount )
   @ANcount.setter
-  def ANcount( self, ANcount=None ):
+  def ANcount( self, ANcount ):
     # The ANcount must be 0 or 1.
     self._ANcount = 0x0001 if ANcount else 0x0000
 
@@ -1154,7 +1174,7 @@ class NSHeader( object ):
     """Name Service Authority Records; NSCOUNT"""
     return( self._NScount )
   @NScount.setter
-  def NScount( self, NScount=None ):
+  def NScount( self, NScount ):
     # The NScount must be 0 or 1.
     self._NScount = 0x0001 if NScount else 0x0000
 
@@ -1163,7 +1183,7 @@ class NSHeader( object ):
     """Additional Records; ARCOUNT"""
     return( self._ARcount )
   @ARcount.setter
-  def ARcount( self, ARcount=None ):
+  def ARcount( self, ARcount ):
     # As above, the only valid values are 0 and 1.
     self._ARcount = 0x0001 if ARcount else 0x0000
 
@@ -1269,7 +1289,7 @@ class QuestionRecord( object ):
     """NBT Encoded Question Name; QUESTION_NAME"""
     return( self._Qname )
   @Qname.setter
-  def Qname( self, Qname=None ):
+  def Qname( self, Qname ):
     self._Qname = Qname
 
   @property
@@ -1277,7 +1297,7 @@ class QuestionRecord( object ):
     """Question Type; QUESTION_TYPE"""
     return( self._Qtype )
   @Qtype.setter
-  def Qtype( self, Qtype=None ):
+  def Qtype( self, Qtype ):
     self._Qtype = (0xFFFF & Qtype)
 
   @property
@@ -1285,7 +1305,7 @@ class QuestionRecord( object ):
     """Question Class; QUESTION_CLASS"""
     return( self._Qclass )
   @Qclass.setter
-  def Qclass( self, Qclass=None ):
+  def Qclass( self, Qclass ):
     self._Qclass = (0xFFFF & Qclass)
 
   def dump( self, indent=0 ):
@@ -1371,7 +1391,7 @@ class ResourceRecord( object ):
     """Resource Record Name; RR_NAME"""
     return( self._RRname )
   @RRname.setter
-  def RRname( self, RRname=None ):
+  def RRname( self, RRname ):
     self._RRname = RRname
 
   @property
@@ -1379,8 +1399,7 @@ class ResourceRecord( object ):
     """Resource Record Type; RR_TYPE"""
     return( self._RRtype )
   @RRtype.setter
-  def RRtype( self, RRtype=None ):
-    return( self._RRtype )
+  def RRtype( self, RRtype ):
     self._RRtype = (0xFFFF & RRtype)
 
   @property
@@ -1388,7 +1407,7 @@ class ResourceRecord( object ):
     """Resource Record Type; RR_TYPE"""
     return( self._RRclass )
   @RRclass.setter
-  def RRclass( self, RRclass=None ):
+  def RRclass( self, RRclass ):
     self._RRclass = (0xFFFF & RRclass)
 
   @property
@@ -1396,7 +1415,7 @@ class ResourceRecord( object ):
     """Time To Live; TTL"""
     return( self._TTL )
   @TTL.setter
-  def TTL( self, TTL=None ):
+  def TTL( self, TTL ):
     self._TTL = (0xFFFFFFFF & int( TTL ))
 
   @property
@@ -1404,7 +1423,7 @@ class ResourceRecord( object ):
     """RDATA Length; RDLENGTH"""
     return( self._RDlen )
   @RDlen.setter
-  def RDlen( self, RDlen=None ):
+  def RDlen( self, RDlen ):
     self._RDlen = (0xFFFF & int( RDlen ))
 
   def dump( self, indent=0 ):
@@ -1531,7 +1550,7 @@ class AddressRecord( object ):
     """Group bit; RDATA.NB_FLAGS.G"""
     return( bool( NS_GROUP_BIT & self._NBflags ) )
   @Gbit.setter
-  def Gbit( self, G=None ):
+  def Gbit( self, G ):
     if( G ):
       self._NBflags |= NS_GROUP_BIT
     else:
@@ -1542,7 +1561,7 @@ class AddressRecord( object ):
     """Owner Node Type; NB_FLAGS.ONT"""
     return( NS_ONT_MASK & self._NBflags )
   @ONT.setter
-  def ONT( self, ONT=None ):
+  def ONT( self, ONT ):
     self._NBflags = (self._NBflags & ~NS_ONT_MASK) | (NS_ONT_MASK & ONT)
 
   @property
@@ -1550,7 +1569,7 @@ class AddressRecord( object ):
     """IPv4 address; NB_ADDRESS"""
     return( self._NBaddr )
   @NBaddr.setter
-  def NBaddr( self, NBaddr=None ):
+  def NBaddr( self, NBaddr ):
     self._NBaddr = (NBaddr[:4] if( NBaddr ) else (4 * '\0'))
 
   @property
@@ -1558,7 +1577,7 @@ class AddressRecord( object ):
     """Name flags; NB_FLAGS"""
     return( self._NBflags )
   @NBflags.setter
-  def NBflags( self, NBflags=None ):
+  def NBflags( self, NBflags ):
     self._NBflags = (NBflags & NS_NBFLAG_MASK)
 
   def dump( self, indent ):
@@ -1687,7 +1706,7 @@ class NodeStatusResponse( NSHeader, ResourceRecord ):
     """Get/set the list of registered names."""
     return( self._NameList )
   @NameList.setter
-  def NameList( self, NameList=None ):
+  def NameList( self, NameList ):
     self._NameList = NameList[:255] if( NameList ) else []
     self._RDlen = 7 + (18 * (len( self._NameList ) & 0xFF ))
 
@@ -1696,7 +1715,7 @@ class NodeStatusResponse( NSHeader, ResourceRecord ):
     """Get/set the interface MAC address."""
     return( self._MAC )
   @MAC.setter
-  def MAC( self, MAC=None ):
+  def MAC( self, MAC ):
     self._MAC = (MAC + (6 * '\0'))[:6] if( MAC ) else (6 * '\0')
 
   def dump( self, indent=0 ):
@@ -1890,7 +1909,7 @@ class NameQueryResponse( NSHeader, ResourceRecord ):
     """Address list for the NBT Name Query Response; ADDR_ENTRY[]"""
     return( self._AddrList )
   @AddrList.setter
-  def AddrList( self, AddrList=None ):
+  def AddrList( self, AddrList ):
     if( not isinstance( AddrList, list ) ):
       raise TypeError( "The Address List must be a list, or None." )
     self._AddrList = AddrList
@@ -2603,7 +2622,7 @@ class LocalNameTable( object ):
 
   def updateEntry( self, L1name=None,
                          Hidden=False,
-                         Group=False,
+                         Group =False,
                          Status=NS_ACT ):
     """Add/overwrite a name entry in the name list.
 
