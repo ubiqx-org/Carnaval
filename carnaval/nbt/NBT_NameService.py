@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_NameService.py; 2014-09-12 20:40:15 -0500; Christopher R. Hertel$
+# $Id: NBT_NameService.py; 2015-03-15 15:36:31 -0500; Jose A. Rivera$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -337,7 +337,7 @@ class Name( object ):
   Doctest:
     >>> name = Name( "fooberry".upper() )
     >>> newname = Name()
-    >>> newname.setNetBIOSname( name.getNetBIOSname(), ' ', '\\x1E', 'scope' )
+    >>> newname.setNBTname( name.NBname, ' ', '\\x1E', 'scope' )
     >>> str( newname )
     'FOOBERRY<1E>.scope'
   """
@@ -361,7 +361,7 @@ class Name( object ):
                           to the syntax prescribed in the RFCs.
 
     Notes:  More details are provided in the description of
-            <setNetBIOSname()>, below.
+            <setNBTname()>, below.
 
             By default, the NBT Name is initialized with an empty value,
             (None) which must be set before the name can be used.  If
@@ -371,7 +371,7 @@ class Name( object ):
     """
     self.reset()
     if( name is not None ):
-      self._name = self.setNetBIOSname( name, pad, suffix, scope, lsp )
+      self._name = self.setNBTname( name, pad, suffix, scope, lsp )
     return
 
   def __str__( self ):
@@ -396,7 +396,7 @@ class Name( object ):
       >>> name = Name( "ZNORFGASSER", pad='x', suffix=' ' )
       >>> str( name )
       'ZNORFGASSER<20>'
-      >>> name.setL2name( name.getL2name() )
+      >>> name.setL2name( name.L2name )
       34
       >>> str( name )
       'ZNORFGASSERxxxx<20>'
@@ -553,12 +553,12 @@ class Name( object ):
     self._Scope  = None
     self._LSP    = None
 
-  def setNetBIOSname( self, name  = None,
-                            pad   = None,
-                            suffix= None,
-                            scope = None,
-                            lsp   = None ):
-    """Encode and store a NetBIOS name (and scope).
+  def setNBTname( self, name  = None,
+                        pad   = None,
+                        suffix= None,
+                        scope = None,
+                        lsp   = None ):
+    """Encode and store a full NBT name (including scope).
 
     Input:
       name    - The NetBIOS name (maximum 15 bytes) to be encoded.
@@ -704,49 +704,38 @@ class Name( object ):
     self._LSP    = lsp
     return
 
-  def _parseL2name( self, l2name ):
-    # Internal method to validate the format of a level 2 encoded NBT name.
-    #
-    # Input:
-    #   l2name  - The L2 encoded NBT name to be validated.
-    #
-    # Output: A tuple contaning the validated name and Label String Pointer
-    #         (LSP) offset.  If the latter is None, then the input name is
-    #         terminated with a label length of zero (the normal case).
-    #
-    # Errors: ValueError  - Raised if the L2 name fails basic sanity checks,
-    #                       including:
-    #                       + A label length points to a position beyond the
-    #                         end of the input string.
-    #                       + The second byte of an LSP is beyond the end of
-    #                         the input string.
-    #                       + A reserved flag combination was found in the
-    #                         upper two bits of a label length.
-    #
-    posn   = 0
-    namlen = len( l2name )
-    lablen = ord( l2name[0] )
-    # Read through the label lengths to ensure correct syntax and total length.
-    while( lablen > 0 ):
-      if( lablen < 0x40 ):
-        # Upper two bits are 00; should be a normal label length.
-        posn += 1 + lablen
-        if( posn >= namlen ):
-          # Must've had invalid length bytes.
-          raise ValueError( "Malformed NBT name; label length incorrect." )
-        lablen = ord( l2name[posn] )
-      elif( 0xC0 == (lablen & 0xC0) ):
-        # Upper bits are 11; it's a label string pointer (2 bytes long).
-        if( (posn + 1) >= namlen ):
-          raise ValueError( "Malformed NBT name; corrupt label pointer." )
-        # Trim and return the L2 name, and the LSP.
-        lsp = ((lablen & ~0xC0) << 8) + ord( l2name[posn+1] )
-        return( (l2name[:posn+2], lsp ) )
-      else:
-        # Neither a valid length nor a valid label string pointer.
-        raise ValueError( "Malformed NBT name; reserved bit pattern used." )
-    # Validated, zero-terminated, L2 name.
-    return( (l2name[:posn+1], None) )
+  @property
+  def NBname( self ):
+    """Get the NetBIOS name from the NBT Name.
+
+    Output: The decoded NetBIOS name, or None if the object is empty.
+    """
+    if( self._NBname is None ):
+      self._decodeAll()
+    return( self._NBname )
+
+  @property
+  def L1name( self ):
+    """Return the L1 encoded version of the NBT name.
+
+    Output: None, if the NBT Name is empty, else the L1 encoded string
+            format of the NBT name.
+
+    Notes:  Some systems allow the user to set a scope string that
+            contains non-printing characters.  Rare, but possible.
+    """
+    if( (self._L1name is None) and (self._L2name is not None) ):
+      self._L2_decode()
+    return( self._L1name )
+
+  @property
+  def L2name( self ):
+    """Return the L2 encoded (wire format) version of the NBT name.
+
+    Output: None, if the NBT Name is empty.  Otherwise, the L2 encoded
+            format of the name is returned.
+    """
+    return( self._L2name )
 
   def setL2name( self, nbtname=None ):
     """Assign an L2 (wire) format name to the NBT Name object.
@@ -814,6 +803,50 @@ class Name( object ):
       raise NBTerror( 1003, m, lsp )
     return namLen
 
+  def _parseL2name( self, l2name ):
+    # Internal method to validate the format of a level 2 encoded NBT name.
+    #
+    # Input:
+    #   l2name  - The L2 encoded NBT name to be validated.
+    #
+    # Output: A tuple contaning the validated name and Label String Pointer
+    #         (LSP) offset.  If the latter is None, then the input name is
+    #         terminated with a label length of zero (the normal case).
+    #
+    # Errors: ValueError  - Raised if the L2 name fails basic sanity checks,
+    #                       including:
+    #                       + A label length points to a position beyond the
+    #                         end of the input string.
+    #                       + The second byte of an LSP is beyond the end of
+    #                         the input string.
+    #                       + A reserved flag combination was found in the
+    #                         upper two bits of a label length.
+    #
+    posn   = 0
+    namlen = len( l2name )
+    lablen = ord( l2name[0] )
+    # Read through the label lengths to ensure correct syntax and total length.
+    while( lablen > 0 ):
+      if( lablen < 0x40 ):
+        # Upper two bits are 00; should be a normal label length.
+        posn += 1 + lablen
+        if( posn >= namlen ):
+          # Must've had invalid length bytes.
+          raise ValueError( "Malformed NBT name; label length incorrect." )
+        lablen = ord( l2name[posn] )
+      elif( 0xC0 == (lablen & 0xC0) ):
+        # Upper bits are 11; it's a label string pointer (2 bytes long).
+        if( (posn + 1) >= namlen ):
+          raise ValueError( "Malformed NBT name; corrupt label pointer." )
+        # Trim and return the L2 name, and the LSP.
+        lsp = ((lablen & ~0xC0) << 8) + ord( l2name[posn+1] )
+        return( (l2name[:posn+2], lsp ) )
+      else:
+        # Neither a valid length nor a valid label string pointer.
+        raise ValueError( "Malformed NBT name; reserved bit pattern used." )
+    # Validated, zero-terminated, L2 name.
+    return( (l2name[:posn+1], None) )
+
   def appendL2name( self, nbtname=None ):
     """Concatenate one L2name to another.
 
@@ -879,16 +912,8 @@ class Name( object ):
       raise NBTerror( 1003, m, lsp )
     return( len( self._L2name ) )
 
-  def getNetBIOSname( self ):
-    """Return the NetBIOS name from the NBT Name.
-
-    Output: The decoded NetBIOS name, or None if the object is empty.
-    """
-    if( self._NBname is None ):
-      self._decodeAll()
-    return( self._NBname )
-
-  def getLANAname( self ):
+  @property
+  def LANAname( self ):
     """Return the 16-octet formatted version of the NetBIOS name.
 
     Output: The decoded, padded, and suffixed NetBIOS name, or None if
@@ -905,7 +930,8 @@ class Name( object ):
     """
     return( (self.getNetBIOSname() + (15 * self._Pad))[:15] + self._Suffix )
 
-  def getScope( self ):
+  @property
+  def Scope( self ):
     """Return the NBT scope string.
 
     Output: The unencoded scope string, or None if the object is empty.
@@ -914,7 +940,8 @@ class Name( object ):
       self._decodeAll()
     return( self._Scope )
 
-  def getPadSuffix( self ):
+  @property
+  def PadSuffix( self ):
     """Return a tuple containing the padding byte and the suffix byte.
 
     Output: Either None, or a two-element tuple.  The first element will
@@ -930,17 +957,20 @@ class Name( object ):
       return( None )
     return( (self._Pad, self._Suffix) )
 
-  def __getPad( self ):
+  @property
+  def Pad( self ):
     # "Getter" method for the padding byte value.
     tup = self.getPadSuffix()
     return( tup[0] if( tup ) else None )
 
-  def __getSuffix( self ):
+  @property
+  def Suffix( self ):
     # "Getter" method for the suffix byte value.
     tup = self.getPadSuffix()
     return( tup[1] if( tup ) else None )
 
-  def getLSP( self ):
+  @property
+  def LSP( self ):
     """If the name is terminated by an LSP, return the offset value.
 
     Output: None, if there is no label string pointer (LSP) in the L2
@@ -955,36 +985,6 @@ class Name( object ):
     if( self._LSP is None ):
       self._decodeAll()
     return( self._LSP )
-
-  def getL1name( self ):
-    """Return the L1 encoded version of the NBT name.
-
-    Output: None, if the NBT Name is empty, else the L1 encoded string
-            format of the NBT name.
-
-    Notes:  Some systems allow the user to set a scope string that
-            contains non-printing characters.  Rare, but possible.
-    """
-    if( (self._L1name is None) and (self._L2name is not None) ):
-      self._L2_decode()
-    return( self._L1name )
-
-  def getL2name( self ):
-    """Return the fully encoded (wire format) version of the NBT name.
-
-    Output: None, if the NBT Name is empty.  Otherwise, the L2 encoded
-            format of the name is returned.
-    """
-    return( self._L2name )
-
-  # Name object properties.
-  NBname = property( getNetBIOSname, doc="Retrieve the NetBIOS name" )
-  Pad    = property( __getPad,    doc="Retrieve the Padding byte" )
-  Suffix = property( __getSuffix, doc="Retrieve the Suffix byte" )
-  Scope  = property( getScope,    doc="Retrieve the Scope string" )
-  L1name = property( getL1name,   doc="Retrieve the L1 encoded NBT name" )
-  L2name = property( getL2name,   doc="Retrieve the L2 encoded NBT name" )
-  LSP    = property( getLSP, doc="Retrieve the Label String Pointer, if any" )
 
 
 class NSHeader( object ):
@@ -1019,116 +1019,148 @@ class NSHeader( object ):
     self._NScount = 0x0001 if Counts[2] else 0x0000
     self._ARcount = 0x0001 if Counts[3] else 0x0000
 
-  def __TrnId( self, TrnId=None ):
-    # Get/set the Transaction ID (HEADER.NAME_TRN_ID).
-    if( TrnId is None ):
-      return( self._TrnId )   # Return the current Transaction Id value.
+  @property
+  def TrnId( self ):
+    """Transaction ID; NAME_TRN_ID"""
+    return( self._TrnId )   # Return the current Transaction Id value.
+  @TrnId.setter
+  def TrnId( self, TrnId=None ):
     self._TrnId = (0xFFFF & int( TrnId ))   # Set the NAME_TRN_ID value.
 
-  def __Flags( self, Flags=None ):
-    # Get/set the 2-octet HEADER.FLAGS field.
-    if( Flags is None ):
-      return( self._Flags )   # Return the current HEADER.FLAGS value.
+  @property
+  def Flags( self ):
+    """The 2-octet Header Flags; FLAGS"""
+    return( self._Flags )   # Return the current HEADER.FLAGS value.
+  @Flags.setter
+  def Flags( self, Flags=None ):
     self._Flags  = (0xFFFF & int( Flags ))    # Set the HEADER.FLAGS value.
 
-  def __Rbit( self, R=None ):
-    # Get/set the state of the HEADER.FLAGS.R(esponse) bit.
-    if( R is None ):
-      return( bool( self._Flags & NS_R_BIT ) )
+  @property
+  def Rbit( self ):
+    """Response Flag; FLAGS.R"""
+    return( bool( self._Flags & NS_R_BIT ) )
+  @Rbit.setter
+  def Rbit( self, R=None ):
     if( R ):
       self._Flags |= NS_R_BIT
     else:
       self._Flags &= ~NS_R_BIT
 
-  def __OPcode( self, OPcode=None ):
-    # Get/set the HEADER.FLAGS.OPCODE subfield value.
-    if( OPcode is None ):
-      return( self._Flags & NS_OPCODE_MASK )
+  @property
+  def OPcode( self ):
+    """Operation Code; FLAGS.OPCODE"""
+    return( self._Flags & NS_OPCODE_MASK )
+  @OPcode.setter
+  def OPcode( self, OPcode=None ):
     self._Flags = (self._Flags & ~NS_OPCODE_MASK) | (OPcode & NS_OPCODE_MASK)
 
-  def __NMflags( self, NMflags=None ):
-    # Get/set the HEADER.FLAGS.NMFLAGS subfield.
-    if( NMflags is None ):
-      return( self._Flags & NS_NM_FLAGS_MASK )
+  @property
+  def NMflags( self ):
+    """Name Flags: FLAGS.NM_FLAGS"""
+    return( self._Flags & NS_NM_FLAGS_MASK )
+  @NMflags.setter
+  def NMflags( self, NMflags=None ):
     self._Flags &= ~NS_NM_FLAGS_MASK
     self._Flags |= (NMflags & NS_NM_FLAGS_MASK)
 
-  def __AAbit( self, AA=None ):
-    # Get/set the NM_FLAGS.AA (Authoritative Answer) bit state.
-    if( AA is None ):
-      return( bool( self._Flags & NS_NM_AA_BIT ) )
+  @property
+  def AAbit( self ):
+    """Authoritative Answer bit; FLAGS.NM_FLAGS.AA"""
+    return( bool( self._Flags & NS_NM_AA_BIT ) )
+  @AAbit.setter
+  def AAbit( self, AA=None ):
     if( AA ):
       self._Flags |= NS_NM_AA_BIT
     else:
       self._Flags &= ~NS_NM_AA_BIT
 
-  def __TCbit( self, TC=None ):
-    # Get/set the NM_FLAGS.TC (TrunCation) bit state.
-    if( TC is None ):
-      return( bool( self._Flags & NS_NM_TC_BIT ) )
+  @property
+  def TCbit( self ):
+    """TrunCation bit; FLAGS.NM_FLAGS.TC"""
+    return( bool( self._Flags & NS_NM_TC_BIT ) )
+  @TCbit.setter
+  def TCbit( self, TC=None ):
     if( TC ):
       self._Flags |= NS_NM_TC_BIT
     else:
       self._Flags &= ~NS_NM_TC_BIT
 
-  def __RDbit( self, RD=None ):
-    # Get/set the NM_FLAGS.RD (Recursion Desired) bit state.
-    if( RD is None ):
-      return( bool( self._Flags & NS_NM_RD_BIT ) )
+  @property
+  def RDbit( self ):
+    """Recursion Desired bit; FLAGS.NM_FLAGS.RD"""
+    return( bool( self._Flags & NS_NM_RD_BIT ) )
+  @RDbit.setter
+  def RDbit( self, RD=None ):
     if( RD ):
       self._Flags |= NS_NM_RD_BIT
     else:
       self._Flags &= ~NS_NM_RD_BIT
 
-  def __RAbit( self, RA=None ):
-    # Get/set the state of the NM_FLAGS.RA (Recursion Available) bit.
-    if( RA is None ):
-      return( bool( self._Flags & NS_NM_RA_BIT ) )
+  @property
+  def RAbit( self ):
+    """Recursion Available bit; FLAGS.NM_FLAGS.RA"""
+    return( bool( self._Flags & NS_NM_RA_BIT ) )
+  @RAbit.setter
+  def RAbit( self, RA=None ):
     if( RA ):
       self._Flags |= NS_NM_RA_BIT
     else:
       self._Flags &= ~NS_NM_RA_BIT
 
-  def __Bbit( self, B=None ):
-    # Get/set the state of the Broadcast bit (NM_FLAGS.B).
-    if( B is None ):
-      return( bool( self._Flags & NS_NM_B_BIT ) )
+  @property
+  def Bbit( self ):
+    """Broadcast bit; FLAGS.NM_FLAGS.B"""
+    return( bool( self._Flags & NS_NM_B_BIT ) )
+  @Bbit.setter
+  def Bbit( self, B=None ):
     if( B ):
       self._Flags |= NS_NM_B_BIT
     else:
       self._Flags &= ~NS_NM_B_BIT
 
-  def __Rcode( self, Rcode=None ):
-    # Get/set the message Result Code (NM_FLAGS.RCODE).
+  @property
+  def Rcode( self ):
+    """Return Code; FLAGS.NM_FLAGS.RCODE"""
+    return( self._Flags & NS_RCODE_MASK )
+  @Rcode.setter
+  def Rcode( self, Rcode=None ):
     if( Rcode is None ):
       return( self._Flags & NS_RCODE_MASK )
     self._Flags = (self._Flags & ~NS_RCODE_MASK) | (Rcode & NS_RCODE_MASK)
 
-  def __QDcount( self, QDcount=None ):
-    # Get/set the number of Question Records included in the message.
-    if( QDcount is None ):
-      return( self._QDcount )
+  @property
+  def QDcount( self ):
+    """Question Records; QDCOUNT"""
+    return( self._QDcount )
+  @QDcount.setter
+  def QDcount( self, QDcount=None ):
     # The QDcount must be 0 or 1.
     self._QDcount = 0x0001 if QDcount else 0x0000
 
-  def __ANcount( self, ANcount=None ):
-    # Get/set the number of Answer Records included in the message.
-    if( ANcount is None ):
-      return( self._ANcount )
+  @property
+  def ANcount( self):
+    """Answer Records; ANCOUNT"""
+    return( self._ANcount )
+  @ANcount.setter
+  def ANcount( self, ANcount=None ):
     # The ANcount must be 0 or 1.
     self._ANcount = 0x0001 if ANcount else 0x0000
 
-  def __NScount( self, NScount=None ):
-    # Get/set the number of Name Service Authority records.
-    if( NScount is None ):
-      return( self._NScount )
+  @property
+  def NScount( self ):
+    """Name Service Authority Records; NSCOUNT"""
+    return( self._NScount )
+  @NScount.setter
+  def NScount( self, NScount=None ):
     # The NScount must be 0 or 1.
     self._NScount = 0x0001 if NScount else 0x0000
 
-  def __ARcount( self, ARcount=None ):
-    # Get/set the number of Additional Records in the message.
-    if( ARcount is None ):
-      return( self._ARcount )
+  @property
+  def ARcount( self ):
+    """Additional Records; ARCOUNT"""
+    return( self._ARcount )
+  @ARcount.setter
+  def ARcount( self, ARcount=None ):
     # As above, the only valid values are 0 and 1.
     self._ARcount = 0x0001 if ARcount else 0x0000
 
@@ -1201,23 +1233,6 @@ class NSHeader( object ):
                                  self._NScount,
                                  self._ARcount ) )
 
-  # Turn the majority of the methods into properties.
-  TrnId   = property( __TrnId,   __TrnId,   doc="Transaction ID; NAME_TRN_ID" )
-  Flags   = property( __Flags,   __Flags,   doc="Header Flags; HEADER.FLAGS" )
-  Rbit    = property( __Rbit,    __Rbit,    doc="Response Flag; R" )
-  OPcode  = property( __OPcode,  __OPcode,  doc="Operation Code; OPCODE" )
-  NMflags = property( __NMflags, __NMflags, doc="Name Flags: FLAGS.NM_FLAGS" )
-  AAbit   = property( __AAbit,   __AAbit,   doc="Authoritative Answer bit; AA" )
-  TCbit   = property( __TCbit,   __TCbit,   doc="TrunCation bit; TC" )
-  RDbit   = property( __RDbit,   __RDbit,   doc="Recursion Desired bit; RD" )
-  RAbit   = property( __RAbit,   __RAbit,   doc="Recursion Available bit; RA" )
-  Bbit    = property( __Bbit,    __Bbit,    doc="Broadcast bit; B" )
-  Rcode   = property( __Rcode,   __Rcode,   doc="Return Code; RCODE" )
-  QDcount = property( __QDcount, __QDcount, doc="Question Records; QDCOUNT" )
-  ANcount = property( __ANcount, __ANcount, doc="Answer Records; ANCOUNT" )
-  NScount = property( __NScount, __NScount, doc="Authority Records; NSCOUNT" )
-  ARcount = property( __ARcount, __ARcount, doc="Additional Records; ARCOUNT" )
-
 
 class QuestionRecord( object ):
   """NBT Name Service Question Record.
@@ -1246,22 +1261,28 @@ class QuestionRecord( object ):
     self._Qtype  = Qtype
     self._Qclass = NS_Q_CLASS_IN
 
-  def __Qname( self, Qname=None ):
-    # Get/set the encoded NBT Question Name.
-    if( Qname is None ):
-      return( self._Qname )
+  @property
+  def Qname( self ):
+    """NBT Encoded Question Name; QUESTION_NAME"""
+    return( self._Qname )
+  @Qname.setter
+  def Qname( self, Qname=None ):
     self._Qname = Qname
 
-  def __Qtype( self, Qtype=None ):
-    # Get/set the Question Type.
-    if( Qtype is None ):
-      return( self._Qtype )
+  @property
+  def Qtype( self ):
+    """Question Type; QUESTION_TYPE"""
+    return( self._Qtype )
+  @Qtype.setter
+  def Qtype( self, Qtype=None ):
     self._Qtype = (0xFFFF & Qtype)
 
-  def __Qclass( self, Qclass=None ):
-    # Get/set the Question Class.
-    if( Qclass is None ):
-      return( self._Qclass )
+  @property
+  def Qclass( self ):
+    """Question Class; QUESTION_CLASS"""
+    return( self._Qclass )
+  @Qclass.setter
+  def Qclass( self, Qclass=None ):
     self._Qclass = (0xFFFF & Qclass)
 
   def dump( self, indent=0 ):
@@ -1303,11 +1324,6 @@ class QuestionRecord( object ):
     """
     return( self._Qname + _format_QR.pack( self._Qtype, self._Qclass ) )
 
-  # Create properties.
-  Qname  = property( __Qname,  __Qname,  doc="NBT Encoded Name; QUESTION_NAME" )
-  Qtype  = property( __Qtype,  __Qtype,  doc="Question Type; QUESTION_TYPE" )
-  Qclass = property( __Qclass, __Qclass, doc="Question Class; QUESTION_CLASS" )
-
 
 class ResourceRecord( object ):
   """NBT Name Service Resource Record.
@@ -1347,34 +1363,45 @@ class ResourceRecord( object ):
     self._TTL     = 0x00000000 if( not TTL ) else (0xFFFFFFFF & int( TTL ))
     self._RDlen   = 0x0000 if( not RDlen ) else (0xFFFF & int( RDlen ))
 
-  def __RRname( self, RRname=None ):
-    # Get/set the encoded NBT Resource Record Name.
-    if( RRname is None ):
-      return( self._RRname )
+  @property
+  def RRname( self ):
+    """Resource Record Name; RR_NAME"""
+    return( self._RRname )
+  @RRname.setter
+  def RRname( self, RRname=None ):
     self._RRname = RRname
 
-  def __RRtype( self, RRtype=None ):
-    # Get/set the Resource Record Type.
-    if( RRtype is None ):
-      return( self._RRtype )
+  @property
+  def RRtype( self ):
+    """Resource Record Type; RR_TYPE"""
+    return( self._RRtype )
+  @RRtype.setter
+  def RRtype( self, RRtype=None ):
+    return( self._RRtype )
     self._RRtype = (0xFFFF & RRtype)
 
-  def __RRclass( self, RRclass=None ):
-    # Get/set the Resource Record Class.
-    if( RRclass is None ):
-      return( self._RRclass )
+  @property
+  def RRclass( self ):
+    """Resource Record Type; RR_TYPE"""
+    return( self._RRclass )
+  @RRclass.setter
+  def RRclass( self, RRclass=None ):
     self._RRclass = (0xFFFF & RRclass)
 
-  def __TTL( self, TTL=None ):
-    # Get/set the Time to Live value.
-    if( TTL is None ):
-      return( self._TTL )
+  @property
+  def TTL( self ):
+    """Time To Live; TTL"""
+    return( self._TTL )
+  @TTL.setter
+  def TTL( self, TTL=None ):
     self._TTL = (0xFFFFFFFF & int( TTL ))
 
-  def __RDlen( self, RDlen=None ):
-    # Get/set the RDLENGTH field of the Resource Record.
-    if( RDlen is None ):
-      return( self._RDlen )
+  @property
+  def RDlen( self ):
+    """RDATA Length; RDLENGTH"""
+    return( self._RDlen )
+  @RDlen.setter
+  def RDlen( self, RDlen=None ):
     self._RDlen = (0xFFFF & int( RDlen ))
 
   def dump( self, indent=0 ):
@@ -1444,13 +1471,6 @@ class ResourceRecord( object ):
     s = _format_RR.pack( self._RRtype, self._RRclass, self._TTL, self._RDlen )
     return( self._RRname + s )
 
-  # Create properties.
-  RRname = property( __RRname,  __RRname,  doc="Resource Record Name; RR_NAME" )
-  RRtype = property( __RRtype,  __RRtype,  doc="Resource Record Type; RR_TYPE" )
-  RRclass= property( __RRclass, __RRclass, doc="Resource Record Type; RR_TYPE" )
-  TTL    = property( __TTL,     __TTL,     doc="Time To Live; TTL" )
-  RDlen  = property( __RDlen,   __RDlen,   doc="RDATA Length; RDLENGTH" )
-
 
 class AddressRecord( object ):
   """NBT Name Service Address Record.
@@ -1503,31 +1523,39 @@ class AddressRecord( object ):
     if( G ):
       self._NBflags |= NS_GROUP_BIT
 
-  def __Gbit( self, G=None ):
-    # Get/set the Group (G) bit in the NB_FLAGS field.
-    if( G is None ):
-      return( bool( NS_GROUP_BIT & self._NBflags ) )
+  @property
+  def Gbit( self ):
+    """Group bit; RDATA.NB_FLAGS.G"""
+    return( bool( NS_GROUP_BIT & self._NBflags ) )
+  @Gbit.setter
+  def Gbit( self, G=None ):
     if( G ):
       self._NBflags |= NS_GROUP_BIT
     else:
       self._NBflags &= ~NS_GROUP_BIT
 
-  def __ONT( self, ONT=None ):
-    # Get/set the Owner Node Type in the RDATA.NB_FLAGS.
-    if( ONT is None ):
-      return( NS_ONT_MASK & self._NBflags )
+  @property
+  def ONT( self ):
+    """Owner Node Type; NB_FLAGS.ONT"""
+    return( NS_ONT_MASK & self._NBflags )
+  @ONT.setter
+  def ONT( self, ONT=None ):
     self._NBflags = (self._NBflags & ~NS_ONT_MASK) | (NS_ONT_MASK & ONT)
 
-  def __NBaddr( self, NBaddr=None ):
-    # Get/set the RDATA.NB_ADDRESS of the message.
-    if( NBaddr is None ):
-      return( self._NBaddr )
+  @property
+  def NBaddr( self ):
+    """IPv4 address; NB_ADDRESS"""
+    return( self._NBaddr )
+  @NBaddr.setter
+  def NBaddr( self, NBaddr=None ):
     self._NBaddr = (NBaddr[:4] if( NBaddr ) else (4 * '\0'))
 
-  def __NBflags( self, NBflags=None ):
-    # Get/set the RDATA.NB_FLAGS field as a whole.
-    if( NBflags is None ):
-      return( self._NBflags )
+  @property
+  def NBflags( self ):
+    """Name flags; NB_FLAGS"""
+    return( self._NBflags )
+  @NBflags.setter
+  def NBflags( self, NBflags=None ):
     self._NBflags = (NBflags & NS_NBFLAG_MASK)
 
   def dump( self, indent ):
@@ -1541,14 +1569,14 @@ class AddressRecord( object ):
     """
     def _TupONT():
       # Return the string representation of the Owner Node Type value.
-      ont = self.__ONT()
+      ont = self.ONT
       return( (ont, (_ontDict[ont] if( ont in _ontDict ) else '<unknown>')) )
 
-    ipv4 = tuple( ord( octet ) for octet in tuple( self.__NBaddr() ) )
+    ipv4 = tuple( ord( octet ) for octet in tuple( self.NBaddr ) )
     ind = ' ' * indent
     s  = ind + "RDATA (Address Record):\n"
-    s += ind + "  NBflags.: 0x%04x\n" % self.__NBflags()
-    s += ind + "        G...: %s\n"        % self.__Gbit()
+    s += ind + "  NBflags.: 0x%04x\n" % self.NBflags
+    s += ind + "        G...: %s\n"        % self.Gbit
     s += ind + "        ONT.: 0x%X = %s\n" % _TupONT()
     s += ind + "  NBaddr..: %u.%u.%u.%u\n" % ipv4
     return( s )
@@ -1559,12 +1587,6 @@ class AddressRecord( object ):
     Output: A byte stream.
     """
     return( _format_Short.pack( self._NBflags ) + self._NBaddr )
-
-  # Properties.
-  Gbit    = property( __Gbit,    __Gbit,    doc="Group bit; RDATA.NB_FLAGS.G" )
-  ONT     = property( __ONT,     __ONT,     doc="Owner Node Type; NB_FLAGS.ONT")
-  NBaddr  = property( __NBaddr,  __NBaddr,  doc="IPv4 address; NB_ADDRESS" )
-  NBflags = property( __NBflags, __NBflags, doc="Name flags; NB_FLAGS" )
 
 
 class NodeStatusRequest( NSHeader, QuestionRecord ):
@@ -1657,17 +1679,21 @@ class NodeStatusResponse( NSHeader, ResourceRecord ):
     rdlen = 7 + (18 * (len( self._NameList ) & 0xFF ))
     ResourceRecord.__init__( self, L2name, NS_RR_TYPE_NBSTAT, 0, rdlen )
 
-  def __NameList( self, NameList=None ):
-    # Get/set the list of names in the response.
-    if( NameList is None ):
-      return( self._NameList )
+  @property
+  def NameList( self ):
+    """Get/set the list of registered names."""
+    return( self._NameList )
+  @NameList.setter
+  def NameList( self, NameList=None ):
     self._NameList = NameList[:255] if( NameList ) else []
     self._RDlen = 7 + (18 * (len( self._NameList ) & 0xFF ))
 
-  def __MAC( self, MAC=None ):
-    # Get/set the MAC address value.
-    if( MAC is None ):
-      return( self._MAC )
+  @property
+  def MAC( self ):
+    """Get/set the interface MAC address."""
+    return( self._MAC )
+  @MAC.setter
+  def MAC( self, MAC=None ):
     self._MAC = (MAC + (6 * '\0'))[:6] if( MAC ) else (6 * '\0')
 
   def dump( self, indent=0 ):
@@ -1724,10 +1750,6 @@ class NodeStatusResponse( NSHeader, ResourceRecord ):
     # MAC address
     s += self._MAC
     return( s )
-
-  # Create properties.
-  NameList = property( __NameList, __NameList, doc="List of registered names." )
-  MAC      = property( __MAC,      __MAC,      doc="Interface MAC address." )
 
 
 class NameQueryRequest( NSHeader, QuestionRecord ):
@@ -1858,13 +1880,15 @@ class NameQueryResponse( NSHeader, ResourceRecord ):
     # TTL.
     self.TTL   = TTL
     # ...and set the address list by calling the __AddrList() method.
-    self.__AddrList( aList if( aList ) else [] )
+    self.__AddrList( AddrList if( AddrList ) else [] )
 
-  def __AddrList( self, AddrList=None ):
-    # Set the address list for the NBT Name Query Response.
-    if( AddrList is None ):
-      return( self._AddrList )
-    if( not isinstance( msg, list ) ):
+  @property
+  def AddrList( self ):
+    """Address list for the NBT Name Query Response; ADDR_ENTRY[]"""
+    return( self._AddrList )
+  @AddrList.setter
+  def AddrList( self, AddrList=None ):
+    if( not isinstance( AddrList, list ) ):
       raise TypeError( "The Address List must be a list, or None." )
     self._AddrList = AddrList
     self.RDlen = 6 * len( AddrList )
@@ -1901,9 +1925,6 @@ class NameQueryResponse( NSHeader, ResourceRecord ):
     for AddrEntry in self._AddrList:
       s += AddrEntry.compose()
     return( s )
-
-  AddrList = property( __AddrList, __AddrList,
-                       doc="Name Query Answers; ADDR_ENTRY[]" )
 
 
 class NameRegistrationRequest( NSHeader, QuestionRecord,
@@ -2296,7 +2317,7 @@ class NameRefreshRequest( NameRegistrationRequest ):
     self.RDbit  = False
 
 
-class NameReleaseRequestandDemand( NameRegistrationRequest ):
+class NameReleaseRequestAndDemand( NameRegistrationRequest ):
   """Name Release Request or Name Release Demand message.
 
   A Name Release sent in B mode is a Name Release Demand; no response is
@@ -2382,7 +2403,7 @@ class NameReleaseResponse( NameRegistrationResponse ):
     """
     flags  = NS_R_BIT | NS_OPCODE_RELEASE | NS_NM_AA_BIT
     NSHeader.__init__( self, TrnId, flags, (0, 1, 0, 0) )
-    ResourceRecord.__init__( self, L2name, NS_RR_TYPE_NB, TTL, 6 )
+    ResourceRecord.__init__( self, L2name, NS_RR_TYPE_NB, 0, 6 )
     AddressRecord.__init__( self, G, ONT, IP )
     self.Rcode = Rcode
 
@@ -2564,7 +2585,7 @@ class LocalNameTable( object ):
     # Go ahead...
     self._IPaddr   = IP
     self._ONT      = (ONT & NS_ONT_MASK)
-    self._scope    = (Name( 'nada', scope=scope ).getL2name())[33:]
+    self._scope    = (Name( 'nada', scope=scope ).L2name)[33:]
     self._nameDict = {}
     if( NameList ):
       for L1name, Hidden, Nflags in NameList:
@@ -2784,7 +2805,7 @@ def ParseMsg( msg=None ):
         offset += n.setL2name( msg[12] )
       else:
         raise
-    return( (offset, n.getL2name()) )
+    return( (offset, n.L2name) )
 
   def _readQueRec():
     # Parse a Question Record from a message.
@@ -2845,7 +2866,7 @@ def ParseMsg( msg=None ):
     if( (1, 0, 0, 0 ) != Counts ):
       raise NBTerror( 1005, "Invalid record count in query request" )
     # Parse the Question Record.
-    offset, Qtype, Qname = _readQueRec()
+    _, Qtype, Qname = _readQueRec()
     if( NS_Q_TYPE_NBSTAT == Qtype ):
       # Node Status Request.
       Req = NodeStatusRequest( TrnId, Qname )
@@ -2877,7 +2898,7 @@ def ParseMsg( msg=None ):
       num_names = ord( msg[offset] )
       offset += 1
       NameList = []
-      for i in range( num_names ):
+      for _ in range( num_names ):
         # Unpack the name records.
         NB_name  = msg[offset:][:16]
         NBflags, = _format_Short.unpack( msg[(16+offset):][:2] )
@@ -2893,7 +2914,7 @@ def ParseMsg( msg=None ):
       aL = []
       if( 0 == Rcode ):
         # The response is positive, so collect the name records.
-        for i in range( RDlen/6 ):
+        for _ in range( RDlen/6 ):
           aL.append( _format_AddrEntry.unpack( msg[offset:][:6] ) )
           offset += 6
       Resp = NameQueryResponse( TrnId, RD, RA, Rcode, RRname, TTL, aL )
@@ -2917,19 +2938,20 @@ def ParseMsg( msg=None ):
     if( (1, 0, 0, 1) != Counts ):
       s = "Invalid record count in %s request" % _OPcodeDict[ OPcode ]
       raise NBTerror( 1005, s )
-    # Parse the Question and Resource Records.
-    offset, Qtype, Qname = _readQueRec()
-    offset, RRtype, TTL, RDlen, RRname = _readResRec( 12 )
+    # Parse the Resource Record.
+    offset, _, TTL, _, RRname = _readResRec( 12 )
     # Rdata
     NBflags, IP = _format_AddrEntry.unpack( msg[offset:][:6] )
     # Now figure out what type of request it really is.
     RD = bool( NMflags & NS_NM_RD_BIT )
     B  = bool( NMflags & NS_NM_B_BIT )
+    G   = bool( NBflags & NS_GROUP_BIT )
+    ONT = (NBflags & NS_ONT_MASK)
     # Build the message object.
     if( OPcode in [ NS_OPCODE_REFRESH, NS_OPCODE_ALTREFRESH ] ):
       Req = NameRefreshRequest( TrnId, RRname, TTL, G, ONT, IP )
     elif( NS_OPCODE_RELEASE == OPcode ):
-      Req = NameReleaseRequestandDemand( TrnId, B, RRname, G, ONT, IP )
+      Req = NameReleaseRequestAndDemand( TrnId, B, RRname, G, ONT, IP )
     elif( NS_OPCODE_MULTIHOMED == OPcode ):
       Req = MultiHomedNameRegistrationRequest( TrnId, RRname, TTL, ONT, IP )
     elif( RD ):
@@ -2954,9 +2976,8 @@ def ParseMsg( msg=None ):
     if( (0, 1, 0, 0) != Counts ):
       s = "release" if( NS_OPCODE_RELEASE == OPcode ) else "registration"
       raise NBTerror( 1005, "Invalid record count in %s response" % s )
-    offset, RRtype, TTL, RDlen, RRname = _readResRec( 12 )
+    offset, _, TTL, _, RRname = _readResRec( 12 )
     NBflags, IP = _format_AddrEntry.unpack( msg[offset:][6] )
-    B   = bool( NMflags & NS_NM_B_BIT )
     RD  = bool( NMflags & NS_NM_RD_BIT )
     G   = bool( NBflags & NS_GROUP_BIT )
     ONT = (NBflags & NS_ONT_MASK)
@@ -2982,9 +3003,9 @@ def ParseMsg( msg=None ):
     #
     if( (0, 1, 0, 0) != Counts ):
       raise NBTerror( 1005, "Invalid record count in WACK response" )
-    offset, RRtype, TTL, RDlen, RRname = _readResRec( 12 )
+    offset, _, TTL, _, RRname = _readResRec( 12 )
     RDflags = _format_Short.unpack( msg[offset:][2] )
-    Resp = WaitForAcknowledgementResponse( TranId, RRname, TTL, RDflags )
+    Resp = WaitForAcknowledgementResponse( TrnId, RRname, TTL, RDflags )
     Resp.NMflags = NMflags
     return( Resp )
 
