@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_NameService.py; 2015-03-15 15:36:31 -0500; Jose A. Rivera$
+# $Id: NBT_NameService.py; 2015-03-19 10:33:57 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -366,7 +366,7 @@ class Name( object ):
             By default, the NBT Name is initialized with an empty value,
             (None) which must be set before the name can be used.  If
             the <name> parameter is something other than None, the
-            NBT Name will be filled in by calling the setNetBIOSname()
+            NBT Name will be filled in by calling the setNBTname()
             method with the supplied parameters.
     """
     self.reset()
@@ -919,16 +919,19 @@ class Name( object ):
     Output: The decoded, padded, and suffixed NetBIOS name, or None if
             the object is empty.
 
-    Notes:  This is similar to the getNetBIOSname() method, but the
-            padding and suffix bytes are included in the result.  The
-            output will be a string of 16 octets or None.  The scope
-            is not included in the result.
+    Notes:  This is similar to the NBname property, which returns only
+            the base NetBIOS name.  This property also includes the
+            padding and suffix bytes in the result.  The output will be
+            a string of 16 octets or None.  The scope is not included in
+            the result.
 
             The LANA name is the 16-byte name as it would have been
             registered on the original LAN Adapter hardware in the
             1980's.
     """
-    return( (self.getNetBIOSname() + (15 * self._Pad))[:15] + self._Suffix )
+    if( self.NBname is None ):
+      return( None )
+    return( (self._NBname + (15 * self._Pad))[:15] + self._Suffix )
 
   @property
   def Scope( self ):
@@ -1022,18 +1025,18 @@ class NSHeader( object ):
   @property
   def TrnId( self ):
     """Transaction ID; NAME_TRN_ID"""
-    return( self._TrnId )   # Return the current Transaction Id value.
+    return( self._TrnId )
   @TrnId.setter
   def TrnId( self, TrnId=None ):
-    self._TrnId = (0xFFFF & int( TrnId ))   # Set the NAME_TRN_ID value.
+    self._TrnId = (0xFFFF & int( TrnId ))
 
   @property
   def Flags( self ):
     """The 2-octet Header Flags; FLAGS"""
-    return( self._Flags )   # Return the current HEADER.FLAGS value.
+    return( self._Flags )
   @Flags.setter
   def Flags( self, Flags=None ):
-    self._Flags  = (0xFFFF & int( Flags ))    # Set the HEADER.FLAGS value.
+    self._Flags  = (0xFFFF & int( Flags ))
 
   @property
   def Rbit( self ):
