@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_NameService.py; 2015-03-19 17:01:51 -0500; Christopher R. Hertel$
+# $Id: NBT_NameService.py; 2015-03-20 14:59:14 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -54,7 +54,7 @@
 #   - With regard to IMP_ERR, RFC 1002 says:
 #       "Allowable only for challenging NBNS when gets an Update type
 #       registration request."
-#     See: http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.1.2
+#     See: [IMPCIFS]: http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.1.2
 #   - "NAME UPDATE REQUEST" and "NAME OVERWRITE REQUEST & DEMAND" need
 #     to be clarified.  See the Alert box in #NBT.4.3.1.2.
 #   - The 0x8/0x9 Name Refresh OPcode confusion.
@@ -77,7 +77,7 @@
 #   [IMPCIFS] Hertel, Christopher R., "Implementing CIFS - The Common
 #             Internet File System", Prentice Hall, August 2003
 #             ISBN:013047116X
-#             http://www.ubiqx.org/cifs/
+#             http://ubiqx.org/cifs/
 #
 #   [MS-CIFS] Microsoft Corporation, "Common Internet File System (CIFS)
 #             Protocol Specification"
@@ -103,7 +103,7 @@ implementing the NBT Name Service protocol.
 
 NBT is defined in IETF RFCs 1001 and 1002, collectively known as IETF
 Standard 19 (STD19).  A detailed implementer's guide to NBT can be
-found on the web at:  http://www.ubiqx.org/cifs/NetBIOS.html
+found on the web at:  http://ubiqx.org/cifs/NetBIOS.html
 
 CONSTANTS:
 
@@ -405,6 +405,17 @@ class Name( object ):
       self._name = self.setNBTname( name, pad, suffix, scope, lsp )
     return
 
+  def reset( self ):
+    """Reset the NBT Name to None.
+    """
+    self._L2name = None
+    self._L1name = None
+    self._NBname = None
+    self._Pad    = None
+    self._Suffix = None
+    self._Scope  = None
+    self._LSP    = None
+
   def __str__( self ):
     """Informal string presentation of the wire-format NBT name.
 
@@ -419,9 +430,10 @@ class Name( object ):
             not strictly observed by all implementations.
 
             If, however, the name being printed was created from its
-            component parts and a non-standard pad-byte was given, then
-            the pad byte will be known and recognized as a pad byte.
-            ...and that's why the doctest output shown below is correct.
+            component parts and a non-standard pad-byte was given,
+            then the pad byte will be known and recognized as a pad
+            byte.  ...and that's why the doctest output shown below
+            is correct.
 
     Doctest:
       >>> name = Name( "ZNORFGASSER", pad='x', suffix=' ' )
@@ -452,11 +464,11 @@ class Name( object ):
     """String representation of the NBT Name object instance.
 
     Notes:  See the python documentation for clarification.
-            http://docs.python.org/2/reference/datamodel.html#object.__repr__
+      http://docs.python.org/2/reference/datamodel.html#object.__repr__
 
     Doctest:
-      >>> n = Name( "MITSCHLAG", scope="Himmelschpitz.org" ).__repr__()
-      >>> print n
+      >>> n = Name( "MITSCHLAG", scope="Himmelschpitz.org" )
+      >>> print n.__repr__()
       Name( 'MITSCHLAG', '\\x20', '\\x20', 'Himmelschpitz.org', None )
     """
     # Ensure that the name is fully decoded, or is empty.
@@ -574,17 +586,6 @@ class Name( object ):
         self._L2_decode()
       self._L1_decode()
 
-  def reset( self ):
-    """Reset the NBT Name to None.
-    """
-    self._L2name = None
-    self._L1name = None
-    self._NBname = None
-    self._Pad    = None
-    self._Suffix = None
-    self._Scope  = None
-    self._LSP    = None
-
   def setNBTname( self, name  = None,
                         pad   = None,
                         suffix= None,
@@ -607,7 +608,7 @@ class Name( object ):
                 convention).  If <suffix> is given as None, a space is
                 used by default, unless the padding byte is NUL in
                 which case NUL is also used for the suffix.
-                See: http://www.ubiqx.org/cifs/Appendix-C.html
+                See: [IMPCIFS]: http://ubiqx.org/cifs/Appendix-C.html
       scope   - The NBT scope identifier.  See notes below.
       lsp     - Either None, or a Label String Pointer offset in the
                 range 0..0x3FFF (14 bits).
@@ -645,13 +646,13 @@ class Name( object ):
             Think of it as a virtual LAN identifier.  The default scope
             is the empty string, and that is the one that is most
             commonly used.
-            See: http://www.ubiqx.org/cifs/NetBIOS.html#NBT.2.2
+            See: [IMPCIFS]: http://ubiqx.org/cifs/NetBIOS.html#NBT.2.2
 
             Label String Pointers (LSPs) are used to reduce the amount
             of space used to store L2-encoded names in NBT packets.  If
             given, the <lsp> value will be encoded and used to terminate
             composed L2-encoded name.
-            See: http://ubiqx.org/cifs/NetBIOS.html#NBT.4.1.3
+            See: [IMPCIFS]: http://ubiqx.org/cifs/NetBIOS.html#NBT.4.1.3
 
             The NetBIOS name and NBT scope are defined, in the RFCs, as
             strings of octets, not characters.  See:
@@ -734,105 +735,6 @@ class Name( object ):
     self._LSP    = lsp
     return
 
-  @property
-  def NBname( self ):
-    """Get the NetBIOS name from the NBT Name.
-
-    Output: The decoded NetBIOS name, or None if the object is empty.
-    """
-    if( self._NBname is None ):
-      self._decodeAll()
-    return( self._NBname )
-
-  @property
-  def L1name( self ):
-    """Return the L1 encoded version of the NBT name.
-
-    Output: None, if the NBT Name is empty, else the L1 encoded string
-            format of the NBT name.
-
-    Notes:  Some systems allow the user to set a scope string that
-            contains non-printing characters.  Rare, but possible.
-    """
-    if( (self._L1name is None) and (self._L2name is not None) ):
-      self._L2_decode()
-    return( self._L1name )
-
-  @property
-  def L2name( self ):
-    """Return the L2 encoded (wire format) version of the NBT name.
-
-    Output: None, if the NBT Name is empty.  Otherwise, the L2 encoded
-            format of the name is returned.
-    """
-    return( self._L2name )
-
-  def setL2name( self, nbtname=None ):
-    """Assign an L2 (wire) format name to the NBT Name object.
-
-    Input:
-      nbtname - A fully encoded wire-format NBT name.  This name will
-                overwrite the existing name, in all it's forms.
-
-    Output: The length, in bytes, of the L2-encoded NBT name.  This is
-            useful for parsing packets, as it indicates the location of
-            the data following the L2-encoded name.
-
-    Errors: ValueError        - Raised if the input parameter fails
-                                basic sanity checks.
-            NBTerror( 1003 )  - A Label String Pointer was encountered.
-                                See notes below.
-
-    Notes:  This method always starts by clearing the current name
-            stored in the instance.
-
-            If ValueError is raised the NBT Name instance will be empty.
-
-            If an NBTerror (with an eCode of 1003) is raised, the
-            instance will contain the portion of the name that was
-            provided, terminated with the label string pointer that was
-            discovered.  In addition, NBTerror.value will be set to the
-            offset extracted from the LSP.
-
-            Use appendL2name() to combine name segments and create a
-            single L2 encoded name.
-
-            In practice, the only label string pointer ever used in
-            NBT is 0xC00C, which points to an offset of 12.  The
-            NBT Name class, and this method, are painfully excessive
-            in supporting input of any LSP.  "It should never happen."
-
-            See: http://ubiqx.org/cifs/NetBIOS.html#NBT.4.1.3
-            and "Domain name representation and compression" (page 31)
-            in [RFC883] for more details on label string pointers.
-    """
-    # Clear the current name.
-    self.reset()
-
-    # Check for empty name.
-    if( not nbtname ):
-      raise ValueError( "Invalid NBT name (Empty or None)." )
-    # Sanity check the initial label length.
-    if( ('\x20' != nbtname[0]) and (ord(nbtname[0]) < 0x40) ):
-      raise ValueError( "Malformed NBT name; invalid initial name length." )
-
-    # Parse the name, to validate it and to look for a Label String Pointer.
-    nbtname, lsp = self._parseL2name( nbtname )
-
-    # Does the name exceed the maximum length?
-    namLen = len( nbtname )
-    if( namLen > 255 ):
-      raise ValueError( "NBT name length exceeds 255 byte maximum." )
-
-    # A correctly formed NBT name.
-    self._L2name = nbtname
-    # If there's an LSP, we raise an exception.
-    if( lsp is not None ):
-      self._LSP = lsp
-      m = "Info: The given name is terminated by a Label String Pointer:"
-      raise NBTerror( 1003, m, lsp )
-    return namLen
-
   def _parseL2name( self, l2name ):
     # Internal method to validate the format of a level 2 encoded NBT name.
     #
@@ -876,6 +778,73 @@ class Name( object ):
         raise ValueError( "Malformed NBT name; reserved bit pattern used." )
     # Validated, zero-terminated, L2 name.
     return( (l2name[:posn+1], None) )
+
+  def setL2name( self, nbtname=None ):
+    """Assign an L2 (wire) format name to the NBT Name object.
+
+    Input:
+      nbtname - A fully encoded wire-format NBT name.  This name will
+                overwrite the existing name, in all it's forms.
+
+    Output: The length, in bytes, of the L2-encoded NBT name.  This is
+            useful for parsing packets, as it indicates the location of
+            the data following the L2-encoded name.
+
+    Errors: ValueError        - Raised if the input parameter fails
+                                basic sanity checks.
+            NBTerror( 1003 )  - A Label String Pointer was encountered.
+                                See notes below.
+
+    Notes:  This method always starts by clearing the current name
+            stored in the instance.
+
+            If ValueError is raised the NBT Name instance will be empty.
+
+            If an NBTerror (with an eCode of 1003) is raised, the
+            instance will contain the portion of the name that was
+            provided, terminated with the label string pointer that was
+            discovered.  In addition, NBTerror.value will be set to the
+            offset extracted from the LSP.
+
+            Use appendL2name() to combine name segments and create a
+            single L2 encoded name.
+
+            In practice, the only label string pointer ever used in
+            NBT is 0xC00C, which points to an offset of 12.  The
+            NBT Name class, and this method, are painfully excessive
+            in supporting input of any LSP.  "It should never happen."
+
+            See:  "Domain name representation and compression" (pg.31)
+                  in [RFC883], and [IMPCIFS; NBT.4.1.3]
+                  (http://ubiqx.org/cifs/NetBIOS.html#NBT.4.1.3) for
+                  more details on label string pointers.
+    """
+    # Clear the current name.
+    self.reset()
+
+    # Check for empty name.
+    if( not nbtname ):
+      raise ValueError( "Invalid NBT name (Empty or None)." )
+    # Sanity check the initial label length.
+    if( ('\x20' != nbtname[0]) and (ord(nbtname[0]) < 0x40) ):
+      raise ValueError( "Malformed NBT name; invalid initial name length." )
+
+    # Parse the name, to validate it and to look for a Label String Pointer.
+    nbtname, lsp = self._parseL2name( nbtname )
+
+    # Does the name exceed the maximum length?
+    namLen = len( nbtname )
+    if( namLen > 255 ):
+      raise ValueError( "NBT name length exceeds 255 byte maximum." )
+
+    # A correctly formed NBT name.
+    self._L2name = nbtname
+    # If there's an LSP, we raise an exception.
+    if( lsp is not None ):
+      self._LSP = lsp
+      m = "Info: The given name is terminated by a Label String Pointer:"
+      raise NBTerror( 1003, m, lsp )
+    return namLen
 
   def appendL2name( self, nbtname=None ):
     """Concatenate one L2name to another.
@@ -943,17 +912,51 @@ class Name( object ):
     return( len( self._L2name ) )
 
   @property
-  def LANAname( self ):
-    """Return the 16-octet formatted version of the NetBIOS name.
+  def NBname( self ):
+    """Get the NetBIOS name from the NBT Name (STR).
 
-    Output: The decoded, padded, and suffixed NetBIOS name, or None if
-            the object is empty.
+    The value is the decoded NetBIOS name, or None if the object is
+    empty.
+    """
+    if( self._NBname is None ):
+      self._decodeAll()
+    return( self._NBname )
+
+  @property
+  def L1name( self ):
+    """Get the L1 encoded version of the NBT name (STR).
+
+    The value will be None if the NBT Name is empty.  Otherwise it
+    will be the L1 encoded string format of the NBT name.
+
+    Note: Some systems allow the user to set a scope string that
+          contains non-printing characters.  Rare, but possible.
+    """
+    if( (self._L1name is None) and (self._L2name is not None) ):
+      self._L2_decode()
+    return( self._L1name )
+
+  @property
+  def L2name( self ):
+    """Get the L2 encoded (wire format) version of the NBT name (STR).
+
+    The value will be None if the NBT Name is empty.  Otherwise, it
+    will be the L2 encoded format of the name.
+    """
+    return( self._L2name )
+
+  @property
+  def LANAname( self ):
+    """Get the 16-octet formatted version of the NetBIOS name (STR).
+
+    The value is the decoded, padded, and suffixed NetBIOS name,
+    or None if the object is empty.
 
     Notes:  This is similar to the NBname property, which returns only
             the base NetBIOS name.  This property also includes the
-            padding and suffix bytes in the result.  The output will be
-            a string of 16 octets or None.  The scope is not included in
-            the result.
+            padding and suffix bytes in the result.  The output will
+            be a string of 16 octets or None.  The scope is not
+            included in the result.
 
             The LANA name is the 16-byte name as it would have been
             registered on the original LAN Adapter hardware in the
@@ -965,9 +968,10 @@ class Name( object ):
 
   @property
   def Scope( self ):
-    """Return the NBT scope string.
+    """Get the NBT scope string (STR).
 
-    Output: The unencoded scope string, or None if the object is empty.
+    The value is the unencoded scope string, or None if the object is
+    empty.
     """
     if( self._Scope is None ):
       self._decodeAll()
@@ -975,14 +979,15 @@ class Name( object ):
 
   @property
   def PadSuffix( self ):
-    """Return a tuple containing the padding byte and the suffix byte.
+    """Get a tuple containing the padding byte and the suffix byte.
 
-    Output: Either None, or a two-element tuple.  The first element will
-            be the padding byte and the second will be the suffix byte.
+    The value will be None, or a two-element tuple.  If a tuple, the
+    first element will be the padding byte and the second will be the
+    suffix byte.
 
-    Notes:  If the name has not been set, then the padding and suffix
-            bytes will be unknown.  That is the only case in which the
-            return value will be None.
+    Note: If the name has not been set, then the padding and suffix
+          bytes will be unknown.  That is the only case in which the
+          return value will be None.
     """
     if( (self._Pad is None) or (self._Suffix is None) ):
       self._decodeAll()
@@ -992,31 +997,33 @@ class Name( object ):
 
   @property
   def Pad( self ):
-    """Get the padding byte value."""
-    tup = self.PadSuffix()
+    """Get the padding byte value (STR)."""
+    tup = self.PadSuffix
     return( tup[0] if( tup ) else None )
 
   @property
   def Suffix( self ):
-    """Get the suffix byte value."""
-    tup = self.PadSuffix()
+    """Get the suffix byte value (STR)."""
+    tup = self.PadSuffix
     return( tup[1] if( tup ) else None )
 
   @property
   def LSP( self ):
-    """If the L2 name is terminated by an LSP, return the offset value.
+    """Get the offset given by a label string pointer (14-bit UINT).
 
-    Output: None, if there is no label string pointer (LSP) in the L2
-            name, or an integer in the range 0..0x3FFF representing the
-            offset (relative to the start of a given NBT packet) at
-            which the remainder of the L2 encoded name can be found.
+    If the name is empty, or if there is no label string pointer (LSP)
+    in the L2 name, the value will be None.  Otherwise, the value is an
+    integer in the range 0..0x3FFF, representing the offset (relative
+    to the start of a given NBT packet) at which the remainder of the
+    L2 encoded name can be found.
 
-    Notes:  Once again, in practice the NBT protocol only ever uses
-            0xC00C as an L2 name with an LSP.  This code is excessively
-            pedantic in its implementation of LSP support, allowing you
-            to try other values if you so choose.  It would be
-            interesting to see which implementations handle LSPs
-            completely and which fail in interesting ways.
+    Notes:  Once again, the NBT protocol only ever uses 0xC00C as an
+            L2 name with an LSP.
+
+            This code is excessively pedantic in its implementation of
+            LSP support, allowing you to try other values if you so
+            choose. It would be interesting to see which implementations
+            handle LSPs completely and which fail in interesting ways.
     """
     if( self._LSP is None ):
       self._decodeAll()
@@ -1030,7 +1037,7 @@ class NSHeader( object ):
   fields.  The format of the Name Service header is derived from the
   DNS system; the NBT RFCs make several references to RFC 883.
 
-  See:  http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.2
+  See:  [IMPCIFS]: http://ubiqx.org/cifs/NetBIOS.html#NBT.4.2
   """
   def __init__( self, TrnId=0, Flags=0, Counts=(0, 0, 0, 0) ):
     """Create an NBT Name Service message header.
@@ -1038,8 +1045,9 @@ class NSHeader( object ):
     Input:
       TrnId   - The Transaction Id.
       Flags   - The message header FLAGS field.
-      Counts  - The record counts (QD, AN, NS, AR) as shown in:
-                http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.2.1
+      Counts  - The record counts (QD, AN, NS, AR) as shown in
+                [IMPCIFS; NBT.4.2.1]
+                http://ubiqx.org/cifs/NetBIOS.html#NBT.4.2.1
 
     Notes:  All inputs default to zero, which does not map to any
             valid message.
@@ -1070,7 +1078,7 @@ class NSHeader( object ):
 
   @property
   def Flags( self ):
-    """The 2-octet Header Flags; FLAGS (USHORT).
+    """Get/set the 2-octet Header Flags; FLAGS (USHORT).
 
     Errors:
       [ TypeError,    - Either of these may be thrown if the assigned
@@ -1085,7 +1093,7 @@ class NSHeader( object ):
 
   @property
   def Rbit( self ):
-    """Response Flag; FLAGS.R"""
+    """Get/set the Response Flag; FLAGS.R (BOOL)."""
     return( bool( self._Flags & NS_R_BIT ) )
   @Rbit.setter
   def Rbit( self, R ):
@@ -1096,7 +1104,7 @@ class NSHeader( object ):
 
   @property
   def OPcode( self ):
-    """Operation Code; FLAGS.OPCODE"""
+    """Operation Code; FLAGS.OPCODE (USHORT)."""
     return( self._Flags & NS_OPCODE_MASK )
   @OPcode.setter
   def OPcode( self, OPcode ):
@@ -1104,7 +1112,7 @@ class NSHeader( object ):
 
   @property
   def NMflags( self ):
-    """Name Flags: FLAGS.NM_FLAGS"""
+    """Name Flags: FLAGS.NM_FLAGS (USHORT)."""
     return( self._Flags & NS_NM_FLAGS_MASK )
   @NMflags.setter
   def NMflags( self, NMflags ):
@@ -1113,7 +1121,7 @@ class NSHeader( object ):
 
   @property
   def AAbit( self ):
-    """Authoritative Answer bit; FLAGS.NM_FLAGS.AA"""
+    """Authoritative Answer bit; FLAGS.NM_FLAGS.AA (BOOL)."""
     return( bool( self._Flags & NS_NM_AA_BIT ) )
   @AAbit.setter
   def AAbit( self, AA ):
@@ -1124,7 +1132,7 @@ class NSHeader( object ):
 
   @property
   def TCbit( self ):
-    """TrunCation bit; FLAGS.NM_FLAGS.TC"""
+    """TrunCation bit; FLAGS.NM_FLAGS.TC (BOOL)."""
     return( bool( self._Flags & NS_NM_TC_BIT ) )
   @TCbit.setter
   def TCbit( self, TC ):
@@ -1135,7 +1143,7 @@ class NSHeader( object ):
 
   @property
   def RDbit( self ):
-    """Recursion Desired bit; FLAGS.NM_FLAGS.RD"""
+    """Recursion Desired bit; FLAGS.NM_FLAGS.RD (BOOL)."""
     return( bool( self._Flags & NS_NM_RD_BIT ) )
   @RDbit.setter
   def RDbit( self, RD ):
@@ -1146,7 +1154,7 @@ class NSHeader( object ):
 
   @property
   def RAbit( self ):
-    """Recursion Available bit; FLAGS.NM_FLAGS.RA"""
+    """Recursion Available bit; FLAGS.NM_FLAGS.RA (BOOL)."""
     return( bool( self._Flags & NS_NM_RA_BIT ) )
   @RAbit.setter
   def RAbit( self, RA ):
@@ -1157,7 +1165,7 @@ class NSHeader( object ):
 
   @property
   def Bbit( self ):
-    """Broadcast bit; FLAGS.NM_FLAGS.B"""
+    """Broadcast bit; FLAGS.NM_FLAGS.B (BOOL)."""
     return( bool( self._Flags & NS_NM_B_BIT ) )
   @Bbit.setter
   def Bbit( self, B ):
@@ -1168,7 +1176,7 @@ class NSHeader( object ):
 
   @property
   def Rcode( self ):
-    """Return Code; FLAGS.NM_FLAGS.RCODE"""
+    """Return Code; FLAGS.NM_FLAGS.RCODE (BOOL)."""
     return( self._Flags & NS_RCODE_MASK )
   @Rcode.setter
   def Rcode( self, Rcode ):
@@ -1176,7 +1184,7 @@ class NSHeader( object ):
 
   @property
   def QDcount( self ):
-    """Question Records; QDCOUNT"""
+    """Question Records; QDCOUNT (USHORT)."""
     return( self._QDcount )
   @QDcount.setter
   def QDcount( self, QDcount ):
@@ -1185,7 +1193,7 @@ class NSHeader( object ):
 
   @property
   def ANcount( self):
-    """Answer Records; ANCOUNT"""
+    """Answer Records; ANCOUNT (USHORT)."""
     return( self._ANcount )
   @ANcount.setter
   def ANcount( self, ANcount ):
@@ -1194,7 +1202,7 @@ class NSHeader( object ):
 
   @property
   def NScount( self ):
-    """Name Service Authority Records; NSCOUNT"""
+    """Name Service Authority Records; NSCOUNT (USHORT)."""
     return( self._NScount )
   @NScount.setter
   def NScount( self, NScount ):
@@ -1203,7 +1211,7 @@ class NSHeader( object ):
 
   @property
   def ARcount( self ):
-    """Additional Records; ARCOUNT"""
+    """Additional Records; ARCOUNT (USHORT)."""
     return( self._ARcount )
   @ARcount.setter
   def ARcount( self, ARcount ):
@@ -1227,7 +1235,7 @@ class NSHeader( object ):
                 NS_OPCODE_REFRESH:    "Refresh",
                 NS_OPCODE_ALTREFRESH: "AltRefresh",
                 NS_OPCODE_MULTIHOMED: "Multi-homed Reg." }
-      OPcode = self.__OPcode()
+      OPcode = self.OPcode
       s = xlate[OPcode] if( OPcode in xlate ) else '<unknown>'
       return( (OPcode, s) )
 
@@ -1241,31 +1249,35 @@ class NSHeader( object ):
                 NS_RCODE_RFS_ERR: "Refused",
                 NS_RCODE_ACT_ERR: "Active error",
                 NS_RCODE_CFT_ERR: "Name in conflict" }
-      Rcode = self.__Rcode()
+      Rcode = self.Rcode
       s = xlate[Rcode] if( Rcode in xlate ) else '<unknown>'
       return( (Rcode, s) )
 
     ind = ' ' * indent
     s  = ind + "Header:\n"
-    s += ind + "  Name_Trn_Id.: 0x%04X\n" % self.__TrnId()
-    s += ind + "  Flags.......: 0x%04X\n" % self.__Flags()
-    s += ind + "        Reply...: %s\n"   % self.__Rbit()
+    s += ind + "  Name_Trn_Id.: 0x%04X\n" % self.TrnId
+    s += ind + "  Flags.......: 0x%04X\n" % self.Flags
+    s += ind + "        Reply...: %s\n"   % self.Rbit
     s += ind + "        OPcode..: 0x%X = %s\n"  % _TupOPcode()
-    s += ind + "        NMflags.: 0x%03X\n" % self.__NMflags()
-    s += ind + "                AA: %s\n" % self.__AAbit()
-    s += ind + "                TC: %s\n" % self.__TCbit()
-    s += ind + "                RD: %s\n" % self.__RDbit()
-    s += ind + "                RA: %s\n" % self.__RAbit()
-    s += ind + "                B.: %s\n" % self.__Bbit()
+    s += ind + "        NMflags.: 0x%03X\n" % self.NMflags
+    s += ind + "                AA: %s\n" % self.AAbit
+    s += ind + "                TC: %s\n" % self.TCbit
+    s += ind + "                RD: %s\n" % self.RDbit
+    s += ind + "                RA: %s\n" % self.RAbit
+    s += ind + "                B.: %s\n" % self.Bbit
     s += ind + "        Rcode...: 0x%X = %s\n" % _TupRcode()
-    s += ind + "  QDcount....: 0x%04X\n" % self.__QDcount()
-    s += ind + "  ANcount....: 0x%04X\n" % self.__ANcount()
-    s += ind + "  NScount....: 0x%04X\n" % self.__NScount()
-    s += ind + "  ARcount....: 0x%04X\n" % self.__ARcount()
+    s += ind + "  QDcount....: 0x%04X\n" % self.QDcount
+    s += ind + "  ANcount....: 0x%04X\n" % self.ANcount
+    s += ind + "  NScount....: 0x%04X\n" % self.NScount
+    s += ind + "  ARcount....: 0x%04X\n" % self.ARcount
     return( s )
 
   def compose( self, TrnId=None ):
     """Create the message header.
+
+    Input:
+      TrnId - Transaction ID for this packet.  This value will
+              overrides the object's existing <TrnId> (if any).
 
     Output: The wire format of the NBT Name Service message header,
             presented as a string of 12 octets.
@@ -1289,7 +1301,7 @@ class QuestionRecord( object ):
   class.  The question type depends upon the question question being
   asked or answered.  The question class is always NS_Q_CLASS_IN.
 
-  See:  http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.2.2
+  See:  [IMPCIFS]: http://ubiqx.org/cifs/NetBIOS.html#NBT.4.2.2
   """
   def __init__( self, Qname=None, Qtype=None ):
     """Create an NBT Name Service Question Record.
@@ -1309,7 +1321,7 @@ class QuestionRecord( object ):
 
   @property
   def Qname( self ):
-    """NBT Encoded Question Name; QUESTION_NAME"""
+    """NBT Encoded Question Name; QUESTION_NAME (STR)."""
     return( self._Qname )
   @Qname.setter
   def Qname( self, Qname ):
@@ -1317,7 +1329,7 @@ class QuestionRecord( object ):
 
   @property
   def Qtype( self ):
-    """Question Type; QUESTION_TYPE"""
+    """Question Type; QUESTION_TYPE (USHORT)."""
     return( self._Qtype )
   @Qtype.setter
   def Qtype( self, Qtype ):
@@ -1325,7 +1337,7 @@ class QuestionRecord( object ):
 
   @property
   def Qclass( self ):
-    """Question Class; QUESTION_CLASS"""
+    """Question Class; QUESTION_CLASS (USHORT)."""
     return( self._Qclass )
   @Qclass.setter
   def Qclass( self, Qclass ):
@@ -1380,14 +1392,14 @@ class ResourceRecord( object ):
     * The Resource Data section, which varies depending upon the
       message type, but always starts with a 2-octet length field.
 
-  See:  http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.2.3
+  See:  [IMPCIFS]: http://ubiqx.org/cifs/NetBIOS.html#NBT.4.2.3
   """
   def __init__( self, RRname=None, RRtype=None, TTL=None, RDlen=None ):
     """Create an NBT Name Service Resource Record.
 
     Input:
-      RRname  - An L2-encoded NBT name.
-                See: http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.2.3
+      RRname  - An L2-encoded NBT name.  See: [IMPCIFS; NBT.4.2.3]
+                http://ubiqx.org/cifs/NetBIOS.html#NBT.4.2.3
       RRtype  - A Resource Record Type value.  The valid values are
                 NS_RR_TYPE_NB, NS_RR_TYPE_NBSTAT, and possibly
                 NS_RR_TYPE_NULL.  The latter is given in the RFCs but
@@ -1395,23 +1407,23 @@ class ResourceRecord( object ):
                 possible values are NS_RR_TYPE_A and NS_RR_TYPE_NS,
                 but these are not used by NBT.
       TTL     - A 32-bit Time to Live value, in seconds.  The default
-                TTL is typically around 3 days.
-                See: http://www.ubiqx.org/cifs/NetBIOS.html#foot15
+                TTL is typically around 3 days.  See:
+                [IMPCIFS]: http://ubiqx.org/cifs/NetBIOS.html#foot15
       RDlen   - The length of the RDATA section that follows.
 
     Notes:  The NBT Name Service always uses the Resource Record Class
             NS_RR_CLASS_IN.  There is no reason (other than perverse
             testing) to ever override this value.
     """
-    self._RRname  = RRname
-    self._RRtype  = (0xFFFF & RRtype)
-    self._RRclass = NS_RR_CLASS_IN
-    self._TTL     = 0x00000000 if( not TTL ) else (0xFFFFFFFF & int( TTL ))
-    self._RDlen   = 0x0000 if( not RDlen ) else (0xFFFF & int( RDlen ))
+    self.RRname  = RRname
+    self.RRtype  = RRtype
+    self.RRclass = NS_RR_CLASS_IN
+    self.TTL     = TTL if( TTL ) else 0x00000000
+    self.RDlen   = RDlen if( RDlen ) else 0x0000
 
   @property
   def RRname( self ):
-    """Resource Record Name; RR_NAME"""
+    """Resource Record Name; RR_NAME (STR)."""
     return( self._RRname )
   @RRname.setter
   def RRname( self, RRname ):
@@ -1419,7 +1431,7 @@ class ResourceRecord( object ):
 
   @property
   def RRtype( self ):
-    """Resource Record Type; RR_TYPE"""
+    """Resource Record Type; RR_TYPE (USHORT)."""
     return( self._RRtype )
   @RRtype.setter
   def RRtype( self, RRtype ):
@@ -1427,7 +1439,7 @@ class ResourceRecord( object ):
 
   @property
   def RRclass( self ):
-    """Resource Record Type; RR_TYPE"""
+    """Resource Record Type; RR_TYPE (USHORT)."""
     return( self._RRclass )
   @RRclass.setter
   def RRclass( self, RRclass ):
@@ -1435,15 +1447,15 @@ class ResourceRecord( object ):
 
   @property
   def TTL( self ):
-    """Time To Live; TTL"""
+    """Time To Live; TTL (ULONG)."""
     return( self._TTL )
   @TTL.setter
   def TTL( self, TTL ):
-    self._TTL = (0xFFFFFFFF & int( TTL ))
+    self._TTL = (0xFFFFFFFF & long( TTL ))
 
   @property
   def RDlen( self ):
-    """RDATA Length; RDLENGTH"""
+    """RDATA Length; RDLENGTH (USHORT)."""
     return( self._RDlen )
   @RDlen.setter
   def RDlen( self, RDlen ):
@@ -1503,8 +1515,8 @@ class ResourceRecord( object ):
     s += ind + "         => %s\n" % nbnam
     s += ind + "  RRtype..: 0x%04X = %s\n" % _TupRRtype()
     s += ind + "  RRclass.: 0x%04X = %s\n" % _TupRRclass()
-    s += ind + "  TTL.....: %d seconds\n"  % self.__TTL()
-    s += ind + "  RDlength: %d bytes\n"    % self.__RDlen()
+    s += ind + "  TTL.....: %d seconds\n"  % self.TTL
+    s += ind + "  RDlength: %d bytes\n"    % self.RDlen
     return( s )
 
   def compose( self ):
@@ -1535,7 +1547,8 @@ class AddressRecord( object ):
   This class implements that structure.  We're calling it an Address
   Record for lack of a better name.
 
-  For an example, see http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.1
+  For an example, see [IMPCIFS; NBT.4.3.1]:
+    http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.1
 
   Doctest:
     >>> ip = chr( 10 ) + chr( 64 ) + chr( 109 ) + chr( 73 )
@@ -1569,8 +1582,16 @@ class AddressRecord( object ):
       self._NBflags |= NS_GROUP_BIT
 
   @property
+  def NBflags( self ):
+    """Name flags; NB_FLAGS (USHORT)."""
+    return( self._NBflags )
+  @NBflags.setter
+  def NBflags( self, NBflags ):
+    self._NBflags = (NBflags & NS_NBFLAG_MASK)
+
+  @property
   def Gbit( self ):
-    """Group bit; RDATA.NB_FLAGS.G"""
+    """Group bit; RDATA.NB_FLAGS.G (BOOL)."""
     return( bool( NS_GROUP_BIT & self._NBflags ) )
   @Gbit.setter
   def Gbit( self, G ):
@@ -1581,7 +1602,7 @@ class AddressRecord( object ):
 
   @property
   def ONT( self ):
-    """Owner Node Type; NB_FLAGS.ONT"""
+    """Owner Node Type; NB_FLAGS.ONT (USHORT)."""
     return( NS_ONT_MASK & self._NBflags )
   @ONT.setter
   def ONT( self, ONT ):
@@ -1589,19 +1610,11 @@ class AddressRecord( object ):
 
   @property
   def NBaddr( self ):
-    """IPv4 address; NB_ADDRESS"""
+    """IPv4 address; NB_ADDRESS (STR)."""
     return( self._NBaddr )
   @NBaddr.setter
   def NBaddr( self, NBaddr ):
     self._NBaddr = (NBaddr[:4] if( NBaddr ) else (4 * '\0'))
-
-  @property
-  def NBflags( self ):
-    """Name flags; NB_FLAGS"""
-    return( self._NBflags )
-  @NBflags.setter
-  def NBflags( self, NBflags ):
-    self._NBflags = (NBflags & NS_NBFLAG_MASK)
 
   def dump( self, indent ):
     """Produce a formatted representation of the Address Record.
@@ -1642,7 +1655,7 @@ class NodeStatusRequest( NSHeader, QuestionRecord ):
   the original PC Network system.  In modern usage, the Node Status
   Request asks for the receiver's name table.
 
-  See:  http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.5
+  See:  [IMPCIFS]: http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.5
   """
   def __init__( self, TrnId=0, L2name=None ):
     """Create an NBT Node Status Request.
@@ -1695,7 +1708,7 @@ class NodeStatusResponse( NSHeader, ResourceRecord ):
   the first six bytes, which should contain the MAC address of the
   interface on which the names are registered (or all zeros).
 
-  See:  http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.5.1
+  See:  [IMPCIFS]: http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.5.1
   """
   def __init__( self, TrnId=0, L2name=None, NameList=[], MAC=None ):
     """Create an NBT Node Status Response.
@@ -1707,9 +1720,10 @@ class NodeStatusResponse( NSHeader, ResourceRecord ):
                   NetBIOSname - An unencoded NetBIOS name, totaling 16
                                 bytes in length.  The name must include
                                 the suffix byte and any padding.
-                  NameFlags   - The Group bit, the owner node type
-                                bits, and four name status bits, all
-                                packed into a 16-byte integer.
+                  NameFlags   - A USHORT comprised of bit fields:
+                                * The Group bit,
+                                * The owner node type bits,
+                                * The four name status bits.
       MAC       - An optional MAC address, presented as a string of 6
                   bytes.  If None, the MAC field will be filled with
                   zeros (which is what Samba does).
@@ -1817,7 +1831,7 @@ class NameQueryRequest( NSHeader, QuestionRecord ):
   still claims ownership of the queried name.  The answer must come
   from the local name table.
 
-  See:  http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.2
+  See:  [IMPCIFS]: http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.2
   """
   def __init__( self, TrnId=0, B=True, RD=True, L2name=None ):
     """Create an NBT Name Query Request.
@@ -1877,8 +1891,9 @@ class NameQueryResponse( NSHeader, ResourceRecord ):
   response will have an error code in the FLAGS.RCODE field, and the
   Answer Record will be minimally populated.
 
-  See:  http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.2.1
-        http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.2.2
+  See:  [IMPCIFS]
+        http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.2.1
+        http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.2.2
   """
   def __init__( self, TrnId   = 0,
                       RD      = True,
@@ -1924,8 +1939,8 @@ class NameQueryResponse( NSHeader, ResourceRecord ):
       self.RRtype = NS_RR_TYPE_NULL
     # TTL.
     self.TTL   = TTL
-    # ...and set the address list by calling the __AddrList() method.
-    self.__AddrList( AddrList if( AddrList ) else [] )
+    # ...and set the address list by assigning the AddrList property.
+    self.AddrList = AddrList if( AddrList ) else []
 
   @property
   def AddrList( self ):
@@ -1934,7 +1949,7 @@ class NameQueryResponse( NSHeader, ResourceRecord ):
   @AddrList.setter
   def AddrList( self, AddrList ):
     if( not isinstance( AddrList, list ) ):
-      raise TypeError( "The Address List must be a list, or None." )
+      raise TypeError( "The Address List must be a list." )
     self._AddrList = AddrList
     self.RDlen = 6 * len( AddrList )
 
@@ -1991,7 +2006,7 @@ class NameRegistrationRequest( NSHeader, QuestionRecord,
     pointer to the QUESTION_NAME in the previous section.
   - An Address Record.
 
-  See:  http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.1
+  See:  [IMPCIFS]: http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.1
   """
   def __init__( self, TrnId = 0,
                       B     = True,
@@ -2092,7 +2107,7 @@ class NameRegistrationResponse( NSHeader, ResourceRecord, AddressRecord ):
          use the TTL value in the response (instead of the one that it
          sent in the request) as the registration timeout.
 
-  See:  http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.1.1
+  See:  [IMPCIFS]: http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.1.1
   """
   def __init__( self, TrnId = 0,
                       Rcode = NS_RCODE_POS_RSP,
@@ -2180,7 +2195,7 @@ class ChallengeNameRegistrationResponse( NameRegistrationResponse ):
 
   This is a terrible way to do business.
 
-  See:  http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.1.2
+  See:  [IMPCIFS]: http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.1.2
   """
   def __init__( self, TrnId = 0,
                       L2name= None,
@@ -2220,7 +2235,7 @@ class WaitForAcknowledgementResponse( NSHeader, ResourceRecord ):
   for a few seconds while the NBNS figures out the actual state of a
   currently registered name.
 
-  See:  http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.1.2
+  See:  [IMPCIFS]: http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.1.2
   """
   def __init__( self, TrnId=0, L2name=None, TTL=0, RDflags=None ):
     """Create a WACK message object.
@@ -2278,7 +2293,7 @@ class MultiHomedNameRegistrationRequest( NameRegistrationRequest ):
   It may have been added by IBM, or possibly by Microsoft, to handle the
   problem
 
-  See:  http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.1.4
+  See:  [IMPCIFS]: http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.1.4
   """
   def __init__( self, TrnId = 0,
                       L2name= None,
@@ -2324,7 +2339,7 @@ class NameRefreshRequest( NameRegistrationRequest ):
   saying "I'm still here", and resetting the TTL timer.  Name Refresh
   Request messages are never broadcast.
 
-  See:  http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.3
+  See:  [IMPCIFS]: http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.3
   """
   def __init__( self, TrnId = 0,
                       L2name= None,
@@ -2378,8 +2393,9 @@ class NameReleaseRequestAndDemand( NameRegistrationRequest ):
   node is supposed to give up ownership of the offending name, but most
   NBT end-nodes ignore the Name Release Demand.
 
-  See:  http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.4
-        http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.6.1
+  See:  [IMPCIFS]
+        http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.4
+        http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.6.1
   """
   def __init__( self, TrnId = 0,
                       B     = True,
@@ -2422,7 +2438,7 @@ class NameReleaseResponse( NameRegistrationResponse ):
   except that it has a different OPcode and the RD and RA bits are
   clear (0).
 
-  See:  http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.4.1
+  See:  [IMPCIFS]: http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.4.1
   """
   def __init__( self, TrnId = 0,
                       Rcode = NS_RCODE_POS_RSP,
@@ -2471,8 +2487,9 @@ class NameUpdateRequestAndOverwriteDemand( NameRegistrationRequest ):
   The Update Request is identical to a Name Registration Request, except
   that the RD bit is clear (0).
 
-  See:  http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.1.1
-        http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.1.2
+  See:  [IMPCIFS]
+        http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.1.1
+        http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.1.2
   """
   def __init__( self, TrnId = 0,
                       B     = True,
@@ -2525,7 +2542,7 @@ class NameConflictDemand( NameRegistrationResponse ):
 
   Most NBT end-nodes ignore this message.
 
-  See:  http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.6
+  See:  [IMPCIFS]: http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.6
   """
   def __init__( self, TrnId = 0,
                       L2name= None,
@@ -2559,7 +2576,7 @@ class NameConflictDemand( NameRegistrationResponse ):
 # class RedirectNameQueryResponse():
 #   Unimplemented... though it could be quite interesting to write this
 #   up and test it.
-#   See:  http://www.ubiqx.org/cifs/NetBIOS.html#NBT.4.3.2.3
+#   See:  http://ubiqx.org/cifs/NetBIOS.html#NBT.4.3.2.3
 
 
 class LocalNameTable( object ):
@@ -2736,9 +2753,12 @@ class LocalNameTable( object ):
       >>> lnt.updateEntry( "EGFCEFEMECCACACACACACACACACACAAA",
       ... Status=(NS_ACT|NS_PRM) )
       >>> lnt.updateEntry( "EGFCEFEMECCACACACACACACACACACACA" )
-      >>> lnt.updateEntry( "EOEFFCEEEMEJEOEHEFFCCACACACACACA", Group=True )
-      >>> lnt.updateEntry( "EOEFFCEEEMEJEOEHEFFCCACACACACABN", Group=True )
-      >>> lnt.updateEntry( "CKFDENECFDEFFCFGEFFCCACACACACACA", Hidden=True )
+      >>> lnt.updateEntry( "EOEFFCEEEMEJEOEHEFFCCACACACACACA",
+      ... Group=True )
+      >>> lnt.updateEntry( "EOEFFCEEEMEJEOEHEFFCCACACACACABN",
+      ... Group=True )
+      >>> lnt.updateEntry( "CKFDENECFDEFFCFGEFFCCACACACACACA",
+      ... Hidden=True )
       >>> for n, f in lnt.statusList():
       ...   s = hexstr( n[:15] )
       ...   print "%s<%02X> [0x%04x]" % (s, ord( n[15] ), f)
