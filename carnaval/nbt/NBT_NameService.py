@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_NameService.py; 2015-03-20 14:59:14 -0500; Christopher R. Hertel$
+# $Id: NBT_NameService.py; 2015-03-20 16:30:59 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -63,6 +63,8 @@
 #
 # ToDo:
 #   - Write more doctests.
+#
+#   - Implement the RedirectNameQueryResponse() class.  (See notes, below.)
 #
 #   - Consider which fields in a from-the-wire message should be copied
 #     verbatim into the object created by ParseMsg().  Once we know what
@@ -208,7 +210,6 @@ import struct                               # Binary data handling.
 
 from NBT_Core       import NBTerror         # NBT exception class.
 from common.HexDump import hexbyte, hexstr  # Byte to hex string conversion.
-from common.HexDump import hexdump          # Hexdump raw blocks of data.
 
 
 # Constants ------------------------------------------------------------------ #
@@ -2370,7 +2371,7 @@ class NameRefreshRequest( NameRegistrationRequest ):
             There's not much point in having a separate message type.
     """
     # Leave the B bit clear (0).
-    super( NameRegistrationRequest, self
+    super( NameRefreshRequest, self
          ).__init__( TrnId, False, L2name, TTL, G, ONT, IP )
     # These 2 changes differentiate this message from a Unicast registration.
     self.OPcode = NS_OPCODE_REFRESH
