@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014, 2015 by Christopher R. Hertel
 #
-# $Id: SMB1_Messages.py; 2015-02-06 19:06:15 -0600; Christopher R. Hertel$
+# $Id: SMB1_Messages.py; 2015-03-22 12:29:17 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -56,8 +56,25 @@
 #   - The _SMB1_Echo._dump() method should itemize the Flags and Flags2
 #     bitfield values, a. la. Wireshark.
 #   - Several methods are missing Doctests.
+#   - Several setter methods do not assert that the assigned value is
+#     within the valid range for the type (e.g., 0..255 for UCHAR).
 #   - The ParseSMB1 function could be tightened up a bit.  Too much
 #     redundant code.
+#
+# References:
+#
+#   [IMPCIFS] Hertel, Christopher R., "Implementing CIFS - The Common
+#             Internet File System", Prentice Hall, August 2003
+#             ISBN:013047116X
+#             http://www.ubiqx.org/cifs/
+#
+#   [MS-CIFS] Microsoft Corporation, "Common Internet File System (CIFS)
+#             Protocol Specification"
+#             http://msdn.microsoft.com/en-us/library/ee442092.aspx
+#
+#   [MS-SMB]  Microsoft Corporation, "Server Message Block (SMB) Protocol
+#             Specification"
+#             http://msdn.microsoft.com/en-us/library/cc246231.aspx
 #
 # ============================================================================ #
 #
@@ -126,21 +143,6 @@ CONSTANTS:
                         that none of the dialects offered were accepted.
     SMB_TID_INVALID   : Used as a Treeconnect ID (TID) in SMB_COM_ECHO
                         when no Tree Connect has been made.
-
-REFERENCES:
-
-  [IMPCIFS] Hertel, Christopher R., "Implementing CIFS - The Common
-            Internet File System", Prentice Hall, August 2003
-            ISBN:013047116X
-            http://www.ubiqx.org/cifs/
-
-  [MS-CIFS] Microsoft Corporation, "Common Internet File System (CIFS)
-            Protocol Specification"
-            http://msdn.microsoft.com/en-us/library/ee442092.aspx
-
-  [MS-SMB]  Microsoft Corporation, "Server Message Block (SMB) Protocol
-            Specification"
-            http://msdn.microsoft.com/en-us/library/cc246231.aspx
 """
 
 # Imports -------------------------------------------------------------------- #
@@ -311,8 +313,12 @@ class _SMB1_Header( object ):
   @property
   def command( self ):
     """SMB1 Command code; unsigned 8-bit integer.
-    Errors: ValueError  - Thrown if the assigned value cannot be
-                          converted to an integer.
+    Errors:
+      TypeError   - Thrown if the assigned value is of a type that
+                    cannot be converted to an integer.
+      ValueError  - Thrown if the assigned value is a convertable
+                    type (e.g., <str>), but still cannot be converted
+                    to an integer.
     """
     return( self._command )
   @command.setter
@@ -322,8 +328,12 @@ class _SMB1_Header( object ):
   @property
   def status( self ):
     """NT Status code; unsigned 32-bit integer.
-    Errors: ValueError  - Thrown if the assigned value cannot be
-                          converted to a long integer.
+    Errors:
+      TypeError   - Thrown if the assigned value is of a type that
+                    cannot be converted to an integer.
+      ValueError  - Thrown if the assigned value is a convertable
+                    type (e.g., <str>), but still cannot be converted
+                    to an integer (e.g., int( "feldspar" ) ).
     """
     return( self._status )
   @status.setter
@@ -333,8 +343,12 @@ class _SMB1_Header( object ):
   @property
   def flags( self ):
     """LANMAN1.0 Flags field; unsigned 8-bit integer.
-    Errors: ValueError  - Thrown if the assigned value cannot be
-                          converted to an integer.
+    Errors:
+      TypeError   - Thrown if the assigned value is of a type that
+                    cannot be converted to an integer.
+      ValueError  - Thrown if the assigned value is a convertable
+                    type (e.g., <str>), but still cannot be converted
+                    to an integer.
     """
     return( self._flags )
   @flags.setter
@@ -344,8 +358,12 @@ class _SMB1_Header( object ):
   @property
   def flags2( self, flags2=None ):
     """LANMAN1.2 Flags2 field; unsigned 16-bit integer.
-    Errors: ValueError  - Thrown if the assigned value cannot be
-                          converted to an integer.
+    Errors:
+      TypeError   - Thrown if the assigned value is of a type that
+                    cannot be converted to an integer.
+      ValueError  - Thrown if the assigned value is a convertable
+                    type (e.g., <str>), but still cannot be converted
+                    to an integer.
     """
     return( self._flags2 )
   @flags2.setter
@@ -356,9 +374,12 @@ class _SMB1_Header( object ):
   def pid( self ):
     """Client process ID; unsigned 32-bit integer.
     Errors:
-      ValueError      - Thrown if the assigned value cannot be
-                        converted to a long integer.
       AssertionError  - Thrown if the given PID value is negative.
+      TypeError       - Thrown if the assigned value is of a type that
+                        cannot be converted to an integer.
+      ValueError      - Thrown if the assigned value is a convertable
+                        type (e.g., <str>), but still cannot be
+                        converted to an integer.
     """
     return( self._pidHigh << 16 | self._pidLow )
   @pid.setter
@@ -371,8 +392,12 @@ class _SMB1_Header( object ):
   @property
   def tid( self ):
     """TreeConnect ID; unsigned 16-bit integer.
-    Errors: ValueError  - Thrown if the assigned value cannot be
-                          converted to an integer.
+    Errors:
+      TypeError   - Thrown if the assigned value is of a type that
+                    cannot be converted to an integer.
+      ValueError  - Thrown if the assigned value is a convertable
+                    type (e.g., <str>), but still cannot be converted
+                    to an integer.
     """
     return( self._tid )
   @tid.setter
@@ -382,8 +407,12 @@ class _SMB1_Header( object ):
   @property
   def uid( self ):
     """[Virtual] User ID: unsigned 16-bit integer.
-    Errors: ValueError  - Thrown if the assigned value cannot be
-                          converted to an integer.
+    Errors:
+      TypeError   - Thrown if the assigned value is of a type that
+                    cannot be converted to an integer.
+      ValueError  - Thrown if the assigned value is a convertable
+                    type (e.g., <str>), but still cannot be converted
+                    to an integer.
     """
     return( self._uid )
   @uid.setter
@@ -393,8 +422,12 @@ class _SMB1_Header( object ):
   @property
   def mid( self ):
     """Multiplex ID: unsigned 16-bit integer.
-    Errors: ValueError  - Thrown if the assigned value cannot be
-                          converted to an integer.
+    Errors:
+      TypeError   - Thrown if the assigned value is of a type that
+                    cannot be converted to an integer.
+      ValueError  - Thrown if the assigned value is a convertable
+                    type (e.g., <str>), but still cannot be converted
+                    to an integer.
     """
     return( self._mid )
   @mid.setter
@@ -623,7 +656,7 @@ class SMB1_NegProt_Response( _SMB1_Header ):
   an 0xFFFF response to indicate that no SMB dialect was selected.  Note,
   however, that doing so will (falsely?) indicate to the client that the
   responding node does support some dialect of the original SMB protocol.
-  
+
   So, in reality, SMB2 servers based upon this module should never send
   an SMB1 Negprot response.  SMB2 clients based on this module may
   receive an SMB1 NegProt response with an index value of 0xFFFF.
@@ -659,8 +692,12 @@ class SMB1_NegProt_Response( _SMB1_Header ):
   @property
   def dIndex( self ):
     """The dialect index; an unsigned 16-bit integer.
-    Errors: ValueError  - Thrown if the assigned value cannot be
-                          converted to an integer.
+    Errors:
+      TypeError   - Thrown if the assigned value is of a type that
+                    cannot be converted to an integer.
+      ValueError  - Thrown if the assigned value is a convertable
+                    type (e.g., <str>), but still cannot be converted
+                    to an integer (e.g., int( "spoo" )).
     Notes:  If a negative value is assigned, it will be converted to
             the designated 'no match' value: 0xFFFF.  0xFFFF is also
             ((uint16_t)-1).  The wire format of the Dialect Index is
@@ -790,7 +827,7 @@ class _SMB1_Echo( _SMB1_Header ):
   def _setParamWord0( self, paramWord0=1 ):
     # Setter function for the parameter word (echoCount|seqNumber).
     paramWord0 = int( paramWord0 )
-    assert( (0 <= paramWord0) and (paramWord0 <= _USHORT_MAX) ), \
+    assert( (0 <= paramWord0 <= _USHORT_MAX) ), \
       "Value out of range: %d." % paramWord0
     self._paramWord0 = paramWord0
 
@@ -983,10 +1020,13 @@ class SMB1_Echo_Request( _SMB1_Echo ):
   def echoCount( self ):
     """SMB1 EchoCount value; unsigned 16-bit integer.
     Errors:
-      ValueError      - Thrown if the assigned <echoCount> cannot be
-                        converted to an <int>.
       AssertionError  - Thrown if <echoCount> is negative or greater
                         than 0xFFFF (i.e., does not fit into a USHORT).
+      TypeError       - Thrown if the assigned value is of a type that
+                        cannot be converted to an integer.
+      ValueError      - Thrown if the assigned value is a convertable
+                        type (e.g., <str>), but still cannot be
+                        converted to an integer.
     Notes:  The echo count indicates the number of replies that the
             client expects from a single request.
     """
@@ -1087,8 +1127,11 @@ class SMB1_Echo_Response( _SMB1_Echo ):
   def seqNumber( self ):
     """SMB1 SequenceNumber value; unsigned 16-bit integer.
     Errors:
-      ValueError      - Thrown if the given <seqNumber> cannot be
-                        converted to an <int>.
+      TypeError       - Thrown if the assigned value is of a type that
+                        cannot be converted to an integer.
+      ValueError      - Thrown if the assigned value is a convertable
+                        type (e.g., <str>), but still cannot be
+                        converted to an integer.
       AssertionError  - Thrown if <seqNumber> is less than one or
                         greater than 0xFFFF.
     Notes:  The sequence number of the echo response.
