@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_SessionService.py; 2015-01-29 21:23:17 -0600; Christopher R. Hertel$
+# $Id: NBT_SessionService.py; 2015-03-22 13:54:10 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -200,6 +200,7 @@ def SessionMessage( mLen ):
     >>> print ParseMsg( SessionMessage( 1978 ) )
     (0, 1978)
   """
+  assert( 0 <= mLen ), "Negative length (%d) not supported." % mLen
   assert( mLen < 0x20000 ), \
     "Session Message length exceeds the 17-bit maximum imposed by NBT."
   return( _formatLong.pack( mLen & 0x0001FFFF ) )
