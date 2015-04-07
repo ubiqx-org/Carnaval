@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: SMB_Core.py; 2015-01-15 20:21:30 -0600; Christopher R. Hertel$
+# $Id: SMB_Core.py; 2015-04-06 23:42:19 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -84,7 +84,7 @@ class SMBerror( CodedError ):
     1000  - Warning message (operation succeded with caveats).
     1001  - SMB Syntax Error encountered.
     1002  - SMB Semantic Error encountered.
-    1003  - SMB Protocol mismatch ("<FF>SMB" not found).
+    1003  - SMB Protocol mismatch ([<FF>|<FE>]+"SMB" not found).
 
   See Also: common.ErrorCodeExceptions.CodedError
 
