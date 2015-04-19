@@ -5,7 +5,7 @@
 # Copyright:
 #   Copyright (C) 2015 by Christopher R. Hertel
 #
-# $Id: SMB_URL.py; 2015-01-15 20:21:30 -0600; Christopher R. Hertel$
+# $Id: SMB_URL.py; 2015-04-19 15:02:18 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -32,6 +32,10 @@
 # See Also:
 #   The 0.README file included with the distribution.
 #
+# ---------------------------------------------------------------------------- #
+#              This code was developed in participation with the
+#                   Protocol Freedom Information Foundation.
+#                          <www.protocolfreedom.org>
 # ---------------------------------------------------------------------------- #
 #
 # Notes:
@@ -67,9 +71,11 @@
 """SMB URL format parsing and packing.
 
   The SMB URL is (was) a proposed URL format for use in identifying SMB
-  shares, folders, and files within SMB shares.  The SMB URL can also be
-  used to access the (now deprecated) Browse Service (A.K.A. the "Network
-  Neighborhood").  Several SMB client implementations support the SMB URL.
+  shares, folders, and files within SMB shares.  Basically, anything
+  within the namespace of an SMB share, including the share itself.  The
+  SMB URL can also be used to access the (now deprecated) Browse Service
+  (A.K.A. the "Network Neighborhood").  Several SMB client
+  implementations support the SMB URL.
 
   This module provides the smb_url() class, which can parse, modify, and
   compose SMB URL strings.
@@ -196,10 +202,10 @@ class smb_url( object ):
     username    The username for authentication; a string.
     password    It is generally considered to be unwise to include a
                 password in a visible URL string, and supporting parsing
-                the password may be considered enablement, but this
+                of the password may be considered enablement, but this
                 usage is fairly common.  The password is generally
-                considered to be a subfield of the username, delimited
-                by a colon (':').
+                parsed as a subfield of the username, delimited by a
+                colon (':').
     hostname    This may be either a name or an IP address.  An IPv6
                 address must match the syntax given in RFC 2732.  A name
                 may be either an SMB server or workgroup identifier.
@@ -211,7 +217,7 @@ class smb_url( object ):
                 it exists, is the share name.  The object identified by
                 a pathname may be a share, a file, a directory, or some
                 other SMB filesystem object such as a device or a link.
-    context     A set of name/value pairs, used to provide NBT context.
+    context     A set of key/value pairs, used to provide NBT context.
                 Keys and values are separated by equal signs ('=').
                 Key/value pairs are separated by semicolons (or by
                 ampersands).  Eg.: "Key1=ValueA;key2=valueB;fred=ethel"
@@ -237,10 +243,10 @@ class smb_url( object ):
 
   Notes:
     It is completely possible to generate a bogus SMB URL string using
-    using this class.  The initial parsing is somewhat picky (yet also
+    this class.  The initial parsing is somewhat picky (yet also
     somewhat forgiving) about correct syntax.  Several of the property
     assignments also perform syntax checks.  You can bypass the syntax
-    checks by assigning the _property attributes directly.  There are,
+    checks by assigning the _<field> attributes directly.  There are,
     however, a few additional checks performed when the resulting URL
     is composed.
 
@@ -293,8 +299,8 @@ class smb_url( object ):
 
     Input:
       url - An SMB URL string, or None.
-            None is equivalent to "smb://", which represents a local
-            Browse Service (Network Neighborhood) query.
+            None is equivalent to "smb://", which represents a
+            local Browse Service (Network Neighborhood) query.
 
     Errors:
       SMBerror( 1000 )  - Warning.
@@ -370,14 +376,14 @@ class smb_url( object ):
       pos = 2 + url.find( "//" )
       raise SMBerror( 1001, "Path provided, but no hostname given", pos )
 
-    # Further error checking is done by the assignment methods.
-    self.__setPort( port )
-    self.__setHostname( hostname )
-    self.__setPassword( password )
-    self.__setPath( path )
-    self.__setContext( context )
-    self.__setUsername( username )
-    self.__setAuthdomain( authdomain )
+    # Further error checking is done by the property assignment methods.
+    self.port       = port
+    self.hostname   = hostname
+    self.password   = password
+    self.path       = path
+    self.context    = context
+    self.username   = username
+    self.authdomain = authdomain
 
     # Now that everything has been parsed and assigned,
     #   see if we need to throw any warnings.
@@ -443,7 +449,7 @@ class smb_url( object ):
     s  += ind + "Context..............: %s\n" % fmat( self._context )
     return( s )
 
-  def __cleanField( self, fld ):
+  def _cleanStrField( self, fld ):
     # Do our level best to ensure correct %-escaping of string fields.
     #
     #   Input:  fld - A string, or None.
@@ -461,57 +467,66 @@ class smb_url( object ):
       "Expected a string, not a(n) %s" % type( fld ).__name__
     return( fld if( fld ) else None )
 
-  def __getScheme( self ):
-    # Self-conscious littl waste of code...
-    return( "smb" )
+  @property
+  def scheme( self ):
+    """Always returns "smb".
+    """
+    return( "smb" )     # Self-conscious little waste of code...
 
-  def __getAuthdomain( self ):
-    # Return the authentication domain.
+  @property
+  def authdomain( self ):
+    """Get/set the Authentication Domain; string
+    """
     return( self._authdomain )
+  @authdomain.setter
+  def authdomain( self, ad=None ):
+    self._authdomain = self._cleanStrField( ad )
 
-  def __setAuthdomain( self, ad=None ):
-    # Set the authentication domain value.
-    self._authdomain = self.__cleanField( ad )
-
-  def __getPassword( self ):
-    # Return the password, if any.
-    return( self._password )
-
-  def __setPassword( self, pw=None ):
-    # Set the password field.
-    self._password = self.__cleanField( pw )
-
-  def __getUsername( self ):
-    # Return the username.
+  @property
+  def username( self ):
+    """Get/set the Username; string
+    """
     return( self._username )
+  @username.setter
+  def username( self, un=None ):
+    self._username = self._cleanStrField( un )
 
-  def __setUsername( self, un=None ):
-    # Set the username field.
-    self._username = self.__cleanField( un )
+  @property
+  def password( self ):
+    """Get/set the (optional and discouraged) password; string
 
-  def __getHostname( self ):
-    # Return the hostname.
+    Notes:  The password field a subfield of username.  Use with
+            caution; don't expose passwords.
+    """
+    return( self._password )
+  @password.setter
+  def password( self, pw=None ):
+    self._password = self._cleanStrField( pw )
+
+  @property
+  def hostname( self ):
+    """Get/set the Hostname (server identifier or workgroup name); string
+    """
     return( self._hostname )
+  @hostname.setter
+  def hostname( self, hn=None ):
+    self._hostname = self._cleanStrField( hn )
 
-  def __setHostname( self, hn=None ):
-    # Set the hostname.
-    self._hostname = self.__cleanField( hn )
+  @property
+  def port( self ):
+    """Get/set the port number; integer
 
-  def __getPort( self ):
-    # Return the port number.
-    # Note:  The urlparse module expects <port> to be an integer value.
+    Errors:
+      ValueError      - Thrown if the input is not None and cannot be
+                        converted to an integer.  The port number can
+                        be set to None.
+      AssertionError  - Thrown if the input, converted to an integer,
+                        is outside of the range of an unsigned short.
+                        (uint16_t).
+    """
     return( self._port )
-
-  def __setPort( self, po=None ):
-    # Set the port number.
-    #
-    #   Errors:
-    #     ValueError      - Thrown if the input is not None and cannot be
-    #                       converted to an integer.
-    #     AssertionError  - Thrown if the input, converted to an integer,
-    #                       is outside of the range of an unsigned short.
-    #                       (uint16_t).
-    #
+  @port.setter
+  def port( self, po=None ):
     if( (not po) and (type( po ) is not int) ):
       self._port = None
     else:
@@ -520,12 +535,13 @@ class smb_url( object ):
         "The given port number is outside the valid range (0..65535)."
       self._port = int( po )
 
-  def __getPath( self ):
-    # Return the pathname.
+  @property
+  def path( self ):
+    """Get/set the path; string
+    """
     return( self._path )
-
-  def __setPath( self, pa=None ):
-    # Clean up the pathname, then store it.
+  @path.setter
+  def path( self, pa=None ):
     if( not pa.strip() ):
       self._path = None
     else:
@@ -533,50 +549,29 @@ class smb_url( object ):
         "Expected a pathname string, not a(n) %s" % type( pa ).__name__
       self._path = '/' + pa.lstrip( '/' )
 
-  def __getContext( self ):
-    # Return the context string.
-    return( self._context )
+  @property
+  def context( self ):
+    """Get/set the NBT context key/value pairs; string
 
-  def __setContext( self, cx=None ):
-    # Set the context string.
+    See Also: <parseContext>, <composeContext>
+    """
+    return( self._context )
+  @context.setter
+  def context( self, cx=None ):
     assert( (cx is None) or isinstance( cx, str ) ), \
       "Expected a context string, not a(n) %s" % type( cx ).__name__
     self._context = composeContext( parseContext( cx ) )
 
-  def __getUrl( self ):
-    # Reading the url forcess it to be composed
-    #   (thus ensuring that it is up to date).
+  @property
+  def url( self ):
+    """Get/set the SMB URL; string
+
+    Notes:  Reading the url forcess it to be composed from the available
+            fields (thus ensuring that it is up to date).
+    """
     return( self.compose() )
-
-  def __setUrl( self, url=None ):
-    # Setting the URL means parsing it.
+  @url.setter
+  def url( self, url=None ):
     self.parse( url )
-
-  # Properties.
-  scheme     = property( __getScheme, doc='Always returns "smb"' )
-  authdomain = property( __getAuthdomain,
-                         __setAuthdomain,
-                         doc="Authentication Domain; string" )
-  username   = property( __getUsername,
-                         __setUsername,
-                         doc="Username; string" )
-  password   = property( __getPassword,
-                         __setPassword,
-                         doc="Password; string" )
-  hostname   = property( __getHostname,
-                         __setHostname,
-                         doc="Server identifier or workgroup name; string" )
-  port       = property( __getPort,
-                         __setPort,
-                         doc="Port number; unsigned integer" )
-  path       = property( __getPath,
-                         __setPath,
-                         doc="Pathname; string" )
-  context    = property( __getContext,
-                         __setContext,
-                         doc="NBT context key/value pairs; string" )
-  url        = property( __getUrl,
-                         __setUrl,
-                         doc="SMB URL; string" )
 
 # ============================================================================ #
