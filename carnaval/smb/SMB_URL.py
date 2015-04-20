@@ -5,7 +5,7 @@
 # Copyright:
 #   Copyright (C) 2015 by Christopher R. Hertel
 #
-# $Id: SMB_URL.py; 2015-04-19 15:02:18 -0500; Christopher R. Hertel$
+# $Id: SMB_URL.py; 2015-04-19 20:11:15 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -439,14 +439,14 @@ class smb_url( object ):
       return( str( val ) )
 
     ind = ' ' * indent
-    s   = ind + 'Scheme...............: "%s"\n' % self.scheme
-    s  += ind + "Authentication Domain: %s\n" % fmat( self._authdomain )
-    s  += ind + "Username.............: %s\n" % fmat( self._username )
-    s  += ind + "Password.............: %s\n" % fmat( self._password )
-    s  += ind + "Hostname.............: %s\n" % fmat( self._hostname )
-    s  += ind + "Port Number..........: %s\n" % fmat( self._port )
-    s  += ind + "Share Path...........: %s\n" % fmat( self._path )
-    s  += ind + "Context..............: %s\n" % fmat( self._context )
+    s  = ind + 'Scheme...............: "%s"\n' % self.scheme
+    s += ind + "Authentication Domain: %s\n" % fmat( self._authdomain )
+    s += ind + "Username.............: %s\n" % fmat( self._username )
+    s += ind + "Password.............: %s\n" % fmat( self._password )
+    s += ind + "Hostname.............: %s\n" % fmat( self._hostname )
+    s += ind + "Port Number..........: %s\n" % fmat( self._port )
+    s += ind + "Share Path...........: %s\n" % fmat( self._path )
+    s += ind + "Context..............: %s\n" % fmat( self._context )
     return( s )
 
   def _cleanStrField( self, fld ):
