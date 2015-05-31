@@ -5,7 +5,7 @@
 # Copyright:
 #   Copyright (C) 2015 by Christopher R. Hertel
 #
-# $Id: SMB_URL.py; 2015-04-19 20:11:15 -0500; Christopher R. Hertel$
+# $Id: SMB_URL.py; 2015-05-31 13:30:56 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -450,18 +450,23 @@ class smb_url( object ):
     return( s )
 
   def _cleanStrField( self, fld ):
-    # Do our level best to ensure correct %-escaping of string fields.
+    # Validate the input string.
     #
-    #   Input:  fld - A string, or None.
+    # Input:  fld - Either None, or a string representing a field within
+    #               an SMB URL.
     #
-    #   Output: If <fld> is None or the empty string, the function will
-    #           return None.  Otherwise, the string is unescaped and then
-    #           re-escaped.  This ensures that characters that should be
-    #           %-escaped actually are %-escaped without escaping the
-    #           percent signs in an already escaped string.  Got that?
+    # Output: If <fld> is None or the empty string, this method will
+    #         return None.  Otherwise, if no errors are detected, this
+    #         method just returns the input string.
     #
-    #   Errors: AssertionError  - Thrown if the input is neither a string
-    #                             nor None.
+    # Errors: AssertionError  - Thrown if the input is neither a string
+    #                           nor None.
+    #
+    # Notes:  This method was originally intended to do all sorts of
+    #         string cleanup before returning the input value.  It was
+    #         decided, however, that it was better to let higher-level
+    #         processing catch any syntactic or semantic errors in the
+    #         input values.
     #
     assert( (fld is None) or isinstance( fld, str ) ), \
       "Expected a string, not a(n) %s" % type( fld ).__name__
