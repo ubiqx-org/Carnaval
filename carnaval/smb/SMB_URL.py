@@ -5,7 +5,7 @@
 # Copyright:
 #   Copyright (C) 2015 by Christopher R. Hertel
 #
-# $Id: SMB_URL.py; 2015-05-31 13:30:56 -0500; Christopher R. Hertel$
+# $Id: SMB_URL.py; 2015-05-31 16:09:56 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -252,6 +252,11 @@ class smb_url( object ):
 
   Doctest:
     >>> x = smb_url( "smb://fooberry" )
+    >>> x.url
+    'smb://fooberry'
+    >>> x.path = "/"
+    >>> x.url
+    'smb://fooberry/'
     >>> x.context = " ? Froo=froo; groo=Groo "
     >>> x.path    = "/Foo hammer/gizmogram/peas.pie"
     >>> x.url
@@ -281,6 +286,8 @@ class smb_url( object ):
     Doctest:
       >>> x = smb_url( "//hello/whirld" )
       >>> x.authdomain = "ploobis"
+      >>> x.url
+      'smb://ploobis;hello/whirld'
       >>> x.reset()
       >>> x.url
       'smb://'
