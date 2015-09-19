@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014, 2015 by Christopher R. Hertel
 #
-# $Id: SMB1_Messages.py; 2015-03-22 12:29:17 -0500; Christopher R. Hertel$
+# $Id: SMB1_Messages.py; 2015-09-19 16:14:42 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -91,10 +91,10 @@ Several versions of SMB were produced for PC-DOS, MS-DOS, and OS/2.
 
 SMB1, originally known as the NT LAN Manager 0.12 ("NT LM 0.12") dialect,
 was created for Windows NT.  Other than security enhancements and minor
-feature upgrades, it hasn't changed much since then and is still supported
-in current Windows versions.  However, since the release of Vista, Windows
-has also included support for the SMB2 protocol.  Original SMB is on the
-road to retirement (and there was much rejoicing).
+feature upgrades, SMB1 hasn't changed much since the 1990's and it is
+still supported in current Windows versions.  However, since the release
+of Vista, Windows has also included support for the SMB2 protocol.
+Original SMB is on the road to retirement (and there was much rejoicing).
 
 This module currently implements only three SMB1 protocol commands:
   * SMB_COM_ECHO
@@ -210,7 +210,7 @@ SMB_TID_INVALID = _USHORT_MAX # "No TID" TreeID value used in SMB_COM_ECHO.
 #                         object.  Note that the '<' character indicates
 #                         little-endian encoding, which is the standard
 #                         for SMB.  See the _SMB1_Header.compose() method
-#                         or [MS-CIFS;2.2.3.1] for the full layout.
+#                         or [MS-CIFS; 2.2.3.1] for the full layout.
 #   _format_SMB1BH      - Typically used when the WordCount is zero, this
 #                         structure maps to the WordCount (a byte) followed
 #                         immediately by the ByteCount (two bytes).  Any
@@ -314,31 +314,43 @@ class _SMB1_Header( object ):
   def command( self ):
     """SMB1 Command code; unsigned 8-bit integer.
     Errors:
-      TypeError   - Thrown if the assigned value is of a type that
-                    cannot be converted to an integer.
-      ValueError  - Thrown if the assigned value is a convertable
-                    type (e.g., <str>), but still cannot be converted
-                    to an integer.
+      AssertionError  - Thrown if the assigned value is either negative or
+                        greater than 255 (i.e., is not an unsigned 8-bit
+                        integer value).
+      TypeError       - Thrown if the assigned value is of a type that
+                        cannot be converted to an integer.
+      ValueError      - Thrown if the assigned value is a convertable
+                        type (e.g., <str>), but still cannot be converted
+                        to an integer.
     """
     return( self._command )
   @command.setter
   def command( self, command=None ):
-    self._command = ( 0xFF & int( command ) )
+    command = int( command )
+    assert( (0xFF & command) == command ), \
+      "Command code %s out of range." % hexnum2str( command )
+    self._command = command
 
   @property
   def status( self ):
     """NT Status code; unsigned 32-bit integer.
     Errors:
-      TypeError   - Thrown if the assigned value is of a type that
-                    cannot be converted to an integer.
-      ValueError  - Thrown if the assigned value is a convertable
-                    type (e.g., <str>), but still cannot be converted
-                    to an integer (e.g., int( "feldspar" ) ).
+      AssertionError  - Thrown if the assigned value, interpreted as an
+                        integer, does not fit into a 32-bit unsigned
+                        integer.
+      TypeError       - Thrown if the assigned value is of a type that
+                        cannot be converted to an integer.
+      ValueError      - Thrown if the assigned value is a convertable
+                        type (e.g., <str>), but still cannot be converted
+                        to an integer (e.g., int( "feldspar" ) ).
     """
     return( self._status )
   @status.setter
   def status( self, status=None ):
-    self._status = ( 0xFFFFFFFF & long( status ) )
+    status = long( status )
+    assert( (0xFFFFFFFF & status) == status ), \
+      "Status code %s out of range." % hexnum2str( status )
+    self._status = status
 
   @property
   def flags( self ):
