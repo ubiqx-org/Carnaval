@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014,2015 by Christopher R. Hertel
 #
-# $Id: HexDump.py; 2015-01-21 22:33:03 -0600; Christopher R. Hertel$
+# $Id: HexDump.py; 2015-09-18 21:26:26 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -60,6 +60,30 @@ _HEX_XLATE = "0123456789ABCDEF"
 
 # Functions ------------------------------------------------------------------ #
 #
+
+def hexnum2str( numbr=None, width=0 ):
+  """Format an integer value as a string in hexadecimal notation.
+
+  Input:  numbr - The number to be formatted as a string.
+          width - The minimum width of the formatted portion of the
+                  resulting string.
+
+  Output: A string in the form [-]0xX..., where "[-]" is an optional
+          minus sign that will be present if <numbr> is negative, and
+          "X..." is the formatted portion of the resulting string,
+          which is the hexadecimal representation of abs( <numbr> ).
+
+  Doctest:
+    >>> print hexnum2str( -0xABCDEF, 8 )
+    -0x00ABCDEF
+    >>> print hexnum2str( 12345 )
+    0x3039
+  """
+  prefix = "-0x" if( numbr < 0 ) else "0x"
+  if( not width ):
+    width  = 0
+  return( prefix + ("{:0>{}X}".format( abs( numbr ), width )) )
+
 
 def hexbyte( data=None ):
   """Convert bytes into two-character hex strings.
