@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014,2015 by Christopher R. Hertel
 #
-# $Id: HexDump.py; 2015-09-19 16:11:28 -0500; Christopher R. Hertel$
+# $Id: HexDump.py; 2015-09-21 22:31:58 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -82,7 +82,7 @@ def hexnum2str( numbr=None, width=0 ):
   prefix = "-0x" if( numbr < 0 ) else "0x"
   if( not width ):
     width = 0
-  return( prefix + ("{:0>{}X}".format( abs( numbr ), width )) )
+  return( prefix + ("{0:0>{1}X}".format( abs( numbr ), width )) )
 
 
 def hexbyte( data=None ):
