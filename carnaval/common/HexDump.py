@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014,2015 by Christopher R. Hertel
 #
-# $Id: HexDump.py; 2015-09-21 22:31:58 -0500; Christopher R. Hertel$
+# $Id: HexDump.py; 2015-10-21 17:45:56 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -201,8 +201,7 @@ def hexstrchop( data=None, linemax=72 ):
     erry
   """
   # Check input.
-  assert( linemax >= 4 ), \
-    "Cannot wrap to less than 4 columns."
+  assert( linemax >= 4 ), "Cannot wrap to less than 4 columns."
 
   # Generate the hexified string.
   hstr = hexstr( data )
