@@ -1,15 +1,16 @@
+# -*- coding: utf-8 -*-
 # ============================================================================ #
 #                                  SMB_Core.py
 #
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: SMB_Core.py; 2015-04-06 23:42:19 -0500; Christopher R. Hertel$
+# $Id: SMB_Core.py; 2016-02-16 21:29:14 -0600; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
 # Description:
-#   SMB1/2/3 Network File Protocols: Core components.
+#   Carnaval Toolkit: Core components.
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -35,33 +36,37 @@
 #              This code was developed in participation with the
 #                   Protocol Freedom Information Foundation.
 #                          <www.protocolfreedom.org>
+# ---------------------------------------------------------------------------- #
+#
+# References:
+#   [MS-CIFS] Microsoft Corporation, "Common Internet File System (CIFS)
+#             Protocol Specification"
+#             http://msdn.microsoft.com/en-us/library/ee442092.aspx
+#
+#   [MS-SMB]  Microsoft Corporation, "Server Message Block (SMB) Protocol
+#             Specification"
+#             http://msdn.microsoft.com/en-us/library/cc246231.aspx
+#
+#   [MS-SMB2] Microsoft Corporation, "Server Message Block (SMB) Protocol
+#             Versions 2 and 3"
+#             http://msdn.microsoft.com/en-us/library/cc246482.aspx
+#
 # ============================================================================ #
 #
-"""SMB1/2/3 Network File Protocols: Core components
+"""Carnaval Toolkit: Core components
 
 Classes, functions, and other objects used throughout this SMB protocol
 implementation.  Fundamental stuff.
-
-REFERENCES:
-  [MS-CIFS] Microsoft Corporation, "Common Internet File System (CIFS)
-            Protocol Specification"
-            http://msdn.microsoft.com/en-us/library/ee442092.aspx
-
-  [MS-SMB]  Microsoft Corporation, "Server Message Block (SMB) Protocol
-            Specification"
-            http://msdn.microsoft.com/en-us/library/cc246231.aspx
-
-  [MS-SMB2] Microsoft Corporation, "Server Message Block (SMB) Protocol
-            Versions 2 and 3",
-            http://msdn.microsoft.com/en-us/library/cc246482.aspx
 """
 
 # Imports -------------------------------------------------------------------- #
 #
+#   time.time()         - Get the current system time.
 #   ErrorCodeExceptions - Provides the CodedError() class, upon which the
 #                         SMBerror class is built.
 #
 
+from time import time
 from common.ErrorCodeExceptions import CodedError
 
 
@@ -69,7 +74,7 @@ from common.ErrorCodeExceptions import CodedError
 #
 
 class SMBerror( CodedError ):
-  """SMB1/2/3 exceptions.
+  """SMB2/3 exceptions.
 
   An exception class with an associated set of error codes, defined by
   numbers (starting at 1000).  The error codes are specific to this
@@ -109,5 +114,44 @@ class SMBerror( CodedError ):
     1002 : "SMB Semantic Error",
     1003 : "SMB Protocol Mismatch"
     }
+
+class SMB_FileTime( object ):
+  """FILETIME format time value handling.
+
+  FILETIME values are given in bozoseconds since the Windows Epoch.  The
+  Windows Epoch is UTC midnight on 1-Jan-1601, and a bozosecond is equal
+  to 100 nanoseconds (or 1/10th of a microsecond, or 10^-7 seconds).
+  There is no "official" prefix for 10^-7, so use of the term
+  "bozosecond" is on your own recognizance.
+
+  FILETIME values are 64-bit unsigned integers, supporting a date range
+  from the Windows Epoch to 28-May-60056.
+  """
+  # References:
+  #   Implementing CIFS: The Common Internet File System
+  #       Section 2.6.3.1 under "SystemTimeLow and SystemTimeHigh"
+  #       http://ubiqx.org/cifs/SMB.html#SMB.6.3.1
+  #   [MS-DTYP;2.3.3]
+  #       Microsoft Corporation, "Windows Data Types", section 2.3.3
+  #       https://msdn.microsoft.com/en-us/library/cc230324.aspx
+  #   Wikipedia: 1601
+  #       https://en.wikipedia.org/wiki/1601
+  #   Wikipedia: NTFS
+  #       https://en.wikipedia.org/wiki/NTFS
+  #
+  # Class Values:
+  #   _EPOCH_DELTA_SECS - The number of seconds between the Windows Epoch
+  #                       and the Unix/POSIX/Linux/BSD/etc. Epoch.
+  _EPOCH_DELTA_SECS = 11644473600
+
+  @classmethod
+  def utcNow( cls ):
+    """Return the current UTC time as a FILETIME value.
+
+    Output: An unsigned long integer representing the current time in
+            FILETIME format.
+    """
+    return( long( round( time(), 7 ) * 10000000 ) + cls._EPOCH_DELTA_SECS )
+
 
 # ============================================================================ #
