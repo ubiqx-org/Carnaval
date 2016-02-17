@@ -1,15 +1,16 @@
+# -*- coding: utf-8 -*-
 # ============================================================================ #
 #                               SMB1_Messages.py
 #
 # Copyright:
 #   Copyright (C) 2014, 2015 by Christopher R. Hertel
 #
-# $Id: SMB1_Messages.py; 2015-09-19 16:14:42 -0500; Christopher R. Hertel$
+# $Id: SMB1_Messages.py; 2016-02-16 21:27:36 -0600; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
 # Description:
-#   SMB1/2/3 Network File Protocols: SMB1 message parsing and composition.
+#   Carnaval Toolkit: SMB1 message parsing and composition.
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -78,7 +79,7 @@
 #
 # ============================================================================ #
 #
-"""SMB1/2/3 Network File Protocols: SMB1 message parsing and composition.
+"""Carnaval Toolkit: SMB1 message parsing and composition.
 
 SMB1 is the most recent dialect of the venerable Server Message Block (SMB)
 network file protocol.  It is also probably the last such dialect, since

@@ -5,7 +5,7 @@
 # Copyright:
 #   Copyright (C) 2015 by Christopher R. Hertel
 #
-# $Id: SMB_URL.py; 2015-05-31 16:09:56 -0500; Christopher R. Hertel$
+# $Id: SMB_URL.py; 2016-02-16 21:27:36 -0600; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -68,7 +68,7 @@
 #
 # ============================================================================ #
 #
-"""SMB URL format parsing and packing.
+"""Carnaval Toolkit: SMB URL format parsing and packing.
 
   The SMB URL is (was) a proposed URL format for use in identifying SMB
   shares, folders, and files within SMB shares.  Basically, anything
