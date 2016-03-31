@@ -10,7 +10,7 @@
 # ---------------------------------------------------------------------------- #
 #
 # Description:
-#   Carnaval Toolkit: SMB status codes (error codes).
+#   Carnaval Toolkit: SMB NTSTATUS codes (error codes).
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -46,7 +46,7 @@
 #
 # ============================================================================ #
 #
-"""SMB NTSTATUS return codes.
+"""Carnaval Toolkit: SMB NTSTATUS codes (error codes).
 
 This module encapsulates the Windows NT return codes, aka., NTSTATUS
 codes, that are used by SMB.  It provides methods for looking up
@@ -293,13 +293,13 @@ def getTuple( key=None ):
             [0] - The NTSTATUS code value, an unsigned integer
                   (typically a <long>, but it may be an <int>).
             [1] - The name of the NTSTATUS value, as a string.  This
-                  should always be in all-caps, and prefixed with
+                  should always be in all-caps and prefixed with
                   "STATUS_".
             [2] - The error message associated with the NTSTATUS.
 
   Errors:
-    TypeError - The given <key> was neither a string nor an integer
-                type.  That's just wrong.
+    AssertionError  - The given <key> was neither a string nor an
+                      integer type.  That's just wrong.
 
   Doctest:
     >>> print getTuple( 0xF0000001 )
@@ -308,11 +308,10 @@ def getTuple( key=None ):
     (0, 'STATUS_SUCCESS', 'The operation completed successfully.')
   """
   t = type( key )
+  assert( t in [str, int, long] ), \
+    "The NTSTATUS <key> must be a string or an integer."
   if( str == t ):
     key = key.upper()
-  elif( t not in [int, long] ):
-    raise TypeError( "The NTSTATUS <key> must be a string or an integer." )
-
   try:
     return( _ntstatus_dict[key] )
   except KeyError:
@@ -329,8 +328,8 @@ def getCode( key=None ):
           defined.
 
   Errors:
-    TypeError - The given <key> was neither a string nor an integer
-                type (<long> or <int>).
+    AssertionError  - The given <key> was neither a string nor an
+                      integer type (<long> or <int>).
 
   Doctest:
     >>> print getCode( 0xF0000001 )
@@ -340,7 +339,7 @@ def getCode( key=None ):
     >>> print getCode()
     Traceback (most recent call last):
     ...
-    TypeError: The NTSTATUS <key> must be a string or an integer.
+    AssertionError: The NTSTATUS <key> must be a string or an integer.
   """
   entry = getTuple( key )
   return( None if( entry is None ) else entry[0] )
@@ -356,8 +355,8 @@ def getName( key=None ):
           not defined.
 
   Errors:
-    TypeError - The given <key> was neither a string nor an integer
-                type (<long> or <int>).
+    AssertionError  - The given <key> was neither a string nor an
+                      integer type (<long> or <int>).
   Doctest:
     >>> print getName( 0xF0000001 )
     None
@@ -378,8 +377,8 @@ def getDesc( key=None ):
           is not defined.
 
   Errors:
-    TypeError - The given <key> was neither a string nor an integer
-                type.
+    AssertionError  - The given <key> was neither a string nor an
+                      integer type.
 
   Doctest:
     >>> print getDesc( 0xF0000001 )
@@ -395,9 +394,7 @@ def parseCode( code=None ):
 
   Input:  code  - The NTSTATUS code to be parsed.
 
-  Output: This method returns None if the given <code> is not an
-          integer.  Otherwise, it returns a 5-tuple containing the
-          following fields:
+  Output: A 5-tuple containing the following fields:
             Sev       - Message severity, as a number.
                         0 == Success  1 == Information
                         2 == Warning  3 == Error
@@ -408,6 +405,9 @@ def parseCode( code=None ):
             Facility  - A 12-bit Facility code, indicating the
                         subsystem that generated the NTSTATUS code.
             SubCode   - The remainder of the error code.
+
+  Errors:
+    AssertionError  - Thrown if the input is not an integer value.
 
   Notes:  This method provides access to archane information of
           academic or alchemic interest...but here it is anyway.
@@ -428,8 +428,7 @@ def parseCode( code=None ):
     >>> parseCode( 0xFFFFFFFF )
     (3, 1, 1, 4095, 65535)
   """
-  if( type( code ) not in [int, long] ):
-    return( None )
+  assert( type( code ) in [int, long] ), "Expected an integer value."
   code      = long( code ) & 0xFFFFFFFF
   sev       = int( code >> 30 )
   Customer  = 1 if( code & 0x20000000 ) else 0
@@ -437,5 +436,33 @@ def parseCode( code=None ):
   facility  = int( (code & 0x0FFF0000) >> 16 )
   subCode   = int( code & 0x0000FFFF )
   return( (sev, Customer, Nreserved, facility, subCode) )
+
+def severityName( sev ):
+  """Return the textual representation of the severity of an NTSTATUS code.
+
+  Input:  sev - The severity value, as an integer in the range 0..3.
+
+  Output: One of the following strings:
+            ["Success", "Info", "Warning", "Error"]
+
+  Errors:
+    AssertionError  - Thrown if the input is a negative integer.
+    IndexError      - Thrown if the input is greater than three (3).
+    TypeError       - Thrown if the input is not an integer at all.
+
+  Notes:
+    The severity level can be calculated either by calling parseCode(),
+    or as (0x3 & (NTSTATUS >> 30)).
+
+  Doctest:
+    >>> severityName( 0 )
+    'Success'
+    >>> severityName( "Feldspar Omnibus Noodle" )
+    Traceback (most recent call last):
+    ...
+    TypeError: list indices must be integers, not str
+  """
+  assert( sev >= 0 ), "Expecting an integer value in the range 0..3."
+  return( ["Success", "Info", "Warning", "Error"][sev] )
 
 # ============================================================================ #
