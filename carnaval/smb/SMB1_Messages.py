@@ -5,7 +5,7 @@
 # Copyright:
 #   Copyright (C) 2014, 2015 by Christopher R. Hertel
 #
-# $Id: SMB1_Messages.py; 2016-02-16 21:27:36 -0600; Christopher R. Hertel$
+# $Id: SMB1_Messages.py; 2016-08-03 11:12:56 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -1207,6 +1207,8 @@ def ParseSMB1( msg=None ):
           the supported SMB message objects, which are:
             SMB1_NegProt_Request
             SMB1_NegProt_Response
+            SMB1_Echo_Request
+            SMB1_Echo_Response
 
   Errors:
     ValueError        - Thrown if the input message is too small to be a

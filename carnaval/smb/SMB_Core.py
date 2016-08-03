@@ -5,7 +5,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: SMB_Core.py; 2016-02-16 21:29:14 -0600; Christopher R. Hertel$
+# $Id: SMB_Core.py; 2016-08-03 11:12:56 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -152,6 +152,34 @@ class SMB_FileTime( object ):
             FILETIME format.
     """
     return( long( round( time(), 7 ) * 10000000 ) + cls._EPOCH_DELTA_SECS )
+
+
+# Functions ------------------------------------------------------------------ #
+#
+
+def SMB_Pad8( msglen=0 ):
+  """Return the number of padding octets needed for 8-octet alignment.
+
+  Input:  msglen  - The length of the bytestream that may need to be
+                    padded.  It is assumed that this bytestream starts
+                    on an 8-octet boundary (otherwise, the results are
+                    somewhat meaningless).
+
+  Output: The number of octets required in order to pad to a multiple
+          of 8 octets.  This, of course, will be in the range 0..7.
+
+  Doctest:
+  >>> for i in [-9, -2, 0, 3, 8, 9]:
+  ...   print "%2d ==> %d" % (i, SMB_Pad8( i ))
+  -9 ==> 1
+  -2 ==> 2
+   0 ==> 0
+   3 ==> 5
+   8 ==> 0
+   9 ==> 7
+  """
+  return( (8 - (msglen % 8)) & 0x7 )    # 9% code, 91% documentation.
+
 
 
 # ============================================================================ #
