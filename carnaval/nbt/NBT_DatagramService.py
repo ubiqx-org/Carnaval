@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_DatagramService.py; 2015-01-29 21:23:17 -0600; Christopher R. Hertel$
+# $Id: NBT_DatagramService.py; 2016-08-04 13:37:38 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -851,7 +851,7 @@ class DSFragment( DSMessage ):
 class DirectUniqueDatagram( DSMessage ):
   """Direct Unique (unicast) datagram class.
 
-  This is a direct descendent of the <DSMessage> class, with a fixed
+  This is a direct descendant of the <DSMessage> class, with a fixed
   message type (<msgType>) of <DS_DGM_UNIQUE>.
 
   Properties:

@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: ErrorCodeExceptions.py; 2014-10-07 22:38:48 -0500; Christopher R. Hertel$
+# $Id: ErrorCodeExceptions.py; 2016-08-04 13:37:38 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -153,7 +153,7 @@ class CodedError( Exception ):
         <Value>   is the (optional) instance-specific value given
                   when the exception is raised.
 
-    Notes:  Override this method if your descendent type needs a
+    Notes:  Override this method if your descendant type needs a
             different message format.
     """
     msg = str( self.eCode ).zfill( 4 ) + ': ' + self.error_dict[ self.eCode ]
