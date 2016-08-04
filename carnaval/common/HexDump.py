@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014,2015 by Christopher R. Hertel
 #
-# $Id: HexDump.py; 2015-10-21 17:45:56 -0500; Christopher R. Hertel$
+# $Id: HexDump.py; 2016-08-04 11:58:55 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -270,15 +270,22 @@ def hexdumpln( data=None, offset=0 ):
   return( "%06X:  %s %s |%s|" % (offset, hx[:24], hx[24:][:24], ch) )
 
 
-def hexdump( data=None ):
+def hexdump( data=None, indent=0 ):
   """Produce a hex dump so that packets can be visually inspected.
 
-  Input:  data  - The string of bytes to to be dumped.  The input must
-                  be of type str.
+  Input:  data    - The string of bytes to to be dumped.  The input
+                    must be of type str.
+          indent  - For formatting purposes, the output lines may
+                    be indented using spaces.  This parameter gives
+                    the number of spaces to prepend to each line.
 
   Output: A string, formatted as a hex dump.  Each line is terminated
           with a newline character.  The empty string is returned if
           <data> is the empty string or None.
+
+  Notes:  Each line is 77 columns wide (excluding the trailing newline).
+          On a traditional 80 column display, passing a value greater
+          than 3 to <indent> will cause lines to wrap when printed.
 
   Errors:
     AssertionError  - Raised if the input is not of type str.
@@ -290,16 +297,17 @@ def hexdump( data=None ):
   <BLANKLINE>
   """
   # Reality check.
-  if( not data ):
+  if( data is None or '' == data ):
     return( '' )
   # Check for garblage.
   assert( isinstance( data, str ) ), \
     "Expected type <str>, got <%s>." % type( data ).__name__
 
   # Quick 'n easy...
-  s = ''
+  s   = ''
+  ind = ' ' * indent
   for offset in range( 0, len( data ), 16 ):
-    s += hexdumpln( data, offset ) + '\n'
+    s += ind + hexdumpln( data, offset ) + '\n'
   return( s )
 
 # ============================================================================ #
