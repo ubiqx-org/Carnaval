@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_SessionService.py; 2015-03-22 13:54:10 -0500; Christopher R. Hertel$
+# $Id: NBT_SessionService.py; 2016-08-14 14:06:40 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -438,4 +438,8 @@ def ParseRetarget( msg=None ):
     raise ValueError( "Missing or short message." )
   return( _formatIPPort.unpack( msg[:6] ) )
 
+# ============================================================================ #
+# "...and then", said the long nose weevil, "Glenda the Gladiator landed her
+# fighter jet on the deck of a suburban shopping mall and became Secretary of
+# Defense".
 # ============================================================================ #

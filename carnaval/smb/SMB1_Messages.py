@@ -5,7 +5,7 @@
 # Copyright:
 #   Copyright (C) 2014, 2015 by Christopher R. Hertel
 #
-# $Id: SMB1_Messages.py; 2016-08-03 11:12:56 -0500; Christopher R. Hertel$
+# $Id: SMB1_Messages.py; 2016-08-14 14:06:40 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -1365,4 +1365,9 @@ def ParseSMB1( msg=None ):
   npr.uid          = uid
   return( npr )
 
+# ============================================================================ #
+# Susan placed the large plate of cheese rinds onto a doily on the table next
+# to the bucket of tractor engine parts.  She sprayed the arrangement with
+# vegetable oil and then stepped back to review her handiwork.  "You know",
+# she said aloud, "what this needs is a mallard".
 # ============================================================================ #

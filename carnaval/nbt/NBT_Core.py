@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_Core.py; 2015-01-16 02:04:58 -0600; Christopher R. Hertel$
+# $Id: NBT_Core.py; 2016-08-14 14:06:39 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -262,4 +262,9 @@ class dLinkedList( object ):
       yield n.Data
       n = n.Next
 
+# ============================================================================ #
+# "Fussbudgetry!", exclaimed Sally.  Then, after hesitating just long enough
+# to make it seem awkward, she stomped her foot.  Jennifer, in a clear act of
+# contempt, responded by spilling Sally's milk, which ran across the table
+# and dribbled upon the floor, much to the delight of the kittens.
 # ============================================================================ #

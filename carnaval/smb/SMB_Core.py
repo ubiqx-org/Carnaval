@@ -5,7 +5,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: SMB_Core.py; 2016-08-03 11:12:56 -0500; Christopher R. Hertel$
+# $Id: SMB_Core.py; 2016-08-14 14:06:40 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -181,5 +181,8 @@ def SMB_Pad8( msglen=0 ):
   return( (8 - (msglen % 8)) & 0x7 )    # 9% code, 91% documentation.
 
 
-
+# ============================================================================ #
+# Sean sat despondently on the edge of the Wankel rotary engine, as the
+# two manicurists crafted a transistor radio using parts from a discarded
+# Velociraptor.
 # ============================================================================ #
