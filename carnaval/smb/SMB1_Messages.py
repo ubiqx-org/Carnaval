@@ -5,7 +5,7 @@
 # Copyright:
 #   Copyright (C) 2014, 2015 by Christopher R. Hertel
 #
-# $Id: SMB1_Messages.py; 2016-08-14 14:06:40 -0500; Christopher R. Hertel$
+# $Id: SMB1_Messages.py; 2016-09-12 22:13:41 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -315,14 +315,14 @@ class _SMB1_Header( object ):
   def command( self ):
     """SMB1 Command code; unsigned 8-bit integer.
     Errors:
-      AssertionError  - Thrown if the assigned value is either negative or
-                        greater than 255 (i.e., is not an unsigned 8-bit
-                        integer value).
+      AssertionError  - Thrown if the assigned value is either negative
+                        or greater than 255 (i.e., is not an unsigned
+                        8-bit integer value).
       TypeError       - Thrown if the assigned value is of a type that
                         cannot be converted to an integer.
       ValueError      - Thrown if the assigned value is a convertable
-                        type (e.g., <str>), but still cannot be converted
-                        to an integer.
+                        type (e.g., <str>), but still cannot be
+                        converted to an integer.
     """
     return( self._command )
   @command.setter
@@ -342,8 +342,9 @@ class _SMB1_Header( object ):
       TypeError       - Thrown if the assigned value is of a type that
                         cannot be converted to an integer.
       ValueError      - Thrown if the assigned value is a convertable
-                        type (e.g., <str>), but still cannot be converted
-                        to an integer (e.g., int( "feldspar" ) ).
+                        type (e.g., <str>), but still cannot be
+                        converted to an integer (e.g.,
+                        int( "feldspar" )).
     """
     return( self._status )
   @status.setter
@@ -458,19 +459,19 @@ class _SMB1_Header( object ):
     #
     ind = ' ' * indent
     sig = ''.join( '{0:02x}'.format( ord( b ) ) for b in self._secFeatures )
-    s  = ind + "Protocol..: %s\n"     % hexstr( self._protocol[:4] )
-    s += ind + "Command...: 0x%02X\n" % self._command
-    s += ind + "NT Status.: 0x%08X\n" % self._status
-    s += ind + "Flags.....: 0b{0:08b}\n".format( self._flags )
-    s += ind + "Flags2....: 0b{0:016b}\n".format( self._flags2 )
-    s += ind + "PIDHigh...: 0x%04X\n" % self._pidHigh
-    s += ind + "Signature.: 0x%s\n"   % sig
-    s += ind + "Reserved..: 0x%04X\n" % self._reserved
-    s += ind + "TID.......: 0x%04X\n" % self._tid
-    s += ind + "PIDLow....: 0x%04X\n" % self._pidLow
-    s += ind + "    PID ==> 0x{0:08X} ({0:d})\n".format( self.pid )
-    s += ind + "UID.......: 0x%04X\n" % self._uid
-    s += ind + "MID.......: 0x%04X\n" % self._mid
+    s = ind + "Protocol..: %s\n"     % hexstr( self._protocol[:4] ) \
+      + ind + "Command...: 0x%02X\n" % self._command                \
+      + ind + "NT Status.: 0x%08X\n" % self._status                 \
+      + ind + "Flags.....: 0b{0:08b}\n".format( self._flags )       \
+      + ind + "Flags2....: 0b{0:016b}\n".format( self._flags2 )     \
+      + ind + "PIDHigh...: 0x%04X\n" % self._pidHigh                \
+      + ind + "Signature.: 0x%s\n"   % sig                          \
+      + ind + "Reserved..: 0x%04X\n" % self._reserved               \
+      + ind + "TID.......: 0x%04X\n" % self._tid                    \
+      + ind + "PIDLow....: 0x%04X\n" % self._pidLow                 \
+      + ind + "    PID ==> 0x{0:08X} ({0:d})\n".format( self.pid )  \
+      + ind + "UID.......: 0x%04X\n" % self._uid                    \
+      + ind + "MID.......: 0x%04X\n" % self._mid
     return( s )
 
   def compose( self ):
@@ -853,11 +854,12 @@ class _SMB1_Echo( _SMB1_Header ):
                         into a string, or if the length of the
                         payload exceeds the maximum payload size.
 
-    Notes:  The payload is the string of bytes sent along with the echo
-            messages.  The payload may be given as one of the following:
+    Notes:  The payload is the string of bytes sent along with the
+            echo messages.  The payload may be given as one of the
+            following:
               None          - The empty string will be used.
               <str>         - The given string will be used as-is.
-              <bytearray>   - Byte arrays are converted to type <str>.
+              <bytearray>   - Will be converted to type <str>.
               <unicode>     - Unicode strings are converted to type
                               <str> using "utf_8" encoding.
     """

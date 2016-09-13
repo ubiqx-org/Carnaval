@@ -5,7 +5,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: SMB_Core.py; 2016-08-14 14:06:40 -0500; Christopher R. Hertel$
+# $Id: SMB_Core.py; 2016-09-12 22:13:41 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -103,8 +103,7 @@ class SMBerror( CodedError ):
     Traceback (most recent call last):
       ...
     ValueError: Undefined error code: None.
-    >>> s = 'Die Flipperwaldt gersput'
-    >>> print SMBerror( 1003, s )
+    >>> print SMBerror( 1003, "Die Flipperwaldt gersput" )
     1003: SMB Protocol Mismatch; Die Flipperwaldt gersput.
   """
   # This assignment is all that's needed to create the class:
@@ -150,6 +149,10 @@ class SMB_FileTime( object ):
 
     Output: An unsigned long integer representing the current time in
             FILETIME format.
+
+    Notes:  Yeah...the few nanoseconds it will take to run this code
+            means that by the time the result is actually returned it
+            is already a bit stale.
     """
     return( long( round( time(), 7 ) * 10000000 ) + cls._EPOCH_DELTA_SECS )
 
