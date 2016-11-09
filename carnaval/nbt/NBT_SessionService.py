@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_SessionService.py; 2016-08-14 14:06:40 -0500; Christopher R. Hertel$
+# $Id: NBT_SessionService.py; 2016-11-09 02:09:24 -0600; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -65,8 +65,8 @@ on the web at:
   http://www.ubiqx.org/cifs/NetBIOS.html#NBT.6
 
 The NBT Session Service is probably the simplest aspect of the NBT
-transport suite.  It consists of only six possible messages, half of which
-fit compactly in only 4 bytes:
+transport suite.  It consists of only six possible messages, all but one
+of which have a fixed length:
 
     * Session Message
     * Session Request
