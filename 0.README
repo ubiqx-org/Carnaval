@@ -5,10 +5,11 @@ Carnaval
 
 ...is an SMB2+ protocol suite implementation in Python.
 
-This project is still fairly new.
+This project may look a bit stale, but work continues in the shadows.
+
 So far we have a complete low-level implementation of the NBT transport
-layer, which is a good start.  We also have SMB1 protocol negotiation
-and SMB1 Echo, but we won't be doing much more with SMB1 for a while.
+layer; a good start.  We also have SMB1 protocol negotiation and SMB1
+Echo, but we won't be doing much more with SMB1 for a while (if ever).
 The next step is SMB2 packing and parsing.
 
 Stay tuned.
@@ -88,8 +89,8 @@ We are trying to meet the following goals:
   it.
 
 That's pretty lofty, particularly since we've only gotten as far as the
-NBT transport layer and a couple of SMB1 commands so far.  On the other
-hand, the project has some experienced SMB folks involved and what we've
+NBT transport layer and a couple of SMB1 commands.  On the other hand,
+the project has some experienced SMB folks involved and what we've
 produced so far is living up to our high expectations.
 
 
@@ -116,14 +117,15 @@ DFS::   Distributed File System.  Microsoft's DFS is fairly simple.  The
 NBT::   NetBIOS over TCP transport protocol.  NBT is the virtual LAN
         protocol specified by IETF Standard #19 which, in turn, consists
         of RFC1001 and RFC1002.  NBT provides a mechanism for supporting
-        the semantics of the NetBIOS API over TCP/UPD/IP internetworks.
+        the semantics of the NetBIOS API over TCP/UDP/IP internetworks.
         (See [NBGUIDE], [IMPCIFS], [RFC1001], and [RFC1002].)
 
 SMB::   Server Message Block protocol.  SMB was originally created by
-        IBM in the early 1980's for use with PC-DOS.  SMB was updated
-        and extended for use with OS/2, and was eventually ported to
-        Windows.  The ported version, known as "NT LM 0.12", has
-        remained very much the same since then.
+        IBM in the early 1980's for use with PC-DOS.  It was later updated
+        and extended for use with OS/2, and marketed under the name LAN
+        Manager.  OS/2 LAN Manager was eventually ported to Windows NT,
+        where it was called NT LAN Manager (NTLM).  The ported dialect was
+        identified as "NT LM 0.12".
 
 SMB1::  Also known as SMBv1, CIFS, or "NT LM 0.12"; SMB1 is the
         designation given to the "NT LM 0.12" dialect of the original
@@ -136,19 +138,19 @@ SMB1::  Also known as SMBv1, CIFS, or "NT LM 0.12"; SMB1 is the
         are documented in [MS-SMB].)
 
 SMB2::  A.K.A. SMBv2; SMB2 is not a dialect of SMB1, it is a different
-        protocol.  It does, however, share many characteristics with
-        SMB1.  SMB2 was introduced in Windows Vista.  This original
-        release was not particularly ambitious, and its existence was
-        hardly noticed at the time.  SMBv2.1 was released with Windows
-        7.  SMB2.2 was scheduled for release with Windows 8, but see the
-        description of SMB3.  (See [MS-SMB2].)
+        protocol.  It does, however, share many characteristics with SMB1.
+        SMB2 was introduced in Windows Vista.  This original release was not
+        particularly ambitious, and its existence was hardly noticed at the
+        time.  SMBv2.1 was released with Windows 7.  SMB2.2 was scheduled
+        for release with Windows 8, but see the description of SMB3.  (See
+        [MS-SMB2].)
 
 SMB3::  A.K.A. SMBv3 or SMB2.2; SMB3 is, in fact, a set of dialects of
-        SMB2.  It was originally intended to be released as SMB version
-        2.2 but it contained a number of new features and so was
-        re-dubbed SMB3 (another "marketing upgrade").  SMB3 supports I/O
-        over RDMA as well as scale-out and failover clustering.  SMB3 is
-        documented in [MS-SMB2].
+        SMB2.  SMB3 was originally intended to be released as SMB version
+        2.2 but it contained a number of new features and so was re-dubbed
+        SMB3 (another "marketing upgrade").  SMB3 supports I/O over RDMA as
+        well as scale-out and failover clustering.  SMB3 is documented in
+        [MS-SMB2].
 
 SMB2+:: The SMB2 and SMB3 dialects; SMB2 and SMB3 are the same protocol
         with two different names.  That's confusing, so the community
@@ -195,4 +197,4 @@ All of the references listed below are available online.
 
 Timestamp
 ---------
-$Id: 0.README; 2015-02-17 12:57:05 -0600; Christopher R. Hertel$
+$Id: 0.README; 2016-11-09 01:32:00 -0600; Christopher R. Hertel$
