@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_DatagramService.py; 2016-08-04 13:37:38 -0500; Christopher R. Hertel$
+# $Id: NBT_DatagramService.py; 2016-12-13 19:36:21 -0600; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -44,8 +44,8 @@
 #     comments in this module.
 #
 #     http://www.ubiqx.org/cifs/NetBIOS.html lays out both the design flaws
-#     in STD19, as well as the implementation flaws that have plagued this
-#     important piece of the NBT suite for years.
+#     in STD19 and the implementation flaws that have plagued this important
+#     piece of the NBT suite for years.
 #
 #   - This implementation includes support for creating an NBT Datagram
 #     Distribution Server (NBDD), something which is almost never done
