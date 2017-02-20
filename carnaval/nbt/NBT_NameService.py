@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_NameService.py; 2015-03-20 16:30:59 -0500; Christopher R. Hertel$
+# $Id: NBT_NameService.py; 2017-02-20 17:36:39 -0600; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -49,6 +49,12 @@
 #   - This module make some use of doctest strings within docstrings.
 #     More should be added.  A lot more.
 #     See: http://docs.python.org/2/library/doctest.html
+#
+#   - Starting in the directory above the one containing this module:
+#     Doctest:
+#       $ python -m doctest -v nbt/NBT_NameService.py
+#     Pydoc:
+#       $ pydoc nbt.NBT_NameService
 #
 # RFC Errata:
 #   - With regard to IMP_ERR, RFC 1002 says:
@@ -708,8 +714,8 @@ class Name( object ):
     s = (name + (16 * pad))[:15] + suffix
     self._L1name = ''
     for c in s:
-      self._L1name += chr( ((ord( c ) >> 4) & 0xFF) + 0x41 )  # High nibble.
-      self._L1name += chr( (ord( c ) & 0x0f) + 0x41 )         # Low nibble.
+      self._L1name += chr( ((ord( c ) >> 4) & 0x0F) + 0x41 )  # High nibble.
+      self._L1name += chr( (ord( c ) & 0x0F) + 0x41 )         # Low nibble.
 
     # L2 encode the NetBIOS name and scope.
     self._L2name = ''
