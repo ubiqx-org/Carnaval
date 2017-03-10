@@ -3,8 +3,9 @@
 #                          $Name: git_keywords.py$
 #
 # Copyright (C) 2012 Jose A. Rivera <jarrpa@redhat.com>
+# Copyright (C) 2017 Christopher R. Hertel <crh@ubiqx.org>
 #
-# $Date: 2014-05-06 15:07:31 -0500$
+# $Date: 2017-03-10 15:58:23 -0600$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -75,7 +76,6 @@ from git_utils import git, git_config, git_parse_date, LocalTZ
 from getpass  import getuser
 from socket   import getfqdn
 from datetime import datetime
-
 
 # ---------------------------------------------------------------------------- #
 # Functions
@@ -162,16 +162,16 @@ def kwsub( filepath ):
   # Set the keywords and their substitutions.
   kw = { 'Name'     : 'Name: ' + name,
          'Copyright': 'Copyright (C) ' + str(ad.year) + ' ' + author,
-         'Date'     : 'Date: ' + cdate,
+         'Date'     : 'Date: '   + cdate,
          'Id'       : 'Id: ' + name + '; ' + cdate + '; ' + cn,
          'Author'   : 'Author: ' + author,
-         'AName'    : 'AName: ' + an,
+         'AName'    : 'AName: '  + an,
          'AEmail'   : 'AEmail: ' + ae,
-         'ADate'    : 'ADate: ' + adate,
+         'ADate'    : 'ADate: '  + adate,
          'Committer': 'Committer: ' + committer,
-         'CName'    : 'CName: ' + cn,
+         'CName'    : 'CName: '  + cn,
          'CEmail'   : 'CEmail: ' + ce,
-         'CDate'    : 'CDate: ' + cdate,
+         'CDate'    : 'CDate: '  + cdate,
        }
 
   # Begin substitution.
@@ -230,8 +230,12 @@ def main():
       if( 'true' == git( 'check-attr kwsub ' + fname ).split(': ')[2] ):
         # Perform keyword substitution.
         kwsub( fname )
+
+  # All done.
   sys.exit( 0 )
 
+# You know what this is.  You know what it does.
+#
 if __name__ == '__main__':
   main()
 

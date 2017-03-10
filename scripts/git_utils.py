@@ -2,8 +2,9 @@
 #                            $Name: git_utils.py$
 #
 # Copyright (C) 2012 Jose A. Rivera <jarrpa@redhat.com>
+# Copyright (C) 2017 Christopher R. Hertel <crh@ubiqx.org>
 #
-# $Date: 2014-05-06 15:07:31 -0500$
+# $Date: 2017-03-10 15:58:23 -0600$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -154,8 +155,18 @@ else:
 DSTDIFF = DSTOFFSET - STDOFFSET
 
 class LocalTimezone( tzinfo ):
-  """Undocumented.
+  """Provide local timezone information.
   """
+  def _isdst( self, dt ):
+    """Undocumented.
+    """
+    tt = ( dt.year, dt.month, dt.day,
+           dt.hour, dt.minute, dt.second,
+           dt.weekday(), 0, 0 )
+    stamp = _time.mktime( tt )
+    tt = _time.localtime( stamp )
+    return( tt.tm_isdst > 0 )
+
   def utcoffset( self, dt ):
     """Undocumented.
     """
@@ -176,16 +187,6 @@ class LocalTimezone( tzinfo ):
     """Undocumented.
     """
     return( _time.tzname[self._isdst( dt )] )
-
-  def _isdst( self, dt ):
-    """Undocumented.
-    """
-    tt = ( dt.year, dt.month, dt.day,
-           dt.hour, dt.minute, dt.second,
-           dt.weekday(), 0, 0 )
-    stamp = _time.mktime( tt )
-    tt = _time.localtime( stamp )
-    return( tt.tm_isdst > 0 )
 
 
 # ---------------------------------------------------------------------------- #
