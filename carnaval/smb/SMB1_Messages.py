@@ -5,7 +5,7 @@
 # Copyright:
 #   Copyright (C) 2014, 2015 by Christopher R. Hertel
 #
-# $Id: SMB1_Messages.py; 2016-09-12 22:13:41 -0500; Christopher R. Hertel$
+# $Id: SMB1_Messages.py; 2018-02-21 06:29:52 -0600; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -77,35 +77,46 @@
 #             Specification"
 #             http://msdn.microsoft.com/en-us/library/cc246231.aspx
 #
+#   [SMBDEAD] Jose Barreto, Microsoft, "The Deprecation of SMB1 – You
+#             should be planning to get rid of this old SMB dialect"
+#             https://blogs.technet.microsoft.com/josebda/2015/04/21/\
+#             the-deprecation-of-smb1-you-should-be-planning-to-get-\
+#             rid-of-this-old-smb-dialect/
+#
 # ============================================================================ #
 #
 """Carnaval Toolkit: SMB1 message parsing and composition.
 
-SMB1 is the most recent dialect of the venerable Server Message Block (SMB)
-network file protocol.  It is also probably the last such dialect, since
-SMB has been replaced by a newer protocol known as SMB2.  SMB2 really is a
-completely different protocol, not just another dialect.
+"SMB1" is a new name for an old protocol.
 
-The original SMB protocol was developed by IBM in the early 1980's.
-It was later extended and enhanced by 3Com, IBM, Intel, and Micrsoft.
-Several versions of SMB were produced for PC-DOS, MS-DOS, and OS/2.
+"SMB" stands for "Server Message Block".  The original SMB protocol was
+developed by IBM in the early 1980's.  It was later extended and enhanced
+by 3Com, IBM, Intel, and Microsoft, resulting in several dialects that
+were produced for PC-DOS, MS-DOS, and OS/2.  The most recent dialect of
+the original SMB protocol is known as the NT LAN Manager dialect
+("NT LM 0.12").  It was created (quite a long time ago) for Windows NT.
 
-SMB1, originally known as the NT LAN Manager 0.12 ("NT LM 0.12") dialect,
-was created for Windows NT.  Other than security enhancements and minor
-feature upgrades, SMB1 hasn't changed much since the 1990's and it is
-still supported in current Windows versions.  However, since the release
-of Vista, Windows has also included support for the SMB2 protocol.
-Original SMB is on the road to retirement (and there was much rejoicing).
+The new "SMB1" name generally refers to the NT LAN Manager dialect. The
+Windows NT SMB stack, however, is backward-compatible with older dialects
+so "SMB1" can also refer to the original SMB protocol as a whole.
+
+With Windows Vista, Microsft introduced a completely new (but strangely
+familiar) protocol known as SMB2.  Since then, Microsoft has downgraded
+SMB1 to the point that it is now officially deprecated.  There are plans
+to remove SMB1 from future versions of Windows.
 
 This module currently implements only three SMB1 protocol commands:
+  * SMB_COM_NEGOTIATE
+    SMB1 protocol negotiation can be used as an initial step toward
+    SMB2/3 protocol negotiation.  That's why we bother.
   * SMB_COM_ECHO
     This is the SMB1 equivalent of a "ping".  It is typically used as a
-    keepalive, or to test an established SMB connection.
-  * SMB_COM_NEGOTIATE
-    SMB1 protocol negotiation can be used as an initial step toward SMB2
-    protocol negotiation.  That's why we bother.
+    keepalive, or to test an established SMB connection.  It may be
+    sent following an SMB_COM_NEGOTIATE if an SMB1 dialect has been
+    negotiated.  It is possible that this will never be used.
   * SMB_COM_INVALID
-    This is the designated bogus command.  It generates error messages.
+    This is the designated bogus command.  It generates error
+    response messages.
 
 The SMB1 protocol is specified in [MS-CIFS] and [MS-SMB].  [IMPCIFS]
 provides a guide to SMB1 and related protocols, and their implementation.
