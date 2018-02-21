@@ -5,7 +5,7 @@
 # Copyright:
 #   Copyright (C) 2016 by Christopher R. Hertel
 #
-# $Id: SMB_Status.py; 2016-09-21 13:33:46 -0500; Christopher R. Hertel$
+# $Id: SMB_Status.py; 2018-02-21 06:29:07 -0600; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -175,7 +175,7 @@ class NTStatus( long ):
     # NTStatus codes are unsigned 32-bit values by definition.
 
     # Validate the status code.
-    if( not (isinstance( code, int ) or isinstance( code, long ) ) ):
+    if( not (isinstance( code, int ) or isinstance( code, long )) ):
       s = "The <code> argument must be of type <int> or <long>, not %s."
       raise TypeError( s % type( code ) )
     code = (long( code ) & 0xFFFFFFFF)

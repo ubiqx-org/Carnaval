@@ -4,7 +4,7 @@
 # Copyright (C) 2012 Jose A. Rivera <jarrpa@redhat.com>
 # Copyright (C) 2017 Christopher R. Hertel <crh@ubiqx.org>
 #
-# $Date: 2017-03-10 15:58:23 -0600$
+# $Date: 2018-02-21 06:29:07 -0600$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -143,10 +143,9 @@ def git_parse_date( datestr, fmt=False ):
 
 # ---------------------------------------------------------------------------- #
 # A class capturing the platform's idea of local time.
-# Taken from http://docs.python.org/library/datetime.html#tzinfo-objects
-# on 2012-05-24.
+# Taken from https://docs.python.org/2/library/datetime.html#tzinfo-objects
+# on 2017-08-30.
 
-ZERO = timedelta( 0 )
 STDOFFSET = timedelta( seconds = -_time.timezone )
 if( _time.daylight ):
   DSTOFFSET = timedelta( seconds = -_time.altzone )
@@ -181,7 +180,7 @@ class LocalTimezone( tzinfo ):
     if( self._isdst( dt ) ):
       return( DSTDIFF )
     else:
-      return( ZERO )
+      return( timedelta( 0 ) )
 
   def tzname( self, dt ):
     """Undocumented.
