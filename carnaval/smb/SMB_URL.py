@@ -5,7 +5,7 @@
 # Copyright:
 #   Copyright (C) 2015 by Christopher R. Hertel
 #
-# $Id: SMB_URL.py; 2016-02-16 21:27:36 -0600; Christopher R. Hertel$
+# $Id: SMB_URL.py; 2018-10-02 18:22:51 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -586,4 +586,9 @@ class smb_url( object ):
   def url( self, url=None ):
     self.parse( url )
 
+# ============================================================================ #
+#                    Dreams, spread upon the gravel driveway like carrot juice #
+#                      in the morning fog of a bright new day.  "Except", said #
+#                           Candice, "that Harold is lactose intolerant, so he #
+#                            could not have taken the catamaran to Cleveland". #
 # ============================================================================ #
