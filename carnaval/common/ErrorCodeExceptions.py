@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: ErrorCodeExceptions.py; 2016-08-04 13:37:38 -0500; Christopher R. Hertel$
+# $Id: ErrorCodeExceptions.py; 2019-04-14 16:21:30 -0500; Christopher R. Hertel$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -89,14 +89,16 @@ class CodedError( Exception ):
 
     Input:  eCode - An error code.
 
-    Output: A string, which is the text associated with the given
-            error code, or None if the error code is not defined.
+    Output: A string, which is the message text associated with the
+            given error code, or None.  None is returned if the
+            error code is not defined, or if it is defined but
+            the message was set to None.
 
     Notes:  CodedError() descendant classes can be created simply by
             assigning a dictionary of number/string pairs to the
             <error_dict> class attribute.
     """
-    if( eCode ):
+    if( eCode is not None ):
       eCode = long( eCode )
       if( eCode in cls.error_dict ):
         return( cls.error_dict[ eCode ] )
