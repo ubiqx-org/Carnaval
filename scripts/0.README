@@ -55,9 +55,9 @@ Bugs
 ----
 
 * There is some sort of glitch in `git_keywords.py` that usually (but not
-  always) causes keyword updates to occur twice (or so it seems).  As a
-  result, it is often necessary run `git reset HEAD` on committed files
-  immediately after committing them.
+  always) causes keyword updates to occur at the wrong time.  As a result,
+  it is often necessary run `git reset HEAD` on committed files immediately
+  after committing them.  This appears to be an order of operations problem.
 
 ____
-$Id: 0.README; 2019-04-30 20:22:27 -0500; crh$
+$Id: 0.README; 2019-04-30 20:25:23 -0500; crh$
