@@ -5,7 +5,7 @@
 # Copyright:
 #   Copyright (C) 2014, 2015 by Christopher R. Hertel
 #
-# $Id: SMB1_Messages.py; 2018-02-21 06:29:52 -0600; Christopher R. Hertel$
+# $Id: SMB1_Messages.py; 2019-04-30 20:27:40 -0500; crh$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -127,9 +127,12 @@ CONSTANTS:
     SMB_MSG_PROTOCOL  : \\xFFSMB; SMB message prefix (protocol ID).
 
   Supported SMB1 Commands:
-    SMB_COM_ECHO      : SMB echo request.
-    SMB_COM_NEGOTIATE : Protocol dialect negotiation.
-    SMB_COM_INVALID   : Designated invalid command.
+    SMB_COM_ECHO            : SMB echo request.
+    SMB_COM_NEGOTIATE       : Protocol dialect negotiation.
+    SMB_COM_INVALID         : Designated invalid command.
+    SMB_COM_SUPPORTED_LIST  : A list of the SMB1 commands that are
+                              supported by this module, excluding
+                              SMB_COM_INVALID.
 
   SMB1_Header.Flags:
   (This list is incomplete.  See [MS-CIFS; 2.2.3.1] for more.)
@@ -188,6 +191,7 @@ SMB_MSG_PROTOCOL  = '\xFFSMB' # Standard SMB message prefix (protocol ID).
 SMB_COM_ECHO      = 0x2B      # Echo (ping).
 SMB_COM_NEGOTIATE = 0x72      # Protocol Negotiation.
 SMB_COM_INVALID   = 0xFE      # Officially invalid command code.
+SMB_COM_SUPPORTED_LIST = [SMB_COM_ECHO, SMB_COM_NEGOTIATE]
 
 # SMB1 Header Flags bits (incomplete list; see [MS-CIFS;2.2.3.1])
 SMB_FLAGS_CASE_INSENSITIVE    = 0x08  # 1=Case insensitive pathnames.
@@ -326,43 +330,51 @@ class _SMB1_Header( object ):
   def command( self ):
     """SMB1 Command code; unsigned 8-bit integer.
     Errors:
-      AssertionError  - Thrown if the assigned value is either negative
-                        or greater than 255 (i.e., is not an unsigned
-                        8-bit integer value).
+      AssertionError  - Thrown if the command value is not in the 0..255
+                        range (an unsigned 8-bit integer value), or if
+                        the command code is in the correct range, but is
+                        not a supported command code.
       TypeError       - Thrown if the assigned value is of a type that
                         cannot be converted to an integer.
-      ValueError      - Thrown if the assigned value is a convertable
-                        type (e.g., <str>), but still cannot be
-                        converted to an integer.
+      ValueError      - On assignment: Thrown if the assigned value is a
+                        convertable type (e.g., <str>), but still cannot
+                        be converted to an integer.
+                        On retrieval: Thrown if the command code is not
+                        supported by this module.
     """
+    if( self._command not in SMB_COM_SUPPORTED_LIST ):
+      s = hexnum2str( self._command, 2 )
+      raise ValueError( "Unsupported command code: %s." % s )
     return( self._command )
   @command.setter
   def command( self, command=None ):
-    command = int( command )
-    assert( (0xFF & command) == command ), \
-      "Command code %s out of range." % hexnum2str( command )
-    self._command = command
+    cmd = 0xFF & int( command )
+    assert( cmd == command ), \
+      "Command code %s out of range." % hexnum2str( command, 2 )
+    assert( cmd in SMB_COM_SUPPORTED_LIST ), \
+      "Unsupported command code: %s." % hexnum2str( cmd, 2 )
+    self._command = cmd
 
   @property
   def status( self ):
     """NT Status code; unsigned 32-bit integer.
     Errors:
-      AssertionError  - Thrown if the assigned value, interpreted as an
-                        integer, does not fit into a 32-bit unsigned
-                        integer.
+      AssertionError  - Thrown if the assigned value, interpreted as a
+                        long integer, cannot be represented as a 32-bit
+                        unsigned value.
       TypeError       - Thrown if the assigned value is of a type that
-                        cannot be converted to an integer.
+                        cannot be converted to a long integer.
       ValueError      - Thrown if the assigned value is a convertable
                         type (e.g., <str>), but still cannot be
-                        converted to an integer (e.g.,
-                        int( "feldspar" )).
+                        converted to a long integer (e.g.,
+                        long( "feldspar" )).
     """
     return( self._status )
   @status.setter
   def status( self, status=None ):
     status = long( status )
     assert( (0xFFFFFFFF & status) == status ), \
-      "Status code %s out of range." % hexnum2str( status )
+      "Status code %s out of range." % hexnum2str( status, 4 )
     self._status = status
 
   @property
