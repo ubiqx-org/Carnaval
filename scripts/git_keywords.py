@@ -1,11 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # ============================================================================ #
 #                          $Name: git_keywords.py$
 #
 # Copyright (C) 2012 Jose A. Rivera <jarrpa@redhat.com>
-# Copyright (C) 2017 Christopher R. Hertel <crh@ubiqx.org>
+# Copyright (C) 2017, 2019 Christopher R. Hertel <crh@ubiqx.org>
 #
-# $Date: 2017-03-10 15:58:23 -0600$
+# $Date: 2019-04-30 19:47:24 -0500$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -47,7 +47,7 @@ Currently, the following keywords are supported:
                 when.  Taken as the author of the commit.  This should only
                 be used when a single author holds copyright.
   * Date      - A date and time stamp of when the file was last committed.
-  * Id        - A string giving the file name, author date, and author name.
+  * Id        - A string giving the file name, CDate, and CHndl.
   * Author    - A string giving the author name and author e-mail address.
   * AName     - The file author's name.
   * AEmail    - The file author's e-mail address.
@@ -55,6 +55,7 @@ Currently, the following keywords are supported:
   * Committer - A string giving the committer name and e-mail address.
   * CName     - The file committer's name.
   * CEmail    - The file committer's e-mail address
+  * CHndl     - The file committer's e'mail with the @... part stripped off.
   * CDate     - The file committer's date of commit. An alias for Date.
 
 In addition, this script requires the use of the following custom git
@@ -149,6 +150,7 @@ def kwsub( filepath ):
   ae = getenv('GIT_AUTHOR_EMAIL') or git_email or (user + '@' + fqdn)
   cn = getenv('GIT_COMMITTER_NAME') or git_user or user
   ce = getenv('GIT_COMMITTER_EMAIL') or git_email or (user + '@' + fqdn)
+  ch = ce.split('@')[0]
   author = an + ' <' + ae + '>'
   committer = cn + ' <' + ce + '>'
   dt = datetime.now().replace( tzinfo=LocalTZ )
@@ -160,18 +162,19 @@ def kwsub( filepath ):
   name = os.path.basename( filepath )
 
   # Set the keywords and their substitutions.
-  kw = { 'Name'     : 'Name: ' + name,
-         'Copyright': 'Copyright (C) ' + str(ad.year) + ' ' + author,
-         'Date'     : 'Date: '   + cdate,
-         'Id'       : 'Id: ' + name + '; ' + cdate + '; ' + cn,
-         'Author'   : 'Author: ' + author,
-         'AName'    : 'AName: '  + an,
-         'AEmail'   : 'AEmail: ' + ae,
-         'ADate'    : 'ADate: '  + adate,
+  kw = { 'Copyright': ' '.join( ['Copyright (C)', str(ad.year), author] ),
+         'Name'     : 'Name: '      + name,
+         'Date'     : 'Date: '      + cdate,
+         'Id'       : 'Id: '        + "; ".join( [name, cdate, ch] ),
+         'Author'   : 'Author: '    + author,
+         'AName'    : 'AName: '     + an,
+         'AEmail'   : 'AEmail: '    + ae,
+         'ADate'    : 'ADate: '     + adate,
          'Committer': 'Committer: ' + committer,
-         'CName'    : 'CName: '  + cn,
-         'CEmail'   : 'CEmail: ' + ce,
-         'CDate'    : 'CDate: '  + cdate,
+         'CName'    : 'CName: '     + cn,
+         'CEmail'   : 'CEmail: '    + ce,
+         'CHndl'    : 'CHndl: '     + ch,
+         'CDate'    : 'CDate: '     + cdate
        }
 
   # Begin substitution.
