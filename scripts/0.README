@@ -34,5 +34,30 @@ Setting up your repository to support keyword substitution:
 4. Make sure that your username and e'mail address are correctly assigned in
    the `<repository>/.git/config` file.  If you are using a GitHub account,
    your e'mail address should probably be the address you're using on GitHub.
+
+Stuff You Probably Already Know
+-------------------------------
+
+From the `carnaval/` directory, you can run the unit tests or generate
+module documentation:
+
+* Run doctest scripts: `python -m doctest -v <dir>/<module>.py`
+
+* View module documentation: `pydoc <dir>.<module>`
+
+* There is a tool called `pyclean` that is available in some distributions
+  (and otherwise available for installation).  It'll clean up those pesky
+  `.pyc` and `.pyo` files for you.
+
+(I know these things exist, but I always need to be reminded how to use them.)
+
+Bugs
+----
+
+* There is some sort of glitch in `git_keywords.py` that usually (but not
+  always) causes keyword updates to occur twice (or so it seems).  As a
+  result, it is often necessary run `git reset HEAD` on committed files
+  immediately after committing them.
+
 ____
-$Id: 0.README; 2015-02-17 13:20:30 -0600; Christopher R. Hertel$
+$Id: 0.README; 2019-04-30 20:22:27 -0500; crh$
