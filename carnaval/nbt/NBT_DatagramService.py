@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_DatagramService.py; 2016-12-13 19:36:21 -0600; Christopher R. Hertel$
+# $Id: NBT_DatagramService.py; 2019-05-14 16:03:49 -0500; crh$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -733,8 +733,8 @@ class DSFragment( DSMessage ):
                 the content of a particular fragment.
   Doctest:
     >>> ip = chr( 192 ) + chr( 168 ) + chr( 0 ) + chr( 1 )
-    >>> sn = Name( "MOONBEAM" ).getL2name()
-    >>> dn = Name( "KAPOOR" ).getL2name()
+    >>> sn = Name( "MOONBEAM" ).L2name
+    >>> dn = Name( "KAPOOR" ).L2name
     >>> ud = (8 * "Asynchonous double buffer.  " ).rstrip()
     >>> DUD = DirectUniqueDatagram( DS_SNT_B, 2, ip, DS_PORT, sn, dn, ud )
     >>> DUD.maxData = 196
@@ -859,8 +859,8 @@ class DirectUniqueDatagram( DSMessage ):
 
   Doctest:
     >>> ip = chr( 10 ) + chr( 11 ) + chr( 12 ) + chr( 13 )
-    >>> sn = Name( "Fooberry", scope="cheese" ).getL2name()
-    >>> dn = Name( "Vorplzoo" ).getL2name()
+    >>> sn = Name( "Fooberry", scope="cheese" ).L2name
+    >>> dn = Name( "Vorplzoo" ).L2name
     >>> ud = "We are the android sisters."
     >>> DUD = DirectUniqueDatagram( DS_SNT_B, 7, ip, DS_PORT, sn, dn, ud )
     >>> DgmList = DUD.composeList()
@@ -951,8 +951,8 @@ class DirectGroupDatagram( DSMessage ):
 
   Doctest:
     >>> ip = chr( 10 ) + chr( 12 ) + chr( 14 ) + chr( 18 )
-    >>> sn = Name( "ONOFFON", suffix='\x37' ).getL2name()
-    >>> dn = Name( "OFFONOFF", suffix='\x42' ).getL2name()
+    >>> sn = Name( "ONOFFON", suffix='\x37' ).L2name
+    >>> dn = Name( "OFFONOFF", suffix='\x42' ).L2name
     >>> ud = "Last night, I had a digital dream."
     >>> DGD = DirectGroupDatagram( DS_SNT_P, 21, ip, DS_PORT, sn, dn, ud )
     >>> DgmList = DGD.composeList()
@@ -1043,8 +1043,8 @@ class BroadcastDatagram( DSMessage ):
 
   Doctest:
     >>> ip = chr( 10 ) + chr( 1 ) + chr( 2 ) + chr( 3 )
-    >>> sn = Name( "Andor", suffix='\x37', scope='digital' ).getL2name()
-    >>> dn = Name( '*', scope="circus" ).getL2name()
+    >>> sn = Name( "Andor", suffix='\x37', scope='digital' ).L2name
+    >>> dn = Name( '*', scope="circus" ).L2name
     >>> ud = "A zen country singer?"
     >>> BD = BroadcastDatagram( DS_SNT_M, 2010, ip, DS_PORT, sn, dn, ud )
     >>> DgmList = BD.composeList()
@@ -1386,7 +1386,7 @@ class QueryNBDD( DSQuery ):
 
   Doctest:
     >>> ip    = chr( 10 ) + chr( 0 ) + chr( 37 ) + chr( 42 )
-    >>> qName = Name( "Tookah" ).getL2name()
+    >>> qName = Name( "Tookah" ).L2name
     >>> QN    = QueryNBDD( DS_SNT_P, 7890, ip, DS_PORT, qName )
     >>> print ParseDgm( QN.compose() ).dump()
     Header:
@@ -1448,7 +1448,7 @@ class PositiveResponseNBDD( DSQuery ):
 
   Doctest:
     >>> ip    = chr( 10 ) + chr( 10 ) + chr( 99 ) + chr( 88 )
-    >>> qName = Name( "Teru" ).getL2name()
+    >>> qName = Name( "Teru" ).L2name
     >>> pNBDD = PositiveResponseNBDD( 1978, ip, DS_PORT, qName )
     >>> print ParseDgm( pNBDD.compose() ).dump()
     Header:
@@ -1502,7 +1502,7 @@ class NegativeResponseNBDD( DSQuery ):
 
   Doctest:
     >>> ip    = chr( 10 ) + chr( 10 ) + chr( 44 ) + chr( 66 )
-    >>> qName = Name( "Ruby" ).getL2name()
+    >>> qName = Name( "Ruby" ).L2name
     >>> nNBDD = NegativeResponseNBDD( 7654, ip, DS_PORT, qName )
     >>> print ParseDgm( nNBDD.compose() ).dump()
     Header:
@@ -1579,8 +1579,8 @@ class Defrag( object ):
   Doctest:
     >>> # Define source and destination addresses.
     >>> ip = chr( 172 ) + chr( 18 ) + chr( 0 ) + chr( 1 )
-    >>> sn = Name( "RUBY" ).getL2name()
-    >>> dn = Name( "TERU" ).getL2name()
+    >>> sn = Name( "RUBY" ).L2name
+    >>> dn = Name( "TERU" ).L2name
     >>> # Create the datagram message payload.
     >>> ud = (24 * "It's not my fault!  " ).rstrip()
     >>> # Now create the group datagram message object.
@@ -1975,9 +1975,9 @@ def ParseDgm( msg=None ):
     n       = Name()
     pos     = 14
     pos    += n.setL2name( msg[pos:] )
-    srcName = n.getL2name()
+    srcName = n.L2name
     pos    += n.setL2name( msg[pos:] )
-    dstName = n.getL2name()
+    dstName = n.L2name
     usrData = msg[pos:]
 
     if( DS_FIRST_FLAG != (hdrFlags & DS_FM_MASK) ):
