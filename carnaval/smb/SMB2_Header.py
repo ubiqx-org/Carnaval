@@ -5,7 +5,7 @@
 # Copyright:
 #   Copyright (C) 2016 by Christopher R. Hertel
 #
-# $Id: SMB2_Header.py; 2019-05-18 17:30:05 -0500; crh$
+# $Id: SMB2_Header.py; 2019-05-19 16:12:11 -0500; crh$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -946,39 +946,41 @@ def _unit_test():
     >>> _unit_test()
     Success
   """
-  # 1.Baseline test.
-  #   Just verify that we can store and retrieve the basic attributes
-  #   of an _SMB2_Header object.
-  #
-  hdr = _SMB2_Header( SMB2_COM_LOGOFF, SMB2_DIALECT_302 )
-  hdr.creditCharge  = 213
-  hdr.channelSeq    = 42607
-  hdr.creditReqResp = 42
-  hdr.flagReply     = False
-  hdr.flagAsync     = False
-  hdr.flagNext      = False
-  hdr.flagSigned    = False
-  hdr.flagPriority  = 5
-  hdr.flagDFS       = True
-  hdr.flagReplay    = False
-  hdr.nextCommand   = 0x87654321
-  hdr.messageId     = _SMB2_Header._format_Q.unpack( "Fooberry" )[0]
-  hdr.treeId        = 0xBEADED
-  hdr.sessionId     = _SMB2_Header._format_Q.unpack( "Icecream" )[0]
-  hdr.signature     = "Reginald".center( 16 )
-  # Create a header dump, compose a message, then parse the message.
-  dmp0 = hdr.dump()
-  msg  = hdr.compose()
-  hdr = _SMB2_Header.parseMsg( msg, SMB2_DIALECT_302 )
-  # Dump the newly reparsed header, and compare against the original.
-  dmp1 = hdr.dump()
-  if( dmp0 != dmp1 ):
-    print "Failure: Reparsing a composed header resulted in differences."
-    print "As composed:\n", dmp0
-    print "As parsed:\n", dmp1
-    return
+  if( __debug__ ):
+    # 1.Baseline test.
+    #   Just verify that we can store and retrieve the basic attributes
+    #   of an _SMB2_Header object.
+    #
+    hdr = _SMB2_Header( SMB2_COM_LOGOFF, SMB2_DIALECT_302 )
+    hdr.creditCharge  = 213
+    hdr.channelSeq    = 42607
+    hdr.creditReqResp = 42
+    hdr.flagReply     = False
+    hdr.flagAsync     = False
+    hdr.flagNext      = False
+    hdr.flagSigned    = False
+    hdr.flagPriority  = 5
+    hdr.flagDFS       = True
+    hdr.flagReplay    = False
+    hdr.nextCommand   = 0x87654321
+    hdr.messageId     = _SMB2_Header._format_Q.unpack( "Fooberry" )[0]
+    hdr.treeId        = 0xBEADED
+    hdr.sessionId     = _SMB2_Header._format_Q.unpack( "Icecream" )[0]
+    hdr.signature     = "Reginald".center( 16 )
+    # Create a header dump, compose a message, then parse the message.
+    dmp0 = hdr.dump()
+    msg  = hdr.compose()
+    hdr = _SMB2_Header.parseMsg( msg, SMB2_DIALECT_302 )
+    # Dump the newly reparsed header, and compare against the original.
+    dmp1 = hdr.dump()
+    if( dmp0 != dmp1 ):
+      print "Failure: Reparsing a composed header resulted in differences."
+      print "As composed:\n", dmp0
+      print "As parsed:\n", dmp1
+      return
+    print "TESTED!"
 
-  # 2.Add additional tests hereafter.
+    # 2.Add additional tests hereafter.
 
   # Bottom line.
   print "Success"
