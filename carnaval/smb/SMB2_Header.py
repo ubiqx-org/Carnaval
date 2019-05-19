@@ -5,7 +5,7 @@
 # Copyright:
 #   Copyright (C) 2016 by Christopher R. Hertel
 #
-# $Id: SMB2_Header.py; 2019-05-19 16:12:11 -0500; crh$
+# $Id: SMB2_Header.py; 2019-05-19 16:17:54 -0500; crh$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -978,7 +978,6 @@ def _unit_test():
       print "As composed:\n", dmp0
       print "As parsed:\n", dmp1
       return
-    print "TESTED!"
 
     # 2.Add additional tests hereafter.
 
