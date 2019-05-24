@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_DatagramService.py; 2019-05-14 16:03:49 -0500; crh$
+# $Id: NBT_DatagramService.py; 2019-05-23 23:03:27 -0500; crh$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -69,7 +69,9 @@ Let's repeat this until it sinks in:  NetBIOS is an API, not a network
 protocol.  It was originally a chunk of code loaded into DOS memory that
 presented an API, but the original code is never (well, maybe rarely)
 used any more.  A remarkably useful guide to the NetBIOS API can be
-found here:  http://www.netbiosguide.com/
+found here:
+  http://web.archive.org/web/20170122014837/http://netbiosguide.com/
+
 
 NBT is transport protocol that provides the semantics needed to support
 the NetBIOS API.  On systems such as DOS, OS/2, or Windows, programs
