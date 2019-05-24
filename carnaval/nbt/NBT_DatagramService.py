@@ -4,7 +4,7 @@
 # Copyright:
 #   Copyright (C) 2014 by Christopher R. Hertel
 #
-# $Id: NBT_DatagramService.py; 2019-05-23 23:03:27 -0500; crh$
+# $Id: NBT_DatagramService.py; 2019-05-23 23:32:03 -0500; crh$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -72,8 +72,7 @@ used any more.  A remarkably useful guide to the NetBIOS API can be
 found here:
   http://web.archive.org/web/20170122014837/http://netbiosguide.com/
 
-
-NBT is transport protocol that provides the semantics needed to support
+NBT is a transport protocol that provides the semantics needed to support
 the NetBIOS API.  On systems such as DOS, OS/2, or Windows, programs
 that make use of the NetBIOS or NetBEUI API can use NBT transport
 without needing to be modified or recompiled.  On other platforms,
@@ -562,7 +561,7 @@ class DSMessage( DSHeader ):
     return( self._srcName )
   @srcName.setter
   def srcName( self, srcName=None ):
-    assert isinstance( srcName, str ), "Assigned value must be type <str>."
+    assert( isinstance( srcName, str ) ), "Assigned value must be type <str>."
     self._srcName = srcName
 
   @property
@@ -574,7 +573,7 @@ class DSMessage( DSHeader ):
     return( self._dstName )
   @dstName.setter
   def dstName( self, dstName=None ):
-    assert isinstance( dstName, str ), "Assigned value must be type <str>."
+    assert( isinstance( dstName, str ) ), "Assigned value must be type <str>."
     self._dstName = dstName
 
   @property
@@ -1090,9 +1089,9 @@ class BroadcastDatagram( DSMessage ):
       hdrSNT  - Sending Node Type value (one of the DS_SNT_* values).
       dgmId   - A 16-bit message ID, used to match responses to
                 requests.
-      srcIP   - Sending node's IPv4 address.  This is the address of the
-                interface on which the message was sent, presented as a
-                string of four octets.
+      srcIP   - Sending node's IPv4 address.  This is the address of
+                the interface on which the message was sent, presented
+                as a string of four octets.
       srcPort - The source UDP port.
       srcName - The L2-encoded fully-qualified name of the NetBIOS
                 service that is sending the message.
@@ -1112,14 +1111,14 @@ class BroadcastDatagram( DSMessage ):
     Notes:  The destination name (<dstName>) *must* be the wildcard name
             with the scope appended, encoded in L2 format.  The simplest
             form of the wildcard name is:
-              ' CKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\0'
+              ' CKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\0'
             ...which is the wildcard name with the empty scope.
 
             The destination name is passed in as a parameter so that the
             correct scope can be included, in encoded format.
     """
-    # Ensure that we were given the wildcard name.
-    assert (' CKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' != dstName[:34]), \
+    # Ensure that we were given the wildcard name (ignore scope).
+    assert( ' CKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' == dstName[:33] ), \
       "Invalid destination name (must be '*')."
     # Call the super method.
     super( BroadcastDatagram, self ).__init__( msgType = DS_DGM_BCAST,
@@ -1323,7 +1322,7 @@ class DSQuery( DSHeader ):
     return( self._qryName )
   @qryName.setter
   def qryName( self, qryName=None ):
-    assert isinstance( qryName, str ), "Query Name is not of type str."
+    assert( isinstance( qryName, str ) ), "Query Name is not of type str."
     self._qryName = qryName
 
   @property
@@ -1896,7 +1895,7 @@ class Defrag( object ):
   @timeout.setter
   def timeout( self, timeout=None ):
     timeout = int( timeout )
-    assert ( timeout >= 0 ), "<timeout> cannot be negative."
+    assert( timeout >= 0 ), "<timeout> cannot be negative."
     timeout = max( 250, min( timeout, 0xFFFF ) )
     self._timeout = dt.timedelta( milliseconds=timeout )
 
@@ -1917,7 +1916,7 @@ class Defrag( object ):
   @ckCount.setter
   def ckCount( self, ckCount=None ):
     ckCount = int( ckCount )
-    assert ( ckCount >= 0 ), "<ckCount> must not be negative."
+    assert( ckCount >= 0 ), "<ckCount> must not be negative."
     self._ckCount = ckCount
 
 
