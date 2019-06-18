@@ -5,7 +5,7 @@
 # Copyright:
 #   Copyright (C) 2016 by Christopher R. Hertel
 #
-# $Id: SMB2_Header.py; 2019-05-19 16:17:54 -0500; crh$
+# $Id: SMB2_Header.py; 2019-06-18 17:56:20 -0500; crh$
 #
 # ---------------------------------------------------------------------------- #
 #
@@ -96,7 +96,7 @@
 #
 # ============================================================================ #
 #
-"""Carnaval Toolkit: SMB2+ message packing and parsing.
+"""Carnaval Toolkit: SMB2+ message header packing and parsing.
 
 Common classes, functions, etc., for packing and unpacking SMB2+ Headers.
 This module deals with structures common to both the client and server.
