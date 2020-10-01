@@ -183,8 +183,9 @@ All of the references listed below are available online.
             Versions 2 and 3",
             http://msdn.microsoft.com/en-us/library/cc246482.aspx
 
-[NBGUIDE]:: Winston, Gavin, "NetBIOS Specification", 1998-2012,
-            http://www.netbiosguide.com/
+[NBGUIDE]:: Winston, Gavin, "NetBIOS Specification", 1998-2012 (Archived)
+            https://web.archive.org/web/20170724042731/http://www.netbiosguide.com:80/
+
 
 [RFC1001]:: Network Working Group, "Protocol Standard for a NetBIOS Service
             on a TCP/UDP Transport: Concepts and Methods", STD 19, RFC 1001,
@@ -194,7 +195,10 @@ All of the references listed below are available online.
             on a TCP/UDP Transport: Detailed Specifications", STD 19, RFC
             1002, March 1987, http://www.ietf.org/rfc/rfc1002.txt
 
+[SNIASMB3]:: Storage Networking Industry Association (SNIA) SMB3 
+             Reference site, https://www.snia.org/smb3
+
 
 Timestamp
 ---------
-$Id: 0.README; 2016-11-09 01:32:00 -0600; Christopher R. Hertel$
+$Id: 0.README; 2020-10-01 18:57:23 -0500; crh$
