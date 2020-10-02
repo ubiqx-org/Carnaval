@@ -19,27 +19,18 @@ Patch Submissions
 -----------------
 
 If you want to contribute something, we would just be tickled pink, but
-please note the licensing philosophy discussion below.  If you submit
-patches, we reserve the right to re-license the resulting code.  That
-includes docstrings and such-like that are part of the finished product.
-
-The goal is to ensure that we can contribute some or all of the project
-to the Python Software Foundation (PSF), which has its own licensing
-requirements.
-
-See:  https://wiki.python.org/moin/PythonSoftwareFoundationLicenseFaq
+please note the licensing philosophy discussion below.
 
 
 Licensing Philosophy
 --------------------
 
-This code is provided with the hope that it is both usable and useful,
-but without any promises regarding net weight, color, the quality of the
-bits used to represent the code on any computer or in any form of data
-transmission, fitness for any specific purpose, or the number of jelly
-beans in the giant jam jar.  We're just putting this out there with the
-wild wish that it will make someone happier than they already hopefully
-are.
+This code is provided with the hope that it is both usable and useful, but
+without any promises regarding net weight, color, the quality or origin of
+the bits used to represent the code on any computer or in any form of data
+transmission, fitness for any specific purpose, or the number of jelly beans
+in the giant jam jar.  We're just putting this out there with the wild wish
+that it will make someone happier than they already hopefully are.
 
 These modules are licensed under either the GNU Lesser General Public
 License (LGPL) or the GNU Affero General Public License.  If there were
@@ -53,11 +44,8 @@ working servers, testing programs, etc., are licensed under the AGPL.
 See the individual files for specifics, but the licensing is intended to
 make sense.
 
-As explained above, if the code proves to be useful, stable, weighty,
-witty, popular, florescent, effervescent, or otherwise beneficial to the
-general populace, we may attempt to donate important modules to the
-Python Software Foundation (PSF).  Doing so would require that the
-donated code be released under an additional license.
+The long term goal is to provide both a practical toolkit and a worthy
+reference implementation.
 
 AGPL:  https://www.gnu.org/licenses/agpl.html +
 LGPL:  https://www.gnu.org/licenses/lgpl.html
@@ -203,4 +191,4 @@ All of the references listed below are available online.
 
 Timestamp
 ---------
-$Id: 0.README; 2020-10-01 19:17:46 -0500; crh$
+$Id: 0.README; 2020-10-02 12:02:10 -0500; crh$
