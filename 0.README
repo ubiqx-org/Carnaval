@@ -1,10 +1,10 @@
-NOTE: We're not dead yet!
-...but this project is on hold until we figure out what to do about Python.
-
+NOTE:: We're not dead yet! +
+...but this project is on hold until we figure out what to do about Python. +
++
 Python has been declared dead and the recommendation is to port to Py3.
 Thing is, Py3 has been out for quite a while now and we don't want to port
-to that just to find out that Py4 is the brave new thing.
-
+to that just to find out that Py4 is the brave new thing. +
++
 In the mean time, work proceeds on https://gitlab.com/ubiqx/zambezi/[Zambezi].
 
 ---
