@@ -1,8 +1,7 @@
 [cols="^.<,<.<"]
 |===
 | :pencil:&nbsp;*Note:* | We're not dead yet!
-
-  ...but this project is on hold until we figure out what to do about Python.
+| | ...but this project is on hold until we figure out what to do about Python.
 
   Python has been declared dead and the recommendation is to port to Py3.
   Thing is, Py3 has been out for quite a while now and we don't want to port
