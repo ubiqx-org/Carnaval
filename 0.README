@@ -1,6 +1,6 @@
 [cols="^.<,<.<"]
 |===
-| :pencil:&nbsp;*Note:* | We're not dead yet!
+| :pencil:<b>Note:</b> | We're not dead yet!
 | | ...but this project is on hold until we figure out what to do about Python.
 
   Python has been declared dead and the recommendation is to port to Py3.
