@@ -1,3 +1,16 @@
+<table align="left"><tr>
+  <th>:pencil: Note:</th>
+  <td>We're not dead yet!<br/>
+  ...but this project is on hold until we figure out what to do about Python.
+
+  <p>Python has been declared dead and the recommendation is to port to Py3.
+  Thing is, Py3 has been out for quite a while now and we don't want to port
+  to that just to find out that Py4 is the brave new thing.
+
+  <p>In the mean time, work proceeds on
+  https://gitlab.com/ubiqx/zambezi/[Zambezi].</td>
+</tr></table>
+
 Hi!
 
 Carnaval
@@ -191,4 +204,4 @@ All of the references listed below are available online.
 
 Timestamp
 ---------
-$Id: 0.README; 2020-10-02 12:02:10 -0500; crh$
+$Id: 0.README; 2020-12-15 15:45:37 -0600; crh$
